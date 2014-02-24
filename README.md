@@ -41,16 +41,18 @@ The argument passed to `visit` can either be a string username or a Profile
 object. Note that this will cause you to show up in that user's visitors list,
 unless you've turned on invisible browsing. One you have visited a profile, you
 should have access to just about every piece of information that is also
-available on the website. Be sure to check out the docstrings and source code of
+available on the website. You can check out the docstrings and source code of
 the Profile class in pyokc.py to get a better idea of what is available to you.
 
 <h3>User/Profile questions</h3>
 
-The questions that you or someone else have answered can be accessed via the
-`questions` attribute of `User` or `Profile`, respectively. Because getting
-this information can involve a time-consuming number of requests, you must
-first manually call `update_questions()`. You can then access Question
-information via attributes like `q.text` and `q.user_answer`.
+The questions that you or someone else have answered can be accessed as a
+list via the `questions` attribute of `User` or `Profile`, respectively.
+Because getting this information can involve a time-consuming number of
+requests, you must first manually fill this list via the
+`User.update_questions()` or `Profile.update_questions()` methods. You
+can then access Question information via attributes like `q.text` and
+`q.user_answer`.
 
 <h3>Mailbox</h3>
 
@@ -60,6 +62,9 @@ information via attributes like `q.text` and `q.user_answer`.
 
 `print(first_thread.messages)`
 
+Because reading each thread requires a request to the server, you must
+first pass a MessageThread object as an argument to `User.read()` before
+its `messages` attribute will become available.
 
 <h2>Installation</h2>
 
