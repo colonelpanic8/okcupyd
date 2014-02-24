@@ -11,17 +11,23 @@ and by
 
 <h3>Starting a new session</h3>
 
-`from pyokc import pyokc`
+```python
+from pyokc import pyokc
 
-`u = pyokc.User('totallymyusername', 'totallymypassword')`
+u = pyokc.User('totallymyusername', 'totallymypassword')
+```
 
 <h3>Messaging another user</h3>
 
-`u.message('foxylady899', 'Do you have a map?')`
+```python
+u.message('foxylady899', 'Do you have a map?')
+```
 
 <h3>Searching profiles</h3>
 
-`profile_list = u.search(age_min=26, age_max=32)`
+```python
+profile_list = u.search(age_min=26, age_max=32)
+```
 
 Just like OKCupid, pyokc uses default search values if you haven't specified a
 particular value. For instance, if you do not state a search location or
@@ -56,11 +62,13 @@ can then access Question information via attributes like `q.text` and
 
 <h3>Mailbox</h3>
 
-`first_thread = u.inbox[0]`
+```python
+first_thread = u.inbox[0]
 
-`u.read(first_thread)`
+u.read(first_thread)
 
-`print(first_thread.messages)`
+print(first_thread.messages)
+```
 
 Because reading each thread requires a request to the server, you must
 first pass a MessageThread object as an argument to `User.read()` before
@@ -68,7 +76,9 @@ its `messages` attribute will become available.
 
 <h2>Installation</h2>
 
-`pip install pyokc`
+```bash
+pip install pyokc
+```
 
 pyokc has two dependencies: requests and lxml.
 
