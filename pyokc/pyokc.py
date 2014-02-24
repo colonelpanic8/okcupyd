@@ -30,7 +30,9 @@ class User:
         self._session = Session()
         credentials = {'username': username, 'password': password, 'dest': '/home'}
         helpers.login(self._session, credentials)
-        self.age, self.orientation, self.status, self.gender = helpers.get_additional_info(self._session)
+        profile_response = self._session.get('https://www.okcupid.com/profile')
+        profile_tree = html.fromstring(profile_response.content.decode('utf8'))
+        self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
         self.update_mailbox(pages=1)
         self.update_visitors()
         
@@ -262,7 +264,7 @@ class User:
             info = helpers.get_profile_basics(div, profiles)
             if len(info):
                 profiles.append(Profile(self._session, info['name'], info['age'],
-                                     info['location'], info['match']))
+                                     info['location'], info['match'], enemy=info['enemy']))
         return profiles
         
     def visit(self, username):
@@ -294,7 +296,7 @@ class User:
         profile_request = self._session.post('http://www.okcupid.com/profile/{0}'.format(prfl.name), data=params)
         profile_tree = html.fromstring(profile_request.content.decode('utf8'))
         prfl.match, prfl.friend, prfl.enemy = helpers.get_percentages(profile_tree)
-        prfl.age, prfl.gender, prfl.orientation, prfl.status = helpers.get_profile_gentation(profile_tree)
+        prfl.age, prfl.gender, prfl.orientation, prfl.status = helpers.get_additional_info(profile_tree)
         helpers.update_essays(profile_tree, prfl.essays)
         helpers.update_looking_for(profile_tree, prfl.looking_for)
         helpers.update_details(profile_tree, prfl.details)
