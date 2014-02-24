@@ -39,7 +39,7 @@ profile.
 `u.visit('foxylady899')` or `u.visit(profile_list[0])`
 The argument passed to `visit` can either be a string username or a Profile
 object. Note that this will cause you to show up in that user's visitors list,
-unless you've turned on invisible browsing. One you have visited a profile, you
+unless you've turned on invisible browsing. Once you have visited a profile, you
 should have access to just about every piece of information that is also
 available on the website. You can check out the docstrings and source code of
 the Profile class in pyokc.py to get a better idea of what is available to you.
