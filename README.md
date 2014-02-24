@@ -1,7 +1,83 @@
 <h1>pyokc</h1>
 
-<p>pyokc is a python-based tool for interacting with OKCupid.com.</p>
+pyokc is a Python 3 package for interacting with OKCupid.com that
+was largely inspired by 
+<a href="http://davidshimel.com/reverse-engineering-okcupid/">this post</a>
+and by 
+<a href="http://www.wired.com/wiredscience/2014/01/how-to-hack-okcupid/">this guy</a>
+(sort of).
+
+<h2>Use</h2>
+
+<h3>Starting a new session</h3>
+
+`from pyokc import pyokc`
+
+`u = pyokc.User('totallymyusername', 'totallymypassword')`
+
+<h3>Messaging another user</h3>
+
+`u.message('foxylady899', 'Do you have a map?')`
+
+<h3>Searching profiles</h3>
+
+`profile_list = u.search(age_min=26, age_max=32)`
+
+Just like OKCupid, pyokc uses default search values if you haven't specified a
+particular value. For instance, if you do not state a search location or
+radius, the profiles returned will be within a 25-mile radius of your profile's
+location. By default, `search` returns 18 profiles, however this can be changed
+with the `number` keyword parameter. You can search using every metric that
+OKCupid currently allows, with the exception of A-list only options. The
+objects returned in the list are Profile objects that contain basic information
+about a profile as attributes such as `name`, `age`, and `match`. The actual
+content of a profile, however, cannot be accessed without actually visiting the
+profile.
+
+<h3>Visiting a profile</h3>
+
+`u.visit('foxylady899')` or `u.visit(profile_list[0])`
+The argument passed to `visit` can either be a string username or a Profile
+object. Note that this will cause you to show up in that user's visitors list,
+unless you've turned on invisible browsing. One you have visited a profile, you
+should have access to just about every piece of information that is also
+available on the website. Be sure to check out the docstrings and source code of
+the Profile class in pyokc.py to get a better idea of what is available to you.
+
+<h3>User/Profile questions</h3>
+
+The questions that you or someone else have answered can be accessed via the
+`questions` attribute of `User` or `Profile`, respectively. Because getting
+this information can involve a time-consuming number of requests, you must
+first manually call `update_questions()`. You can then access Question
+information via attributes like `q.text` and `q.user_answer`.
+
+<h3>Mailbox</h3>
+
+`first_thread = u.inbox[0]`
+
+`u.read(first_thread)`
+
+`print(first_thread.messages)`
+
 
 <h2>Installation</h2>
 
 `pip install pyokc`
+
+pyokc has two dependencies: requests and lxml.
+
+<b>Note:</b> Windows users will likely run into issues installing lxml. If
+this happens, be sure to install the binaries
+<a href="http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml">here</a> and then use
+pip again.
+
+<h2>FAQ</h2>
+
+<h3>Why is my program going slowly?</h3>
+
+pyokc overrides the `get` and `post` methods of Requests.Session to include a
+3-second delay between requests to OKCupid. Hopefully, this will prevent
+someone from making too many requests in too short of a timespan and bringing
+down the wrath of the OKCupid powers-that-be. This length of time can be
+modified by changing the number assigned to `DELAY` in settings.py.
