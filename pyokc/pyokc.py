@@ -1,5 +1,4 @@
 import re
-import time
 from lxml import html
 from pyokc import helpers
 from pyokc import magicnumbers
@@ -106,7 +105,6 @@ class User:
                 threadid = thread.threadid
                 break
         get_messages = self._session.get('http://www.okcupid.com/messages')
-        time_start = time.clock()
         inbox_tree = html.fromstring(get_messages.content.decode('utf8'))
         authcode = helpers.get_authcode(inbox_tree)
         msg_data = {
@@ -318,7 +316,6 @@ class User:
                 'low': 1 + 10*count,
                 }
             get_questions = self._session.post('http://www.okcupid.com/profile/{0}/questions'.format(self.username), data=questions_data)
-            time_start = time.clock()
             tree = html.fromstring(get_questions.content.decode('utf8'))
             for div in tree.iter('div'):
                 if 'id' in div.attrib and re.match(r'question_(\d+)', div.attrib['id']):
