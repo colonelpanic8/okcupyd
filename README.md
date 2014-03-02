@@ -50,6 +50,12 @@ should have access to just about every piece of information that is also
 available on the website. You can check out the docstrings and source code of
 the Profile class in pyokc.py to get a better idea of what is available to you.
 
+<h3>Rating a profile</h3>
+
+```python
+u.rate('foxylady899', 5)
+```
+
 <h3>User/Profile questions</h3>
 
 The questions that you or someone else have answered can be accessed as a

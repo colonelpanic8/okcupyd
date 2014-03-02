@@ -1,7 +1,7 @@
 from json import loads
 from re import search
 from lxml import html
-from pyokc.errors import AuthenticationError
+from pyokc.errors import AuthenticationError, ProfileNotFoundError
 
 CHAR_REPLACE = {
     "′": "'",
@@ -20,13 +20,7 @@ def login(session, credentials):
     by the user.
     """
     login_response = session.post('https://www.okcupid.com/login', data=credentials)
-    root = html.fromstring(login_response.content.decode('utf8'))
-    logged_in = False
-    for script in root.iter('script'):
-        if script.text and credentials['username'].lower() in script.text.lower():
-            logged_in = True
-            break
-    if not logged_in:
+    if login_response.url != 'http://www.okcupid.com/home':
         raise AuthenticationError('Could not log in with the credentials provided')
         
 def get_additional_info(tree):
@@ -50,12 +44,10 @@ def get_authcode(inbox_tree):
     profile.
     """
     authcode = ''
-    for iframe in inbox_tree.xpath("//iframe[@id = 'ad_frame_sky_r']"):
-        if 'src' in iframe.attrib: 
-            source = iframe.attrib['src']
-            re_search = search('authid=([a-z%0-9]+)', source)
-            if re_search is not None:
-                authcode = re_search.group(1)
+    for source in inbox_tree.xpath("//iframe[@id = 'ad_frame_sky_r']/@src"):
+        re_search = search('authid=([a-z%0-9]+)', source)
+        if re_search is not None:
+            authcode = re_search.group(1)
     return authcode
 
 def get_message_string(li_element, sender):
@@ -108,34 +100,31 @@ def get_profile_basics(div, profiles):
     'class' in div.attrib and div.attrib['class'] == 'match_card opensans'):
         name = div.attrib['id'][4:]
         if name.lower() not in [p.name.lower() for p in profiles]:
-            age = None
-            location = ''
+            age = int(div.xpath(".//span[@class = 'age']/text()")[0])
+            location = replace_chars(div.xpath(".//span[@class = 'location']/text()")[0])
             match = None
             enemy = None
-            for span in div.iterdescendants('span'):
-                if 'class' in span.attrib and span.attrib['class'] == 'age':
-                    age = int(span.text)
-                if 'class' in span.attrib and span.attrib['class'] == 'location':
-                    location = replace_chars(span.text)
+            raw_id = div.xpath(".//li[@class = 'current-rating']/@id")[0]
+            id = search(r'\d{2,}', raw_id).group()
             for desc_div in div.xpath(".//div[@class = 'percentages hide_on_hover ']"):
                 if desc_div.text.replace(' ', '')[1] == '%':
                     percentage = int(desc_div.text.replace(' ', '')[0])
                 else:
                     percentage = int(desc_div.text.replace(' ', '')[:2])
-                # Should be match unless the order_by keyword arg is
+                # Should be match unless the order_by kwarg is
                 # set to 'enemy'
                 if 'Match' in desc_div.text:
                     match = percentage
                 elif 'Enemy' in desc_div.text:
                     enemy = percentage
-            if age is not None and location:
-                profile_info = {
-                    'name': name,
-                    'age': age,
-                    'location': location,
-                    'match': match,
-                    'enemy': enemy,
-                    }
+            profile_info = {
+                'name': name,
+                'age': age,
+                'location': location,
+                'match': match,
+                'enemy': enemy,
+                'id': id,
+                }
     return profile_info
     
 def format_last_online(last_online):
@@ -189,15 +178,25 @@ def get_percentages(profile_tree):
     list of int
     """
     percentage_list = []
-    match_str = profile_tree.xpath("//span[@class = 'match']")[0].text
-    friend_str = profile_tree.xpath("//span[@class = 'friend']")[0].text
-    enemy_str = profile_tree.xpath("//span[@class = 'enemy']")[0].text
-    for str in (match_str, friend_str, enemy_str):  
-        if str[1] == '%':
-            percentage_list.append(int(str[0]))
-        else:
-            percentage_list.append(int(str[:2]))
-    return percentage_list
+    try:
+        match_str = profile_tree.xpath("//span[@class = 'match']")[0].text
+        friend_str = profile_tree.xpath("//span[@class = 'friend']")[0].text
+        enemy_str = profile_tree.xpath("//span[@class = 'enemy']")[0].text
+        for str in (match_str, friend_str, enemy_str):  
+            if str[1] == '%':
+                percentage_list.append(int(str[0]))
+            else:
+                percentage_list.append(int(str[:2]))
+        return percentage_list
+    except IndexError:
+        raise ProfileNotFoundError('Could not find the profile specified')
+        
+def get_profile_id(tree):
+    """
+    Return a unique profile id string.
+    """
+    js_call_string = tree.xpath("//a[@class = 'one-star']/@href")[0]
+    return search(r'\d{2,}', js_call_string).group()
     
 def update_essays(tree, essays):
     """
@@ -236,19 +235,11 @@ def update_looking_for(profile_tree, looking_for):
     Update looking_for attribute of a Profile.
     """
     div = profile_tree.xpath("//div[@id = 'what_i_want']")[0]
-    for li in div.iter('li'):
-        if 'id' in li.attrib:
-            if li.attrib['id'] == 'ajax_gentation':
-                looking_for['gentation'] = li.text.strip()
-            elif li.attrib['id'] == 'ajax_ages':
-                looking_for['ages'] = li.text.strip()
-                looking_for['ages'] = replace_chars(looking_for['ages'])
-            elif li.attrib['id'] == 'ajax_near':
-                looking_for['near'] = li.text.strip()
-            elif li.attrib['id'] == 'ajax_single':
-                looking_for['single'] = li.text.strip()
-            elif li.attrib['id'] == 'ajax_lookingfor':
-                looking_for['seeking'] = li.text.strip()               
+    looking_for['gentation'] = div.xpath(".//li[@id = 'ajax_gentation']/text()")[0].strip()
+    looking_for['ages'] = replace_chars(div.xpath(".//li[@id = 'ajax_ages']/text()")[0].strip())
+    looking_for['near'] = div.xpath(".//li[@id = 'ajax_near']/text()")[0].strip()
+    looking_for['single'] = div.xpath(".//li[@id = 'ajax_single']/text()")[0].strip()
+    looking_for['seeking'] = div.xpath(".//li[@id = 'ajax_lookingfor']/text()")[0].strip()               
                     
 def update_details(profile_tree, details):
     """

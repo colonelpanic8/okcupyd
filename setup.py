@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name = "pyokc",
-    version = "0.1.1",
+    version = "0.2.1",
     packages = find_packages(),
     install_requires = ['lxml', 'requests'],
 
@@ -18,10 +18,10 @@ setup(
     # metadata for upload to PyPI
     author = "Evan Fredericksen",
     author_email = "evfredericksen@gmail.com",
-    description = "A framework for interacting with OKCupid.com",
+    description = "A package for interacting with OKCupid.com",
     license = "MIT",
     keywords = "python okcupid",
-    url = "http://github.com/pyokc",
+    url = "https://github.com/evfredericksen/pyokc",
     long_description=read('README.rst'),
     classifiers=[
         "Development Status :: 3 - Alpha",

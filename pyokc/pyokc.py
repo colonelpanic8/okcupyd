@@ -262,10 +262,11 @@ class User:
             info = helpers.get_profile_basics(div, profiles)
             if len(info):
                 profiles.append(Profile(self._session, info['name'], info['age'],
-                                     info['location'], info['match'], enemy=info['enemy']))
+                                     info['location'], info['match'], enemy=info['enemy'],
+                                     id=info['id']))
         return profiles
         
-    def visit(self, username):
+    def visit(self, username, update_pics=False):
         """Visit another user's profile. Automatically update the
         `essays`, `details`, and `looking_for` attributes of the
         visited profile. Accept either a string or a Profile object as
@@ -277,6 +278,9 @@ class User:
         username : str, Profile
             Username of the profile to visit. Can be either a string or a
             Profile object.
+        update_pics : Bool
+            Determines whether or not update_pics() is automatically
+            called for this profile.
         Returns
         ---------
         Profile
@@ -298,7 +302,14 @@ class User:
         helpers.update_essays(profile_tree, prfl.essays)
         helpers.update_looking_for(profile_tree, prfl.looking_for)
         helpers.update_details(profile_tree, prfl.details)
-        prfl.update_pics()
+        # If update_pics is False, you will need to call Profile.update_pics()
+        # manually if you wish to access urls in this profile's pics attribute,
+        # however this method will be approximately 3 seconds quicker because
+        # it makes only 1 request instead of 2.
+        if update_pics:
+            prfl.update_pics()
+        if prfl._id is None:
+            prfl._id = helpers.get_profile_id(profile_tree)
         return prfl
         
     def update_questions(self):
@@ -390,6 +401,29 @@ class User:
             friend = int(div.xpath(".//p[@class = 'match_percentages']/span[@class = 'friend']/text()")[0].replace('%', ''))
             enemy = int(div.xpath(".//p[@class = 'match_percentages']/span[@class = 'enemy']/text()")[0].replace('%', ''))
             self.visitors.append(Profile(self._session, name, age, location, match, friend, enemy))
+            
+    def rate(self, profile, rating):
+        """
+        Rate a profile 1 through 5 stars. Profile argument may be
+        either a Profile object or a string. However, if it is a
+        string we must first visit the profile to get its id number.
+        Parameters
+        ----------
+        profile : str or Profile
+            The profile that you wish to rate.
+        rating : str or int
+            1 through 5 star rating that you wish to bestow.
+        """
+        if isinstance(profile, str):
+            profile = self.visit(profile)
+        parameters = {
+            'target_userid': profile._id,
+            'type': 'vote',
+            'target_objectid': '0',
+            'vote_type': 'personality',
+            'score': rating,
+            }
+        self._session.post('http://www.okcupid.com/vote_handler', data=parameters)
                     
     def __str__(self):
         return '<User {0}>'.format(self.username)
@@ -420,7 +454,7 @@ class Profile:
         The enemy percentage that you have with this profile.
     """
     def __init__(self, _session, name, age=None, location='', match=None,
-                 friend=None, enemy=None):
+                 friend=None, enemy=None, id=None):
         self._session = _session
         self.name = name
         self.age = age
@@ -428,6 +462,7 @@ class Profile:
         self.match = match
         self.friend = friend
         self.enemy = enemy
+        self._id = id
         self.gender = None
         self.orientation = None
         self.status = None

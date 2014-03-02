@@ -3,3 +3,6 @@ class AuthenticationError(Exception):
     
 class InvalidInputError(Exception):
     pass
+    
+class ProfileNotFoundError(Exception):
+    pass
