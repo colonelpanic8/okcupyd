@@ -12,6 +12,7 @@ CHAR_REPLACE = {
     "—": "-",
     "–": "-",
     "…": "...",
+    "🌲": " ",
     }
 
 def login(session, credentials):

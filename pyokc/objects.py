@@ -54,25 +54,10 @@ class MessageThread:
         return '<{0} message {1} {2}>'.format(unread_string, self._direction, self.sender)
         
 class Question:
-    def __init__(self, text, answers, user_answer, explanation, answerer):
+    def __init__(self, text, user_answer, explanation):
         self.text = text
-        self.answers = answers
         self.user_answer = user_answer
         self.explanation = explanation
-        self.answerer = answerer
-        
-class UserQuestion(Question):
-    def __init__(self, text, answers, user_answer, explanation, answerer, acceptable_answers, importance):
-        super().__init__(text, answers, user_answer, explanation, answerer)
-        self.acceptable_answers = acceptable_answers
-        self.importance = importance
-        
-class ProfileQuestion(Question):
-    def __init__(self, text, answers, user_answer, explanation, answerer, category, you_approve, they_approve):
-        super().__init__(text, answers, user_answer, explanation, answerer)
-        self.category = category
-        self.you_approve = you_approve
-        self.they_approve = they_approve
        
-    # def __repr__(self):
-        # return '<Question: {0}>'.format(self.text)
+    def __repr__(self):
+        return '<Question: {0}>'.format(self.text)

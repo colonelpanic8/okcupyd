@@ -2,16 +2,19 @@ import re
 from lxml import html
 from pyokc import helpers
 from pyokc import magicnumbers
-from pyokc.objects import MessageThread, UserQuestion, ProfileQuestion, Session
+from pyokc.objects import MessageThread, Question, Session
+from pyokc.settings import USERNAME, PASSWORD
   
 class User:
     """
-    Represent an OKCupid user.
+    Represent an OKCupid user. Username and password are only optional
+    if you have already filled in your username and password in
+    settings.py.
     Parameters
     ----------
-    username : str
+    username : str, optional
         The username for your OKCupid account.
-    password : str
+    password : str, optional
         The password for your OKCupid account.
     Raises
     ----------
@@ -19,7 +22,7 @@ class User:
         If you are unable to login with the username and password
         provided.
     """
-    def __init__(self, username, password):
+    def __init__(self, username=USERNAME, password=PASSWORD):
         self.username = username
         self.inbox = []
         self.outbox = []
@@ -159,29 +162,31 @@ class User:
             If left blank, return some variation of "guys/girls who
             like guys/girls" or "both who like bi girls/guys, depending
             on the user's gender and orientation.
-        smokes : list of str, optional
+        smokes : str or list of str, optional
             Smoking habits of profiles returned.
-        drinks : list of str, optional
+        drinks : str or list of str, optional
             Drinking habits of profiles returned.
-        drugs : list of str, optional
+        drugs : str or list of str, optional
             Drug habits of profiles returned.
-        education : list of str, optional
+        education : str or list of str, optional
             Highest level of education attained by profiles returned.
-        job : list of str, optional
+        job : str or list of str, optional
             Industry in which the profile users work.
-        income : list of str, optional
+        income : str or list of str, optional
             Income range of profiles returned.
-        religion : list of str, optional
+        religion : str or list of str, optional
             Religion of profiles returned.
-        offspring : list of str, optional
+        offspring : str or list of str, optional
             Whether the profiles returned have or want children.
-        pets : list of str, optional
+        pets : str or list of str, optional
             Dog/cat ownership of profiles returned.
-        diet : list of str, optional
+        languages : str or list of str, optional
+            Languages spoken for profiles returned.
+        diet : str or list of str, optional
             Dietary restrictions of profiles returned.
-        sign : list of str, optional
+        sign : str or list of str, optional
             Astrological sign of profiles returned.       
-        ethnicity : list of str, optional
+        ethnicity : str or list of str, optional
             Ethnicity of profiles returned.
         join_date : int or str, optional
             Either a string describing the profile join dates ('last
@@ -231,6 +236,8 @@ class User:
             search_parameters['filter{0}'.format(filter_no)] = height_query
             filter_no = str(int(filter_no) + 1)
         for key, value in kwargs.items():
+            if isinstance (value, str) and key.lower() not in ('join_date', 'keywords'):
+                value = [value]
             if key in ['smokes', 'drinks', 'drugs', 'education', 'job',
             'income', 'religion', 'diet', 'sign', 'ethnicity'] and len(value):
                 search_parameters['filter{0}'.format(filter_no)] = magicnumbers.get_options_query(key, value)
@@ -319,52 +326,33 @@ class User:
         can take a while due to OKCupid displaying only ten questions
         on each page, potentially requiring a large number of requests.
         """
-        count = 0
-        question_number = 0
         keep_going = True
+        question_number = 0
         while keep_going:
             questions_data = {
-                'low': 1 + 10*count,
+                'low': 1 + question_number,
                 }
-            get_questions = self._session.post('http://www.okcupid.com/profile/{0}/questions'.format(self.username), data=questions_data)
+            get_questions = self._session.post(
+            'http://www.okcupid.com/profile/{0}/questions'.format(self.username),
+            data=questions_data)
             tree = html.fromstring(get_questions.content.decode('utf8'))
-            for div in tree.iter('div'):
-                if 'id' in div.attrib and re.match(r'question_(\d+)', div.attrib['id']):
-                    question_number += 1
-                    explanation = ''
-                    number = re.match(r'question_(\d+)', div.attrib['id']).group(1)
-                    text = helpers.replace_chars(div.xpath(".//p[@class = 'qtext']")[0].text)
-                    answer_eles = div.xpath(".//li")
-                    answers = {}
-                    # Use a dictionary/regex for the answer values
-                    # because occasionally the numbers are not sequential
-                    for ele in answer_eles:
-                        value = re.match(r'self_answers_\d+_(\d+)', ele.attrib['id']).group(1)
-                        answers[value] = ele.text
-                    acceptable_answers = [ele.text for ele in answer_eles if ele.attrib['class'] in (' match', 'mine match')]
-                    importance_no = div.xpath(".//input[@id = 'question_{0}_importance']/@value".format(number))[0]
-                    if importance_no == '5':
-                        importance = 'Irrelevant'
-                    elif importance_no == '4':
-                        importance = 'A little important'
-                    elif importance_no == '3':
-                        importance = 'Somewhat important'
-                    elif importance_no == '2':
-                        importance = 'Very important'
-                    elif importance_no == '1':
-                        importance = 'Mandatory'
-                    explanation_p = div.xpath(".//p[@class = 'explanation']")
-                    if explanation_p[0].text is not None:
-                        explanation = explanation_p[0].text
-                    answer_int = int(div.xpath(".//input[@id = 'question_{0}_answer']/@value".format(number))[0])
-                    if question_number > 1 and text not in [q.text for q in self.questions]:
-                        user_answer = answers[str(answer_int)]
-                        self.questions.append(UserQuestion(text, answers, user_answer, explanation, self, acceptable_answers, importance))
-            next = tree.xpath("//a[text() = 'Next']")
-            if not len(next) or 'href' not in next[0].attrib:
+            next_wrapper = tree.xpath("//li[@class = 'next']")
+            # Get a list of each question div wrapper, ignore the first because it's an unanswered question
+            question_wrappers = tree.xpath("//div[contains(@id, 'question_')]")[1:]
+            for div in question_wrappers:
+                if not div.attrib['id'][9:].isdigit():
+                    question_wrappers.remove(div)
+            for div in question_wrappers:
+                question_number += 1
+                explanation = ''
+                text = helpers.replace_chars(div.xpath(".//div[@class = 'qtext']/p/text()")[0])
+                user_answer = div.xpath(".//li[contains(@class, 'mine')]/text()")[0]
+                explanation_p = div.xpath(".//p[@class = 'value']")
+                if explanation_p[0].text is not None:
+                    explanation = explanation_p[0].text
+                self.questions.append(Question(text, user_answer, explanation))
+            if not len(next_wrapper):
                 keep_going = False
-            else:
-                count += 1
                 
     def read(self, thread):
         """
@@ -423,7 +411,44 @@ class User:
             'vote_type': 'personality',
             'score': rating,
             }
-        self._session.post('http://www.okcupid.com/vote_handler', data=parameters)
+        self._session.post('http://www.okcupid.com/vote_handler',
+                           data=parameters)
+        
+    def quickmatch(self):
+        '''
+        Return an instance of a Profile representing the profile on
+        your Quickmatch page. 
+        Returns
+        ----------
+        Profile
+        '''
+        get_quickmatch = self._session.get('http://www.okcupid.com/quickmatch')
+        tree = html.fromstring(get_quickmatch.content.decode('utf8'))
+        # all of the profile information on the quickmatch page is hidden in 
+        # a <script> element, meaning that regex is unfortunately necessary 
+        for script in tree.iter('script'):
+            if script.text is not None:
+                search_result = re.search(r'[^{]"tuid" : "(\d+)', script.text)
+                if search_result is not None:
+                    id = search_result.group(1)
+                # I'm sorry.
+                broad_result = re.search(r'''"location"\s:\s"(.+?)".+
+                                             "epercentage"\s:\s(\d{1,2}),\s
+                                             "fpercentage"\s:\s(\d{1,2}),\s
+                                             "tracking_age"\s:\s(\d{2}).+
+                                             "sn"\s:\s"(.+?)",\s
+                                             "percentage"\s:\s(\d{1,2})''',
+                                             script.text, re.VERBOSE)
+                if broad_result is not None:
+                    location = broad_result.group(1)
+                    enemy = int(broad_result.group(2))
+                    friend = int(broad_result.group(3))
+                    age = int(broad_result.group(4))
+                    username = broad_result.group(5)
+                    match = int(broad_result.group(6))
+        return Profile(self._session, username, age=age, location=location,
+                       match=match, friend=friend, enemy=enemy, id=id)
+         
                     
     def __str__(self):
         return '<User {0}>'.format(self.username)
@@ -502,6 +527,7 @@ class Profile:
             'education': '',
             'job': '',
             'income': '',
+            'relationship type': '',
             'offspring': '',
             'pets': '',
             'speaks': '',
@@ -510,63 +536,38 @@ class Profile:
     def update_questions(self):
         """
         Update self.questions with Question instances, which contain
-        text, answers, user_answer, and explanation attributes. See
+        text, user_answer, and explanation attributes. See
         the Question class in objects.py for more details. Like
         User.update_questions(), note that this can take a while due to
         OKCupid displaying only ten questions on each page, potentially
         requiring a large number of requests to the server.
         """
-        count = 0
-        for category in ['Ethics', 'Sex', 'Religion', 'Lifestyles', 'Dating', 'Other']:
-            keep_going = True
-            while keep_going:
-                questions_data = {
-                    'low': 1 + 10*count,
-                    category: '1',
-                    }
-                questions_request = self._session.post('http://www.okcupid.com/profile/{0}/questions'.format(self.name), data=questions_data)
-                tree = html.fromstring(questions_request.content.decode('utf8'))
-                for div in tree.iter('div'):
-                    if 'id' in div.attrib and re.match(r'question_(\d+)', div.attrib['id']):
-                        explanation = ''
-                        number = re.match(r'question_(\d+)', div.attrib['id']).group(1)
-                        text = helpers.replace_chars(div.xpath(".//p[@class = 'qtext']")[0].text)
-                        answer_eles = div.xpath(".//input[contains(@id,'question_{0}_qans')]".format(number))
-                        answers = []
-                        for ele in answer_eles:
-                            answers.append(ele.attrib['value'])
-                        user_answer_ele = div.xpath(".//span[@id = 'answer_viewer_{0}']".format(number))[0]
-                        user_answer = user_answer_ele.text.strip()
-                        they_approve = None
-                        if 'class' in user_answer_ele.attrib and user_answer_ele.attrib['class'] == 'not_accepted':
-                            they_approve = False
-                        elif len(user_answer):
-                            they_approve = True
-                        answer_target = div.xpath(".//span[@id = 'answer_target_{0}']".format(number))[0]
-                        you_approve = None
-                        if 'class' in answer_target.attrib and answer_target.attrib['class'] == 'not_accepted':
-                            you_approve = False
-                        elif len(user_answer):
-                            you_approve = True                    
-                        explanation = div.xpath(".//span[@id = 'note_target_{0}']".format(number))[0].text
-                        if explanation is None:
-                            explanation = ''
-                        else:
-                            explanation = helpers.replace_chars(explanation.strip())
-                        if text not in [q.text for q in self.questions]:
-                            self.questions.append(ProfileQuestion(text,
-                                                                  answers,
-                                                                  user_answer,
-                                                                  explanation,
-                                                                  self,
-                                                                  category,
-                                                                  you_approve,
-                                                                  they_approve))
-                next = tree.xpath("//a[text() = 'Next']")
-                if not len(next) or 'href' not in next[0].attrib:
-                    keep_going = False
-                else:
-                    count += 1
+        keep_going = True
+        question_number = 0
+        while keep_going:
+            questions_data = {
+                'low': 1 + question_number,
+                }
+            get_questions = self._session.post(
+            'http://www.okcupid.com/profile/{0}/questions'.format(self.name),
+            data=questions_data)
+            tree = html.fromstring(get_questions.content.decode('utf8'))
+            next_wrapper = tree.xpath("//li[@class = 'next']")
+            question_wrappers = tree.xpath("//div[contains(@id, 'question_')]")
+            for div in question_wrappers:
+                if not div.attrib['id'][9:].isdigit():
+                    question_wrappers.remove(div)
+            for div in question_wrappers:
+                question_number += 1
+                explanation = ''
+                text = helpers.replace_chars(div.xpath(".//div[@class = 'qtext']/p/text()")[0])
+                user_answer = div.xpath(".//span[contains(@id, 'answer_target_')]/text()")[0].strip()
+                explanation_span = div.xpath(".//span[@class = 'note']")
+                if explanation_span[0].text is not None:
+                    explanation = explanation_span[0].text.strip()
+                self.questions.append(Question(text, user_answer, explanation))
+            if not len(next_wrapper):
+                keep_going = False
                 
     def update_traits(self):
         """

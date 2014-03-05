@@ -9,12 +9,17 @@ and by
 
 <h2>Use</h2>
 
+<h3>First things first</h3>
+
+Go to settings.py and assign your OKCupid profile name to `USERNAME` and your password
+to `PASSWORD`. From now on you won't need to enter either for any pyokc scripts.
+
 <h3>Starting a new session</h3>
 
 ```python
 from pyokc import pyokc
 
-u = pyokc.User('totallymyusername', 'totallymypassword')
+u = pyokc.User()
 ```
 
 <h3>Messaging another user</h3>
