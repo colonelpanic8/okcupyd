@@ -1,6 +1,9 @@
 from time import clock, sleep
 import requests
-from pyokc.settings import DELAY
+try:
+    from pyokc.settings import DELAY
+except ImportError:
+    from settings import DELAY
 
 class Session(requests.Session):
     def __init__(self):

@@ -1,4 +1,7 @@
-from pyokc.errors import InvalidInputError
+try:
+    from pyokc.errors import InvalidInputError
+except ImportError:
+    from errors import InvalidInputError
 
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')') 
 

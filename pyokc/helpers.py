@@ -1,8 +1,11 @@
 from json import loads
 from re import search
 from lxml import html
-from pyokc.errors import AuthenticationError, ProfileNotFoundError
-
+try:  
+    from pyokc.errors import AuthenticationError, ProfileNotFoundError
+except ImportError:
+    from errors import AuthenticationError, ProfileNotFoundError
+    
 CHAR_REPLACE = {
     "′": "'",
     '″': '"',
