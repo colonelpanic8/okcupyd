@@ -107,3 +107,7 @@ pyokc overrides the `get` and `post` methods of Requests.Session to include a
 someone from making too many requests in too short of a timespan and bringing
 down the wrath of the OKCupid powers-that-be. This length of time can be
 modified by changing the number assigned to `DELAY` in settings.py.
+
+<h3>Why x/y/z giving me an error message?</h3>
+
+OKCupid updates its site frequently, and it can be difficult to keep up. If you run into an error, feel free to create an issue or send a pull request, and I'll get to it as quickly as possible
