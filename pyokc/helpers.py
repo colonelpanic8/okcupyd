@@ -32,10 +32,10 @@ def get_additional_info(tree):
     Make a request to OKCupid to get a user's age, gender, orientation,
     and relationship status.
     """    
-    age = int(tree.xpath("//span[@id = 'ajax_age']/text()")[0])
-    orientation = tree.xpath("//span[@id = 'ajax_orientation']/text()")[0]
-    status = tree.xpath("//span[@id = 'ajax_status']/text()")[0]
-    gender_result = tree.xpath("//span[@id = 'ajax_gender']/text()")[0]
+    age = int(tree.xpath("//*[@id = 'ajax_age']/text()")[0])
+    orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0]
+    status = tree.xpath("//*[@id = 'ajax_status']/text()")[0]
+    gender_result = tree.xpath("//*[@id = 'ajax_gender']/text()")[0]
     if gender_result == "M":
         gender = 'Male'
     elif gender_result == "F":
@@ -183,10 +183,12 @@ def get_percentages(profile_tree):
     """
     percentage_list = []
     try:
-        match_str = profile_tree.xpath("//span[@class = 'match']")[0].text
-        friend_str = profile_tree.xpath("//span[@class = 'friend']")[0].text
-        enemy_str = profile_tree.xpath("//span[@class = 'enemy']")[0].text
-        for str in (match_str, friend_str, enemy_str):  
+        for box in profile_tree.xpath("//div[@class = 'percentbox']"):
+            if box.xpath(".//span[@class = 'percentlabel']/text()")[0].lower() == 'match':
+                match_str = box.xpath(".//span[@class = 'percent']/text()")[0]
+            else:
+                enemy_str = box.xpath(".//span[@class = 'percent']/text()")[0] 
+        for str in (match_str, enemy_str):  
             if str[1] == '%':
                 percentage_list.append(int(str[0]))
             else:

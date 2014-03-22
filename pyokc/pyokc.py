@@ -309,7 +309,7 @@ class User:
             }
         profile_request = self._session.post('http://www.okcupid.com/profile/{0}'.format(prfl.name), data=params)
         profile_tree = html.fromstring(profile_request.content.decode('utf8'))
-        prfl.match, prfl.friend, prfl.enemy = helpers.get_percentages(profile_tree)
+        prfl.match, prfl.enemy = helpers.get_percentages(profile_tree)
         prfl.age, prfl.gender, prfl.orientation, prfl.status = helpers.get_additional_info(profile_tree)
         helpers.update_essays(profile_tree, prfl.essays)
         helpers.update_looking_for(profile_tree, prfl.looking_for)
@@ -391,9 +391,8 @@ class User:
             age = int(div.xpath(".//div[@class = 'userinfo']/span[@class = 'age']/text()")[0])
             location = div.xpath(".//div[@class = 'userinfo']/span[@class = 'location']/text()")[0]
             match = int(div.xpath(".//p[@class = 'match_percentages']/span[@class = 'match']/text()")[0].replace('%', ''))
-            friend = int(div.xpath(".//p[@class = 'match_percentages']/span[@class = 'friend']/text()")[0].replace('%', ''))
             enemy = int(div.xpath(".//p[@class = 'match_percentages']/span[@class = 'enemy']/text()")[0].replace('%', ''))
-            self.visitors.append(Profile(self._session, name, age, location, match, friend, enemy))
+            self.visitors.append(Profile(self._session, name, age, location, match, enemy))
             
     def rate(self, profile, rating):
         """
@@ -452,7 +451,7 @@ class User:
                     username = broad_result.group(5)
                     match = int(broad_result.group(6))
         return Profile(self._session, username, age=age, location=location,
-                       match=match, friend=friend, enemy=enemy, id=id)
+                       match=match, enemy=enemy, id=id)
          
                     
     def __str__(self):
@@ -478,19 +477,16 @@ class Profile:
         The geographical location of this profile's user.
     match : int
         The match percentage that you have with this profile.
-    friend : int
-        The friend percentage that you have with this profile.
     enemy : int
         The enemy percentage that you have with this profile.
     """
     def __init__(self, _session, name, age=None, location='', match=None,
-                 friend=None, enemy=None, id=None):
+                 enemy=None, id=None):
         self._session = _session
         self.name = name
         self.age = age
         self.location = location
         self.match = match
-        self.friend = friend
         self.enemy = enemy
         self._id = id
         self.gender = None
@@ -520,6 +516,7 @@ class Profile:
             }
         self.details = {
             'last online': '',
+            'orientation': '',
             'ethnicity': '',
             'height': '',
             'body type': '',
