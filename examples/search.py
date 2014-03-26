@@ -15,7 +15,8 @@ for profile in profiles:
     u.visit(profile, update_pics=True) # you can also ignore the update_pics kwarg and later call profile.update_pics() 
     print("Downloading {0}'s pictures...".format(profile.name))
     for count, url in enumerate(profile.pics, start=1):
+        extension = url.split('.')[-1]
         response = get(url, stream=True)
-        with open('{0}{1}.png'.format(profile.name, count), 'wb') as out_file:
+        with open('{0}{1}.{2}'.format(profile.name, count, extension), 'wb') as out_file:
             copyfileobj(response.raw, out_file)
         del response

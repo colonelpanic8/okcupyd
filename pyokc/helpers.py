@@ -32,10 +32,10 @@ def get_additional_info(tree):
     Make a request to OKCupid to get a user's age, gender, orientation,
     and relationship status.
     """    
-    age = int(tree.xpath("//*[@id = 'ajax_age']/text()")[0])
-    orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0]
-    status = tree.xpath("//*[@id = 'ajax_status']/text()")[0]
-    gender_result = tree.xpath("//*[@id = 'ajax_gender']/text()")[0]
+    age = int(tree.xpath("//*[@id = 'ajax_age']/text()")[0].strip())
+    orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0].strip()
+    status = tree.xpath("//*[@id = 'ajax_status']/text()")[0].strip()
+    gender_result = tree.xpath("//*[@id = 'ajax_gender']/text()")[0].strip()
     if gender_result == "M":
         gender = 'Male'
     elif gender_result == "F":
@@ -110,17 +110,20 @@ def get_profile_basics(div, profiles):
             enemy = None
             raw_id = div.xpath(".//li[@class = 'current-rating']/@id")[0]
             id = search(r'\d{2,}', raw_id).group()
-            for desc_div in div.xpath(".//div[@class = 'percentages hide_on_hover ']"):
-                if desc_div.text.replace(' ', '')[1] == '%':
-                    percentage = int(desc_div.text.replace(' ', '')[0])
-                else:
-                    percentage = int(desc_div.text.replace(' ', '')[:2])
-                # Should be match unless the order_by kwarg is
-                # set to 'enemy'
-                if 'Match' in desc_div.text:
-                    match = percentage
-                elif 'Enemy' in desc_div.text:
-                    enemy = percentage
+            try:
+                desc_div = div.xpath(".//div[@class = 'percentages hide_on_hover ']")[0]
+            except IndexError:
+                desc_div = div.xpath(".//div[@class = 'percentages hide_on_hover hidden']")[0]
+            if desc_div.text.replace(' ', '')[1] == '%':
+                percentage = int(desc_div.text.replace(' ', '')[0])
+            else:
+                percentage = int(desc_div.text.replace(' ', '')[:2])
+            # Should be match unless the order_by kwarg is
+            # set to 'enemy'
+            if 'Match' in desc_div.text:
+                match = percentage
+            elif 'Enemy' in desc_div.text:
+                enemy = percentage
             profile_info = {
                 'name': name,
                 'age': age,

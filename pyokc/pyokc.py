@@ -9,7 +9,8 @@ except ImportError:
     import helpers
     import magicnumbers
     from objects import MessageThread, Question, Session
-    from settings import USERNAME, PASSWORD  
+    from settings import USERNAME, PASSWORD
+
 class User:
     """
     Represent an OKCupid user. Username and password are only optional
@@ -220,7 +221,8 @@ class User:
             'filter2': '2,{0},{1}'.format(age_min, age_max),
             'filter3': '5,{0}'.format(last_online_int),
             'filter4': '35,{0}'.format(status_parameter),
-            'locid': locid, 
+            'locid': locid,
+            'lquery': location,
             'timekey': 1,
             'matchOrderBy': order_by.upper(),
             'custom_search': 0,
