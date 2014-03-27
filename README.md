@@ -1,9 +1,7 @@
 <h1>pyokc</h1>
 
 pyokc is a Python 3 package for interacting with OKCupid.com that
-was largely inspired by 
-<a href="http://davidshimel.com/reverse-engineering-okcupid/">this post</a>
-and by 
+was inspired by
 <a href="http://www.wired.com/wiredscience/2014/01/how-to-hack-okcupid/">this guy</a>
 (sort of).
 
