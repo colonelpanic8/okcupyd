@@ -1,11 +1,11 @@
 from json import loads
 from re import search
 from lxml import html
-try:  
+try:
     from pyokc.errors import AuthenticationError, ProfileNotFoundError
 except ImportError:
     from errors import AuthenticationError, ProfileNotFoundError
-    
+
 CHAR_REPLACE = {
     "′": "'",
     '″': '"',
@@ -26,12 +26,12 @@ def login(session, credentials):
     login_response = session.post('https://www.okcupid.com/login', data=credentials)
     if login_response.url != 'http://www.okcupid.com/home':
         raise AuthenticationError('Could not log in with the credentials provided')
-        
+
 def get_additional_info(tree):
     """
     Make a request to OKCupid to get a user's age, gender, orientation,
     and relationship status.
-    """    
+    """
     age = int(tree.xpath("//*[@id = 'ajax_age']/text()")[0].strip())
     orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0].strip()
     status = tree.xpath("//*[@id = 'ajax_status']/text()")[0].strip()
@@ -69,7 +69,7 @@ def get_message_string(li_element, sender):
     div = li_element.xpath(".//div[@class = 'message_body']")[0]
     message_string += div.text_content().replace(' \n \n', '\n').strip()
     return message_string
-    
+
 def get_locid(session, location):
     """
     Make a request to locquery resource to translate a string location
@@ -90,7 +90,38 @@ def get_locid(session, location):
     if len(js['results']):
         locid = js['results'][0]['locid']
     return locid
-    
+
+def get_rating(div):
+    """
+    Get the rating from a match card.
+    Parameters
+    ---------
+    div : element
+        Element used by xpath.
+    Returns
+    ---------
+    int
+        The rating you've given this user.
+    """
+    rating_div = div.xpath(".//li[@class = 'current-rating']")
+    rating_style = rating_div[0].attrib['style']
+    width_percent = int(''.join(c for c in rating_style if c.isdigit()))
+    return int((width_percent / 100) * 5)
+
+def get_contacted(div):
+    """
+    Get whether you've contacted this user.
+    Parameters
+    ---------
+    div : element
+        Element used by xpath.
+    Returns
+    ---------
+    bool
+        Whether you've contacted this user or not.
+    """
+    return bool(div.xpath(".//span[@class = 'fancydate']"))
+
 def get_profile_basics(div, profiles):
     """
     Parse a <div> element from a search result page to get basic
@@ -100,7 +131,7 @@ def get_profile_basics(div, profiles):
     list of str, int
     """
     profile_info = {}
-    if ('id' in div.attrib and len(div.attrib['id']) >= 4 and 
+    if ('id' in div.attrib and len(div.attrib['id']) >= 4 and
     'class' in div.attrib and div.attrib['class'] == 'match_card opensans'):
         name = div.attrib['id'][4:]
         if name.lower() not in [p.name.lower() for p in profiles]:
@@ -131,9 +162,11 @@ def get_profile_basics(div, profiles):
                 'match': match,
                 'enemy': enemy,
                 'id': id,
-                }
+                'rating': get_rating(div),
+                'contacted': get_contacted(div)
+            }
     return profile_info
-    
+
 def format_last_online(last_online):
     """
     Return the upper limit in seconds that a profile may have been
@@ -145,7 +178,7 @@ def format_last_online(last_online):
     """
     if isinstance(last_online, str):
         if last_online.lower() in ('day', 'today'):
-            last_online_int = 86400  # 3600 * 24  
+            last_online_int = 86400  # 3600 * 24
         elif last_online.lower() == 'week':
             last_online_int = 604800  # 3600 * 24 * 7
         elif last_online.lower() == 'month':
@@ -159,7 +192,7 @@ def format_last_online(last_online):
     else:
         last_online_int = last_online
     return last_online_int
-    
+
 def format_status(status):
     """
     Returns the int that OKCupid maps to relationship status for
@@ -168,14 +201,14 @@ def format_status(status):
     ----------
     int
     """
-    
+
     status_parameter = 2  # single, default
     if status.lower() in ('not single', 'married'):
         status_parameter = 12
     elif status.lower() == 'any':
         status_parameter = 0
     return status_parameter
-    
+
 def get_percentages(profile_tree):
     """
     Parse element tree to return a profile's match, friend, and enemy
@@ -190,8 +223,8 @@ def get_percentages(profile_tree):
             if box.xpath(".//span[@class = 'percentlabel']/text()")[0].lower() == 'match':
                 match_str = box.xpath(".//span[@class = 'percent']/text()")[0]
             else:
-                enemy_str = box.xpath(".//span[@class = 'percent']/text()")[0] 
-        for str in (match_str, enemy_str):  
+                enemy_str = box.xpath(".//span[@class = 'percent']/text()")[0]
+        for str in (match_str, enemy_str):
             if str[1] == '%':
                 percentage_list.append(int(str[0]))
             else:
@@ -199,14 +232,14 @@ def get_percentages(profile_tree):
         return percentage_list
     except IndexError:
         raise ProfileNotFoundError('Could not find the profile specified')
-        
+
 def get_profile_id(tree):
     """
     Return a unique profile id string.
     """
     js_call_string = tree.xpath("//a[@class = 'one-star']/@href")[0]
     return search(r'\d{2,}', js_call_string).group()
-    
+
 def update_essays(tree, essays):
     """
     Update essays attribute of a Profile.
@@ -238,7 +271,7 @@ def update_essays(tree, essays):
             essays['private thing'] = text
         elif title == "You should message me if":
             essays['message me if'] = text
-                    
+
 def update_looking_for(profile_tree, looking_for):
     """
     Update looking_for attribute of a Profile.
@@ -248,8 +281,8 @@ def update_looking_for(profile_tree, looking_for):
     looking_for['ages'] = replace_chars(div.xpath(".//li[@id = 'ajax_ages']/text()")[0].strip())
     looking_for['near'] = div.xpath(".//li[@id = 'ajax_near']/text()")[0].strip()
     looking_for['single'] = div.xpath(".//li[@id = 'ajax_single']/text()")[0].strip()
-    looking_for['seeking'] = div.xpath(".//li[@id = 'ajax_lookingfor']/text()")[0].strip()               
-                    
+    looking_for['seeking'] = div.xpath(".//li[@id = 'ajax_lookingfor']/text()")[0].strip()
+
 def update_details(profile_tree, details):
     """
     Update details attribute of a Profile.
@@ -258,11 +291,11 @@ def update_details(profile_tree, details):
     for dl in div.iter('dl'):
         title = dl.find('dt').text
         if title == 'Last Online' and dl.find('dd').find('span') is not None:
-            details[title.lower()] = dl.find('dd').find('span').text.strip()            
-        elif title.lower() in details:    
+            details[title.lower()] = dl.find('dd').find('span').text.strip()
+        elif title.lower() in details:
             details[title.lower()] = dl.find('dd').text.strip()
         details[title.lower()] = replace_chars(details[title.lower()])
-        
+
 def get_looking_for(gender, orientation):
     """
     Return a string containing the default gender/orientation of a
@@ -299,7 +332,7 @@ def replace_chars(astring):
     for k, v in CHAR_REPLACE.items():
         astring = astring.replace(k, v)
     return astring
-                
+
 def add_newlines(tree):
     """
     Add a newline character to the end of each <br> element.
