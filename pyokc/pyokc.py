@@ -43,7 +43,7 @@ class User:
         self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
         self.update_mailbox(pages=1)
         self.update_visitors()
-        
+
     def update_mailbox(self, box='inbox', pages=10):
         """
         Update either `self.inbox`, `self.outbox`, or `self.drafts` with
@@ -68,12 +68,12 @@ class User:
                 direction = 'to'
             elif i.lower() == 'drafts':
                 # What happened to folder 3? Who knows.
-                folder_number = 4 
+                folder_number = 4
                 update_box = self.drafts
                 direction = 'to'
             for page in range(pages):
                 inbox_data = {
-                    'low': 30*page + 1, 
+                    'low': 30*page + 1,
                     'folder': folder_number,
                     }
                 get_messages = self._session.post('http://www.okcupid.com/messages', data=inbox_data)
@@ -95,7 +95,7 @@ class User:
                     break
             if box.lower() != 'all':
                 break
-        
+
     def message(self, username, message_text):
         """
         Send a message to the username specified.
@@ -117,7 +117,7 @@ class User:
         inbox_tree = html.fromstring(get_messages.content.decode('utf8'))
         authcode = helpers.get_authcode(inbox_tree)
         msg_data = {
-            'ajax': '1', 
+            'ajax': '1',
             'sendmsg': '1',
             'r1': username,
             'body': message_text,
@@ -191,7 +191,7 @@ class User:
         diet : str or list of str, optional
             Dietary restrictions of profiles returned.
         sign : str or list of str, optional
-            Astrological sign of profiles returned.       
+            Astrological sign of profiles returned.
         ethnicity : str or list of str, optional
             Ethnicity of profiles returned.
         join_date : int or str, optional
@@ -277,9 +277,9 @@ class User:
             if len(info):
                 profiles.append(Profile(self._session, info['name'], info['age'],
                                      info['location'], info['match'], enemy=info['enemy'],
-                                     id=info['id']))
+                                     id=info['id'], rating=info['rating'], contacted=info['contacted']))
         return profiles
-        
+
     def visit(self, username, update_pics=False):
         """Visit another user's profile. Automatically update the
         `essays`, `details`, and `looking_for` attributes of the
@@ -325,7 +325,7 @@ class User:
         if prfl._id is None:
             prfl._id = helpers.get_profile_id(profile_tree)
         return prfl
-        
+
     def update_questions(self):
         """
         Update `self.questions` with a sequence of question objects,
@@ -360,7 +360,7 @@ class User:
                 self.questions.append(Question(text, user_answer, explanation))
             if not len(next_wrapper):
                 keep_going = False
-                
+
     def read(self, thread):
         """
         Update messages attribute of a thread object with a list of
@@ -379,7 +379,7 @@ class User:
             if 'class' in li.attrib and li.attrib['class'] in ('to_me', 'from_me', 'from_me preview'):
                 message_string = helpers.get_message_string(li, thread.sender)
                 thread.messages.append(message_string)
-                
+
     def update_visitors(self):
         """
         Update self.visitors with a Profile instance for each
@@ -395,7 +395,7 @@ class User:
             match = int(div.xpath(".//p[@class = 'match_percentages']/span[@class = 'match']/text()")[0].replace('%', ''))
             enemy = int(div.xpath(".//p[@class = 'match_percentages']/span[@class = 'enemy']/text()")[0].replace('%', ''))
             self.visitors.append(Profile(self._session, name, age, location, match, enemy))
-            
+
     def rate(self, profile, rating):
         """
         Rate a profile 1 through 5 stars. Profile argument may be
@@ -419,19 +419,19 @@ class User:
             }
         self._session.post('http://www.okcupid.com/vote_handler',
                            data=parameters)
-        
+
     def quickmatch(self):
         '''
         Return an instance of a Profile representing the profile on
-        your Quickmatch page. 
+        your Quickmatch page.
         Returns
         ----------
         Profile
         '''
         get_quickmatch = self._session.get('http://www.okcupid.com/quickmatch')
         tree = html.fromstring(get_quickmatch.content.decode('utf8'))
-        # all of the profile information on the quickmatch page is hidden in 
-        # a <script> element, meaning that regex is unfortunately necessary 
+        # all of the profile information on the quickmatch page is hidden in
+        # a <script> element, meaning that regex is unfortunately necessary
         for script in tree.iter('script'):
             if script.text is not None:
                 search_result = re.search(r'[^{]"tuid" : "(\d+)', script.text)
@@ -454,18 +454,18 @@ class User:
                     match = int(broad_result.group(6))
         return Profile(self._session, username, age=age, location=location,
                        match=match, enemy=enemy, id=id)
-         
-                    
+
+
     def __str__(self):
         return '<User {0}>'.format(self.username)
-        
+
 class Profile:
     """
     Represent another user on OKCupid. You should not initialize these
     on their own. Instead, User.search() returns a list of Profile
     objects, and User.visit() returns a single Profile object. You can
     also find a list of Profile objects in User.visitors. Most of the
-    attributes will be empty until User.visit() is called. 
+    attributes will be empty until User.visit() is called.
     self.questions, self.traits, and self.pics will remain empty until
     self.update_questions(), self.update_traits(), and
     self.update_pics() are called, respectively.
@@ -481,15 +481,21 @@ class Profile:
         The match percentage that you have with this profile.
     enemy : int
         The enemy percentage that you have with this profile.
+    rating : int
+        The rating you gave this profile.
+    contacted : bool
+        Whether you've contacted this user or not.
     """
     def __init__(self, _session, name, age=None, location='', match=None,
-                 enemy=None, id=None):
+                 enemy=None, id=None, rating=0, contacted=False):
         self._session = _session
         self.name = name
         self.age = age
         self.location = location
         self.match = match
         self.enemy = enemy
+        self.rating = rating
+        self.contacted = contacted
         self._id = id
         self.gender = None
         self.orientation = None
@@ -536,7 +542,7 @@ class Profile:
             'pets': '',
             'speaks': '',
             }
-            
+
     def update_questions(self):
         """
         Update self.questions with Question instances, which contain
@@ -572,7 +578,7 @@ class Profile:
                 self.questions.append(Question(text, user_answer, explanation))
             if not len(next_wrapper):
                 keep_going = False
-                
+
     def update_traits(self):
         """
         Fill `self.traits` the personality traits of this profile.
@@ -580,7 +586,7 @@ class Profile:
         get_traits = self._session.get('http://www.okcupid.com/profile/{0}/personality'.format(self.name))
         tree = html.fromstring(get_traits.content.decode('utf8'))
         self.traits = tree.xpath("//div[@class = 'pt_row']//label/text()")
-    
+
     def update_pics(self):
         """
         Fill `self.pics` with url strings of pictures for this profile.
@@ -588,6 +594,6 @@ class Profile:
         pics_request = self._session.get('http://www.okcupid.com/profile/{0}/photos?cf=profile'.format(self.name))
         pics_tree = html.fromstring(pics_request.content.decode('utf8'))
         self.pics = pics_tree.xpath("//div[@id = 'album_0']//img/@src")
-        
+
     def __repr__(self):
         return '<Profile of {0}>'.format(self.name)
