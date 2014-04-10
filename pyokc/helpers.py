@@ -294,6 +294,9 @@ def update_details(profile_tree, details):
             details[title.lower()] = dl.find('dd').find('span').text.strip()
         elif title.lower() in details:
             details[title.lower()] = dl.find('dd').text.strip()
+        else:
+            details[title.lower()] = None
+            continue
         details[title.lower()] = replace_chars(details[title.lower()])
 
 def get_looking_for(gender, orientation):
