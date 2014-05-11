@@ -36,9 +36,14 @@ class User:
         self.questions = []
         self.visitors = []
         self._session = Session()
-        credentials = {'username': username, 'password': password, 'dest': '/home'}
-        helpers.login(self._session, credentials)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.62 Safari/537.36'
+        }
+        credentials = {'username': username, 'password': password}
+        helpers.login(self._session, credentials, headers)
         profile_response = self._session.get('https://www.okcupid.com/profile')
+        with open('outfile.txt', 'w') as f:
+            f.write(profile_response.content.decode('utf8'))
         profile_tree = html.fromstring(profile_response.content.decode('utf8'))
         self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
         self.update_mailbox(pages=1)

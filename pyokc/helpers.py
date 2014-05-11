@@ -18,13 +18,13 @@ CHAR_REPLACE = {
     "🌲": " ",
     }
 
-def login(session, credentials):
+def login(session, credentials, headers):
     """
     Make a POST reguest to OKCupid using the login credentials provided
     by the user.
     """
-    login_response = session.post('https://www.okcupid.com/login', data=credentials)
-    if login_response.url != 'http://www.okcupid.com/home':
+    login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers)
+    if login_response.url == 'https://www.okcupid.com/login':
         raise AuthenticationError('Could not log in with the credentials provided')
 
 def get_additional_info(tree):
