@@ -16,6 +16,7 @@ class Session(requests.Session):
             pass
         self.timestamp = clock()
         response = super().post(*args, **kwargs)
+        response.raise_for_status()
         return response
         
     def get(self, *args, **kwargs):
@@ -23,6 +24,7 @@ class Session(requests.Session):
             pass
         self.timestamp = clock()
         response = super().get(*args, **kwargs)
+        response.raise_for_status()
         return response
         
 class MessageThread:

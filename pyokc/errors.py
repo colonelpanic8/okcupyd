@@ -6,3 +6,4 @@ class InvalidInputError(Exception):
     
 class ProfileNotFoundError(Exception):
     pass
+    

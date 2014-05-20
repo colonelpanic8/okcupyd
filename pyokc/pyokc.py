@@ -42,8 +42,6 @@ class User:
         credentials = {'username': username, 'password': password}
         helpers.login(self._session, credentials, headers)
         profile_response = self._session.get('https://www.okcupid.com/profile')
-        with open('outfile.txt', 'w') as f:
-            f.write(profile_response.content.decode('utf8'))
         profile_tree = html.fromstring(profile_response.content.decode('utf8'))
         self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
         self.update_mailbox(pages=1)
@@ -318,6 +316,10 @@ class User:
         profile_tree = html.fromstring(profile_request.content.decode('utf8'))
         prfl.match, prfl.enemy = helpers.get_percentages(profile_tree)
         prfl.age, prfl.gender, prfl.orientation, prfl.status = helpers.get_additional_info(profile_tree)
+        if len(profile_tree.xpath("//div[@id = 'rating']")):
+            prfl.rating = helpers.get_rating(profile_tree.xpath("//div[@id = 'rating']")[0])
+        elif len(profile_tree.xpath("//button[@class = 'flatbutton white binary_rating_button like liked']")):
+           prfl.rating = 5
         helpers.update_essays(profile_tree, prfl.essays)
         helpers.update_looking_for(profile_tree, prfl.looking_for)
         helpers.update_details(profile_tree, prfl.details)
@@ -494,6 +496,7 @@ class Profile:
     def __init__(self, _session, name, age=None, location='', match=None,
                  enemy=None, id=None, rating=0, contacted=False):
         self._session = _session
+        self._id = id
         self.name = name
         self.age = age
         self.location = location
@@ -501,7 +504,6 @@ class Profile:
         self.enemy = enemy
         self.rating = rating
         self.contacted = contacted
-        self._id = id
         self.gender = None
         self.orientation = None
         self.status = None

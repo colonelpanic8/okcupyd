@@ -63,9 +63,9 @@ def get_message_string(li_element, sender):
     str
     """
     if 'to_me' in li_element.attrib['class']:
-        message_string = '{0}:'.format(sender)
+        message_string = '{0}: '.format(sender)
     elif 'from_me' in li_element.attrib['class']:
-        message_string = '{0}:'.format(li_element.find('a').attrib['title'])
+        message_string = 'Me: '
     div = li_element.xpath(".//div[@class = 'message_body']")[0]
     message_string += div.text_content().replace(' \n \n', '\n').strip()
     return message_string
@@ -103,10 +103,13 @@ def get_rating(div):
     int
         The rating you've given this user.
     """
-    rating_div = div.xpath(".//li[@class = 'current-rating']")
-    rating_style = rating_div[0].attrib['style']
-    width_percent = int(''.join(c for c in rating_style if c.isdigit()))
-    return int((width_percent / 100) * 5)
+    try:
+        rating_div = div.xpath(".//li[@class = 'current-rating']")
+        rating_style = rating_div[0].attrib['style']
+        width_percent = int(''.join(c for c in rating_style if c.isdigit()))
+        return int((width_percent / 100) * 5)
+    except IndexError:
+        return 0
 
 def get_contacted(div):
     """
@@ -139,8 +142,11 @@ def get_profile_basics(div, profiles):
             location = replace_chars(div.xpath(".//span[@class = 'location']/text()")[0])
             match = None
             enemy = None
-            raw_id = div.xpath(".//li[@class = 'current-rating']/@id")[0]
-            id = search(r'\d{2,}', raw_id).group()
+            try:
+                raw_id = div.xpath(".//li[@class = 'current-rating']/@id")[0]
+                id = search(r'\d{2,}', raw_id).group()
+            except IndexError:
+                id = div.xpath(".//button[@id = 'personality-rating']/@data-tuid")[0]
             try:
                 desc_div = div.xpath(".//div[@class = 'percentages hide_on_hover ']")[0]
             except IndexError:
@@ -293,10 +299,11 @@ def update_details(profile_tree, details):
     div = profile_tree.xpath("//div[@id = 'profile_details']")[0]
     for dl in div.iter('dl'):
         title = dl.find('dt').text
-        if title == 'Last Online' and dl.find('dd').find('span') is not None:
-            details[title.lower()] = dl.find('dd').find('span').text.strip()
-        elif title.lower() in details:
-            details[title.lower()] = dl.find('dd').text.strip()
+        item = dl.find('dd')
+        if title == 'Last Online' and item.find('span') is not None:
+            details[title.lower()] = item.find('span').text.strip()
+        elif title.lower() in details and len(item.text):
+            details[title.lower()] = item.text.strip()
         else:
             details[title.lower()] = None
             continue
