@@ -219,16 +219,19 @@ def get_percentages(profile_tree):
     """
     percentage_list = []
     try:
+        match_str = enemy_str = ""
         for box in profile_tree.xpath("//div[@class = 'percentbox']"):
             if box.xpath(".//span[@class = 'percentlabel']/text()")[0].lower() == 'match':
                 match_str = box.xpath(".//span[@class = 'percent']/text()")[0]
             else:
                 enemy_str = box.xpath(".//span[@class = 'percent']/text()")[0]
         for str in (match_str, enemy_str):
-            if str[1] == '%':
+            if str and str[1] == '%':
                 percentage_list.append(int(str[0]))
-            else:
+            elif str:
                 percentage_list.append(int(str[:2]))
+            else:
+                percentage_list.append("")
         return percentage_list
     except IndexError:
         raise ProfileNotFoundError('Could not find the profile specified')

@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name = "pyokc",
-    version = "0.2.2",
+    version = "0.2.3",
     packages = find_packages(),
     install_requires = ['lxml', 'requests'],
 
@@ -22,7 +22,7 @@ setup(
     license = "MIT",
     keywords = "python okcupid",
     url = "https://github.com/evfredericksen/pyokc",
-    long_description=read('README.rst'),
+    long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
