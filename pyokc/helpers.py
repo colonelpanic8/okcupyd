@@ -246,8 +246,12 @@ def get_profile_id(tree):
     """
     Return a unique profile id string.
     """
-    js_call_string = tree.xpath("//a[@class = 'one-star']/@href")[0]
-    return search(r'\d{2,}', js_call_string).group()
+    try:
+        js_call_string = tree.xpath("//a[@class = 'one-star']/@href")[0]
+        return search(r'\d{2,}', js_call_string).group()
+    except IndexError:
+        return tree.xpath("//button[@id = 'rate_user_profile']/@data-tuid")[0]
+        # <button id="rate_user_profile" data-tuid="2538582662150475561"
 
 def update_essays(tree, essays):
     """
@@ -305,7 +309,6 @@ def update_details(profile_tree, details):
         elif title.lower() in details and len(item.text):
             details[title.lower()] = item.text.strip()
         else:
-            details[title.lower()] = None
             continue
         details[title.lower()] = replace_chars(details[title.lower()])
 

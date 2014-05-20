@@ -185,6 +185,8 @@ class User:
             Income range of profiles returned.
         religion : str or list of str, optional
             Religion of profiles returned.
+        monogamy : str or list of str, optional
+            Whether the profiles returned are monogamous or non-monogamous.
         offspring : str or list of str, optional
             Whether the profiles returned have or want children.
         pets : str or list of str, optional
@@ -249,7 +251,8 @@ class User:
             if isinstance (value, str) and key.lower() not in ('join_date', 'keywords'):
                 value = [value]
             if key in ['smokes', 'drinks', 'drugs', 'education', 'job',
-            'income', 'religion', 'diet', 'sign', 'ethnicity'] and len(value):
+                       'income', 'religion', 'monogamy', 'diet', 'sign',
+                       'ethnicity'] and len(value):
                 search_parameters['filter{0}'.format(filter_no)] = magicnumbers.get_options_query(key, value)
                 filter_no = str(int(filter_no) + 1)
             elif key == 'pets':

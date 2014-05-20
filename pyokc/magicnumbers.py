@@ -136,6 +136,7 @@ binary_lists = {
                'More than $1,000,000'],
     'religion': ['8', 'agnostic', 'atheist', 'christian', 'jewish', 'catholic',
                  'muslim', 'hindu', 'buddhist', 'other'],
+    'monogamy': ['73', 'monogamous', 'non-monogamous'],
     'diet': ['54', 'vegetarian', 'vegan', 'kosher', 'halal'],
     'sign': ['21', 'acquarius', 'pisces', 'aries', 'taurus', 'gemini',
              'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius',
