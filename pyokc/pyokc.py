@@ -1,15 +1,11 @@
 import re
 from lxml import html
-try:
-    from pyokc import helpers
-    from pyokc import magicnumbers
-    from pyokc.objects import MessageThread, Question, Session
-    from pyokc.settings import USERNAME, PASSWORD
-except ImportError:
-    import helpers
-    import magicnumbers
-    from objects import MessageThread, Question, Session
-    from settings import USERNAME, PASSWORD
+
+from . import helpers
+from . import magicnumbers
+from .objects import MessageThread, Question, Session
+from .settings import USERNAME, PASSWORD
+
 
 class User:
     """

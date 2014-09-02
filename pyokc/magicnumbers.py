@@ -1,9 +1,6 @@
-try:
-    from pyokc.errors import InvalidInputError
-except ImportError:
-    from errors import InvalidInputError
+from .errors import InvalidInputError
 
-sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')') 
+sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
 
 seeking = {
     'girls who like guys': '34',
@@ -21,8 +18,8 @@ seeking = {
     'bi guys and girls': '48',
     'everybody': '63',
     }
- 
-# Wtf, OKCupid? 
+
+# Wtf, OKCupid?
 has_kids = {
     "has a kid": {"addition": 33686018, "power": 1},
     "has kids": {"addition": 67372036, "power": 2},
@@ -34,7 +31,7 @@ wants_kids = {
     "wants kids": {"addition": 4653056, "power": 16},
     "doesn't want kids": {"addition": 1191182384, "power": 24},
     }
-    
+
 language_map = {
     'English': '74',
     'Afrikaans': '2',
@@ -114,7 +111,7 @@ language_map = {
     'Welsh': '69',
     'Yiddish': '70',
     }
-    
+
 binary_lists = {
     'smokes': ['11', 'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'],
     'drinks': ['12', 'very often', 'often', 'socially', 'rarely', 'desperately',
@@ -145,10 +142,10 @@ binary_lists = {
                   'indian', 'pacific islander', 'hispanic/latin', 'white',
                   'human (other)']
     }
-    
+
 dogs = ['owns dogs', 'likes dogs', 'dislikes dogs']
 cats = ['owns cats', 'likes cats', 'dislikes cats']
-    
+
 def get_height_query(height_min, height_max):
     '''Convert from inches to millimeters/10'''
     min_int = 0
@@ -158,7 +155,7 @@ def get_height_query(height_min, height_max):
     if height_max is not None:
         max_int = int(height_max) * 254
     return '10,{0},{1}'.format(str(min_int), str(max_int))
- 
+
 def get_options_query(type, inputs):
     for char in sep_replacements:
         inputs = [input.replace(char, '') for input in inputs]
@@ -177,7 +174,7 @@ def get_options_query(type, inputs):
         if option in inputs:
             int_to_return += 2**power
     return '{0},{1}'.format(option_list[0], int_to_return)
-    
+
 def get_pet_queries(pets):
     for char in sep_replacements:
         pets = [pet.replace(char, '') for pet in pets]
@@ -197,7 +194,7 @@ def get_pet_queries(pets):
     dog_query = '16,{0}'.format(dog_int)
     cat_query = '17,{0}'.format(cat_int)
     return dog_query, cat_query
-    
+
 def get_kids_query(kids):
     kids = [kid.lower() for kid in kids]
     kid_int = 0
@@ -223,7 +220,7 @@ def get_kids_query(kids):
                     if wants_option in wants_kids:
                         kid_int += 2**(has_kids[has_option]['power'] + wants_kids[wants_option]['power'])
     return '18,{0}'.format(kid_int)
-    
+
 def get_join_date_query(date):
     date_int = 0
     if isinstance(date, str) and not date.isdigit():
@@ -233,15 +230,14 @@ def get_join_date_query(date):
             date_int = 86400
         elif date.lower() in ('week', 'last week'):
             date_int = 604800
-        elif date.lower() in ('month', 'last month'): 
+        elif date.lower() in ('month', 'last month'):
             date_int = 2678400
-        elif date.lower() in ('year', 'last year'):       
+        elif date.lower() in ('year', 'last year'):
             date_int = 31536000 
-        elif date.lower() in ('decade', 'last decade'):       
+        elif date.lower() in ('decade', 'last decade'):
             date_int = 315360000
         else:
             raise InvalidInputError('Could not parse date string')
     else:
         date_int = date
     return '6,{0}'.format(date_int)
-        
