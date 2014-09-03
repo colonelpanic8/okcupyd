@@ -86,7 +86,7 @@ def get_locid(session, location):
     loc_query = session.post('http://www.okcupid.com/locquery', data=query_parameters)
     p = html.fromstring(loc_query.content.decode('utf8'))
     js = loads(p.text)
-    if len(js['results']):
+    if 'results' in js and len(js['results']):
         locid = js['results'][0]['locid']
     return locid
 
@@ -124,53 +124,71 @@ def get_contacted(div):
     """
     return bool(div.xpath(".//span[@class = 'fancydate']"))
 
+
+class MatchCardExtractor(object):
+
+    def __init__(self, div):
+        self._div = div
+
+    @property
+    def username(self):
+        return self._div.xpath(".//div[@class = 'username']")[0].text_content()
+
+    @property
+    def age(self):
+        return int(self._div.xpath(".//span[@class = 'age']/text()")[0])
+
+    @property
+    def location(self):
+        return replace_chars(self._div.xpath(".//span[@class = 'location']/text()")[0])
+
+    @property
+    def id(self):
+        try:
+            raw_id = self._div.xpath(".//li[@class = 'current-rating']/@id")[0]
+            return search(r'\d{2,}', raw_id).group()
+        except IndexError:
+            return self._div.xpath(".//button[@id = 'personality-rating']/@data-tuid")[0]
+
+    @property
+    def match_percentage(self):
+        return int(self._div.xpath(".//div[@class = 'percentage_wrapper match']")[0].xpath(".//span[@class = 'percentage']")[0].text.strip('%'))
+
+    @property
+    def enemy_percentage(self):
+        return int(self._div.xpath(".//div[@class = 'percentage_wrapper enemy']")[0].xpath(".//span[@class = 'percentage']")[0].text.strip('%'))
+
+    @property
+    def rating(self):
+        try:
+            rating_div = self._div.xpath(".//li[@class = 'current-rating']")
+            rating_style = rating_div[0].attrib['style']
+            width_percent = int(''.join(c for c in rating_style if c.isdigit()))
+            return int((width_percent / 100) * 5)
+        except IndexError:
+            return 0
+
+    @property
+    def contacted(self):
+        return bool(self._div.xpath(".//span[@class = 'fancydate']"))
+
+    @property
+    def as_dict(self):
+        return {
+            'name': self.username,
+            'age': self.age,
+            'location': self.location,
+            'match': self.match_percentage,
+            'enemy': self.enemy_percentage,
+            'id': self.id,
+            'rating': self.rating,
+            'contacted': self.contacted
+        }
+
+
 def get_profile_basics(div, profiles):
-    """
-    Parse a <div> element from a search result page to get basic
-    information of a profile.
-    Returns
-    ----------
-    list of str, int
-    """
-    profile_info = {}
-    if ('id' in div.attrib and len(div.attrib['id']) >= 4 and
-    'class' in div.attrib and div.attrib['class'] == 'match_card opensans'):
-        name = div.attrib['id'][4:]
-        if name.lower() not in [p.name.lower() for p in profiles]:
-            age = int(div.xpath(".//span[@class = 'age']/text()")[0])
-            location = replace_chars(div.xpath(".//span[@class = 'location']/text()")[0])
-            match = None
-            enemy = None
-            try:
-                raw_id = div.xpath(".//li[@class = 'current-rating']/@id")[0]
-                id = search(r'\d{2,}', raw_id).group()
-            except IndexError:
-                id = div.xpath(".//button[@id = 'personality-rating']/@data-tuid")[0]
-            try:
-                desc_div = div.xpath(".//div[@class = 'percentages hide_on_hover ']")[0]
-            except IndexError:
-                desc_div = div.xpath(".//div[@class = 'percentages hide_on_hover hidden']")[0]
-            if desc_div.text.replace(' ', '')[1] == '%':
-                percentage = int(desc_div.text.replace(' ', '')[0])
-            else:
-                percentage = int(desc_div.text.replace(' ', '')[:2])
-            # Should be match unless the order_by kwarg is
-            # set to 'enemy'
-            if 'Match' in desc_div.text:
-                match = percentage
-            elif 'Enemy' in desc_div.text:
-                enemy = percentage
-            profile_info = {
-                'name': name,
-                'age': age,
-                'location': location,
-                'match': match,
-                'enemy': enemy,
-                'id': id,
-                'rating': get_rating(div),
-                'contacted': get_contacted(div)
-            }
-    return profile_info
+    return MatchCardExtractor(div).as_dict
+
 
 def format_last_online(last_online):
     """

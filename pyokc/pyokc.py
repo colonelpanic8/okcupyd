@@ -32,11 +32,11 @@ class User:
         self.questions = []
         self.visitors = []
         self._session = Session()
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.62 Safari/537.36'
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36"
         }
         credentials = {'username': username, 'password': password}
-        helpers.login(self._session, credentials, headers)
+        helpers.login(self._session, credentials, self.headers)
         profile_response = self._session.get('https://www.okcupid.com/profile')
         profile_tree = html.fromstring(profile_response.content.decode('utf8'))
         self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
@@ -271,10 +271,11 @@ class User:
                 filter_no = str(int(filter_no) + 1)
             elif key == 'keywords':
                 search_parameters['keywords'] = value
-        profiles_request = self._session.post('http://www.okcupid.com/match', data=search_parameters)
+        profiles_request = self._session.get('http://www.okcupid.com/match', data=search_parameters, headers=self.headers)
         profiles_tree = html.fromstring(profiles_request.content.decode('utf8'))
+        match_card_elems = profiles_tree.xpath(".//div[@class='match_card opensans']")
         profiles = []
-        for div in profiles_tree.iter('div'):
+        for div in match_card_elems:
             info = helpers.get_profile_basics(div, profiles)
             if len(info):
                 profiles.append(Profile(self._session, info['name'], info['age'],
