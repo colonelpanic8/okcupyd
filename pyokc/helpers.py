@@ -152,11 +152,15 @@ class MatchCardExtractor(object):
 
     @property
     def match_percentage(self):
-        return int(self._div.xpath(".//div[@class = 'percentage_wrapper match']")[0].xpath(".//span[@class = 'percentage']")[0].text.strip('%'))
+        return int(self._div.xpath(
+            ".//div[@class = 'percentage_wrapper match']")[0].xpath(
+                ".//span[@class = 'percentage']")[0].text.strip('%'))
 
     @property
     def enemy_percentage(self):
-        return int(self._div.xpath(".//div[@class = 'percentage_wrapper enemy']")[0].xpath(".//span[@class = 'percentage']")[0].text.strip('%'))
+        return int(self._div.xpath(
+            ".//div[@class = 'percentage_wrapper enemy']")[0].xpath(
+                ".//span[@class = 'percentage']")[0].text.strip('%'))
 
     @property
     def rating(self):
@@ -186,8 +190,8 @@ class MatchCardExtractor(object):
         }
 
 
-def get_profile_basics(div, profiles):
-    return MatchCardExtractor(div).as_dict
+def get_profile_basics(div):
+    return MatchCardExtractor(div)
 
 
 def format_last_online(last_online):

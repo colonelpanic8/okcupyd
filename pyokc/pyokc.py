@@ -2,9 +2,8 @@ import re
 from lxml import html
 
 from . import helpers
-from . import magicnumbers
-from .search import Search
 from .objects import MessageThread, Question, Session
+from .search import Search
 from .settings import USERNAME, PASSWORD
 
 
@@ -34,19 +33,10 @@ class User:
         self.visitors = []
         self._session = Session()
         self.headers = {
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36",
-            'accept-encoding': 'gzip,deflate,sdch',
-            'cache-control': 'max-age=0',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'referer': 'https://www.okcupid.com/'
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36"
         }
         credentials = {'username': username, 'password': password}
         helpers.login(self._session, credentials, self.headers)
-        # profile_response = self._session.get('https://www.okcupid.com/profile')
-        # profile_tree = html.fromstring(profile_response.content.decode('utf8'))
-        # self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
-        # self.update_mailbox(pages=1)
-        # self.update_visitors()
 
     def update_mailbox(self, box='inbox', pages=10):
         """
@@ -133,16 +123,20 @@ class User:
 
     def search(self, **kwargs):
         profiles_response = Search(**kwargs).execute(self._session, headers=self.headers)
-        if not profiles_response: return []
+        if not profiles_response.strip(): return []
         profiles_tree = html.fromstring(profiles_response)
         match_card_elems = profiles_tree.xpath(".//div[@class='match_card opensans']")
         profiles = []
         for div in match_card_elems:
-            info = helpers.get_profile_basics(div, profiles)
-            if len(info):
-                profiles.append(Profile(self._session, info['name'], info['age'],
-                                     info['location'], info['match'], enemy=info['enemy'],
-                                     id=info['id'], rating=info['rating'], contacted=info['contacted']))
+            match_card_extractor = helpers.MatchCardExtractor(div)
+            profiles.append(Profile(self._session, match_card_extractor.username,
+                                    match_card_extractor.age,
+                                    match_card_extractor.location,
+                                    match_card_extractor.match_percentage,
+                                    enemy=match_card_extractor.enemy_percentage,
+                                    id=match_card_extractor.id,
+                                    rating=match_card_extractor.rating,
+                                    contacted=match_card_extractor.contacted))
         return profiles
 
     def visit(self, username, update_pics=False):
@@ -207,7 +201,7 @@ class User:
         while keep_going:
             questions_data = {
                 'low': 1 + question_number,
-                }
+            }
             get_questions = self._session.post(
             'http://www.okcupid.com/profile/{0}/questions'.format(self.username),
             data=questions_data)
@@ -317,7 +311,6 @@ class User:
                 if broad_result is not None:
                     location = broad_result.group(1)
                     enemy = int(broad_result.group(2))
-                    friend = int(broad_result.group(3))
                     age = int(broad_result.group(4))
                     username = broad_result.group(5)
                     match = int(broad_result.group(6))
@@ -327,6 +320,7 @@ class User:
 
     def __str__(self):
         return '<User {0}>'.format(self.username)
+
 
 class Profile:
     """
@@ -466,3 +460,30 @@ class Profile:
 
     def __repr__(self):
         return '<Profile of {0}>'.format(self.name)
+
+
+class AttractivenessFinder(object):
+
+    def __init__(self):
+        self._session = Session()
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36"
+        }
+        credentials = {'username': USERNAME, 'password': PASSWORD}
+        helpers.login(self._session, credentials, self.headers)
+
+    def find_attractiveness(self, username, accuracy=10, _lower=0, _higher=10000):
+        print('searching between {0} and {1}'.format(_lower, _higher))
+        average = (_higher + _lower)//2
+        if _higher - _lower < accuracy:
+            return average
+
+        results = Search(looking_for='everybody', keywords=username, attractiveness_min=average,
+               attractivenvess_max=_higher).execute(self._session).strip()
+
+        if results:
+            print('found')
+            return self.find_attractiveness(username, accuracy, average, _higher)
+        else:
+            print('not found')
+            return self.find_attractiveness(username, accuracy, _lower, average)
