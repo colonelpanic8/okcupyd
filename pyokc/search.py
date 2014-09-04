@@ -5,7 +5,6 @@ from . import magicnumbers
 from . import util
 
 
-key_to_builders = {}
 builder_to_keys = {}
 builder_to_decider = {}
 
@@ -26,10 +25,6 @@ def register_filter_builder(function, keys=(), decider=all_decider):
     else:
         keys = function_arguments
     builder_to_keys[function] = keys
-    for key in keys:
-        assert key not in key_to_builders
-        key_to_builders.setdefault(key, []).append(function)
-
     builder_to_decider[function] = decider
 
     return function
@@ -96,6 +91,82 @@ for key, function in [('pets', util.makelist_decorator(magicnumbers.get_pet_quer
 
 
 class Search(object):
+    """
+    Search OKCupid profiles, return a list of matching profiles.
+    See the search page on OKCupid for a better idea of the
+    arguments expected.
+    Parameters
+    ----------
+    location : string, optional
+        Location of profiles returned. Accept ZIP codes, city
+        names, city & state combinations, and city & country
+        combinations. Default to user location if unable to
+        understand the string or if no value is given.
+    radius : int, optional
+        Radius in miles searched, centered on the location.
+    number : int, optional
+        Number of profiles returned. Default to 18, which is the
+        same number that OKCupid returns by default.
+    age_min : int, optional
+        Minimum age of profiles returned. Cannot be lower than 18.
+    age_max : int, optional
+        Maximum age of profiles returned. Cannot be higher than 99.
+    order_by : str, optional
+        Order in which profiles are returned.
+    last_online : str, optional
+        How recently online the profiles returned are. Can also be
+        an int that represents seconds.
+    status : str, optional
+        Dating status of profiles returned. Default to 'single'
+        unless the argument is either 'not single', 'married', or
+        'any'.
+    height_min : int, optional
+        Minimum height in inches of profiles returned.
+    height_max : int, optional
+        Maximum height in inches of profiles returned.
+    looking_for : str, optional
+        Describe the gender and orientation of profiles returned.
+        If left blank, return some variation of "guys/girls who
+        like guys/girls" or "both who like bi girls/guys, depending
+        on the user's gender and orientation.
+    smokes : str or list of str, optional
+        Smoking habits of profiles returned.
+    drinks : str or list of str, optional
+        Drinking habits of profiles returned.
+    drugs : str or list of str, optional
+        Drug habits of profiles returned.
+    education : str or list of str, optional
+        Highest level of education attained by profiles returned.
+    job : str or list of str, optional
+        Industry in which the profile users work.
+    income : str or list of str, optional
+        Income range of profiles returned.
+    religion : str or list of str, optional
+        Religion of profiles returned.
+    monogamy : str or list of str, optional
+        Whether the profiles returned are monogamous or non-monogamous.
+    offspring : str or list of str, optional
+        Whether the profiles returned have or want children.
+    pets : str or list of str, optional
+        Dog/cat ownership of profiles returned.
+    languages : str or list of str, optional
+        Languages spoken for profiles returned.
+    diet : str or list of str, optional
+        Dietary restrictions of profiles returned.
+    sign : str or list of str, optional
+        Astrological sign of profiles returned.
+    ethnicity : str or list of str, optional
+        Ethnicity of profiles returned.
+    join_date : int or str, optional
+        Either a string describing the profile join dates ('last
+        week', 'last year' etc.) or an int indicating the number
+        of maximum seconds from the moment of joining OKCupid.
+    keywords : str, optional
+        Keywords that the profiles returned must contain. Note that
+        spaces separate keywords, ie. `keywords="love cats"` will
+        return profiles that contain both "love" and "cats" rather
+        than the exact string "love cats".
+        """
 
     def __init__(self, **kwargs):
         self._options = kwargs
@@ -106,7 +177,7 @@ class Search(object):
 
     @property
     def gender(self):
-        return self._options.get('gender', 'M')
+        return self._options.get('gender', 'm')
 
     @property
     def keywords(self):
@@ -128,25 +199,23 @@ class Search(object):
         self.options.update(kwargs)
         return self.options
 
-    def basic_params(self):
-        return {
-            'locid': self.locid,
-            'timekey': 1,
+    def build_search_parameters(self, session, count=9):
+        search_parameters = {
+            'timekey': '1',
             'matchOrderBy': self.order_by.upper(),
-            'custom_search': 0,
-            'fromWhoOnline': 0,
+            'custom_search': '0',
+            'fromWhoOnline': '0',
             'mygender': self.gender,
-            'update_prefs': 1,
-            'sort_type': 0,
-            'sa': 1,
-            'using_saved_search': '',
+            'update_prefs': '1',
+            'sort_type': '0',
+            'sa': '1',
+            'count': str(count),
+            'locid': str(helpers.get_locid(session, self.location)),
         }
-
-    def execute(self, session, count=9):
-        search_parameters = self.basic_params()
-        search_parameters['count'] = count
         if self.keywords: search_parameters['keywords'] = self.keywords
         for filter_number, filter_string in enumerate(self.filters, 1):
             search_parameters['filter{0}'.format(filter_number)] = filter_string
+        return search_parameters
 
-        return session.get('http://www.okcupid.com/match', data=search_parameters, headers=self.headers)
+    def execute(self, session, count=9, headers=None):
+        return session.get('http://www.okcupid.com/match', data=self.build_search_parameters(session, count), headers=headers)

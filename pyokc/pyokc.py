@@ -3,7 +3,7 @@ from lxml import html
 
 from . import helpers
 from . import magicnumbers
-from . import search
+from .search import Search
 from .objects import MessageThread, Question, Session
 from .settings import USERNAME, PASSWORD
 
@@ -38,11 +38,11 @@ class User:
         }
         credentials = {'username': username, 'password': password}
         helpers.login(self._session, credentials, self.headers)
-        profile_response = self._session.get('https://www.okcupid.com/profile')
-        profile_tree = html.fromstring(profile_response.content.decode('utf8'))
-        self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
-        self.update_mailbox(pages=1)
-        self.update_visitors()
+        # profile_response = self._session.get('https://www.okcupid.com/profile')
+        # profile_tree = html.fromstring(profile_response.content.decode('utf8'))
+        # self.age, self.gender, self.orientation, self.status = helpers.get_additional_info(profile_tree)
+        # self.update_mailbox(pages=1)
+        # self.update_visitors()
 
     def update_mailbox(self, box='inbox', pages=10):
         """
@@ -127,154 +127,8 @@ class User:
             }
         return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
 
-    def search(self, location='', radius=25, number=18, age_min=18,
-               age_max=99, order_by='match', last_online='week',
-               status='single', height_min=None, height_max=None,
-               looking_for='', attractiveness_min=0,
-               attractiveness_max=10000, **kwargs):
-        """
-        Search OKCupid profiles, return a list of matching profiles.
-        See the search page on OKCupid for a better idea of the
-        arguments expected.
-        Parameters
-        ----------
-        location : string, optional
-            Location of profiles returned. Accept ZIP codes, city
-            names, city & state combinations, and city & country
-            combinations. Default to user location if unable to
-            understand the string or if no value is given.
-        radius : int, optional
-            Radius in miles searched, centered on the location.
-        number : int, optional
-            Number of profiles returned. Default to 18, which is the
-            same number that OKCupid returns by default.
-        age_min : int, optional
-            Minimum age of profiles returned. Cannot be lower than 18.
-        age_max : int, optional
-            Maximum age of profiles returned. Cannot by higher than 99.
-        order_by : str, optional
-            Order in which profiles are returned.
-        last_online : str, optional
-            How recently online the profiles returned are. Can also be
-            an int that represents seconds.
-        status : str, optional
-            Dating status of profiles returned. Default to 'single'
-            unless the argument is either 'not single', 'married', or
-            'any'.
-        height_min : int, optional
-            Minimum height in inches of profiles returned.
-        height_max : int, optional
-            Maximum height in inches of profiles returned.
-        looking_for : str, optional
-            Describe the gender and orientation of profiles returned.
-            If left blank, return some variation of "guys/girls who
-            like guys/girls" or "both who like bi girls/guys, depending
-            on the user's gender and orientation.
-        smokes : str or list of str, optional
-            Smoking habits of profiles returned.
-        drinks : str or list of str, optional
-            Drinking habits of profiles returned.
-        drugs : str or list of str, optional
-            Drug habits of profiles returned.
-        education : str or list of str, optional
-            Highest level of education attained by profiles returned.
-        job : str or list of str, optional
-            Industry in which the profile users work.
-        income : str or list of str, optional
-            Income range of profiles returned.
-        religion : str or list of str, optional
-            Religion of profiles returned.
-        monogamy : str or list of str, optional
-            Whether the profiles returned are monogamous or non-monogamous.
-        offspring : str or list of str, optional
-            Whether the profiles returned have or want children.
-        pets : str or list of str, optional
-            Dog/cat ownership of profiles returned.
-        languages : str or list of str, optional
-            Languages spoken for profiles returned.
-        diet : str or list of str, optional
-            Dietary restrictions of profiles returned.
-        sign : str or list of str, optional
-            Astrological sign of profiles returned.
-        ethnicity : str or list of str, optional
-            Ethnicity of profiles returned.
-        join_date : int or str, optional
-            Either a string describing the profile join dates ('last
-            week', 'last year' etc.) or an int indicating the number
-            of maximum seconds from the moment of joining OKCupid.
-        keywords : str, optional
-            Keywords that the profiles returned must contain. Note that
-            spaces separate keywords, ie. `keywords="love cats"` will
-            return profiles that contain both "love" and "cats" rather
-            than the exact string "love cats".
-        """
-        if not len(looking_for):
-            looking_for = helpers.get_looking_for(self.gender, self.orientation)
-        looking_for_number = magicnumbers.seeking[looking_for.lower()]
-        if age_min < 18:
-            age_min = 18
-        if age_max > 99:
-            age_max = 99
-        if age_min > age_max:
-            age_min, age_max = age_max, age_min
-        locid = helpers.get_locid(self._session, location)
-        last_online_int = helpers.format_last_online(last_online)
-        status_parameter = helpers.format_status(status)
-        search_parameters = {
-            'filter1': '0,{0}'.format(looking_for_number),
-            'filter2': '2,{0},{1}'.format(age_min, age_max),
-            'filter3': '5,{0}'.format(last_online_int),
-            'filter4': '35,{0}'.format(status_parameter),
-            'locid': locid,
-            'lquery': location,
-            'timekey': 1,
-            'matchOrderBy': order_by.upper(),
-            'custom_search': 0,
-            'fromWhoOnline': 0,
-            'mygender': self.gender[0],
-            'update_prefs': 1,
-            'sort_type': 0,
-            'sa': 1,
-            'using_saved_search': '',
-            'count': number,
-            }
-        filter_no = '5'
-        if location.lower() != 'anywhere':
-            search_parameters['filter5'] = '3,{0}'.format(radius)
-            filter_no = str(int(filter_no) + 1)
-        if height_min is not None or height_max is not None:
-            height_query = magicnumbers.get_height_query(height_min, height_max)
-            search_parameters['filter{0}'.format(filter_no)] = height_query
-            filter_no = str(int(filter_no) + 1)
-        for key, value in kwargs.items():
-            if isinstance (value, str) and key.lower() not in ('join_date', 'keywords'):
-                value = [value]
-            if key in ['smokes', 'drinks', 'drugs', 'education', 'job',
-                       'income', 'religion', 'monogamy', 'diet', 'sign',
-                       'ethnicity'] and len(value):
-                search_parameters['filter{0}'.format(filter_no)] = magicnumbers.get_options_query(key, value)
-                filter_no = str(int(filter_no) + 1)
-            elif key == 'pets':
-                dog_query, cat_query = magicnumbers.get_pet_queries(value)
-                search_parameters['filter{0}'.format(filter_no)] = dog_query
-                filter_no = str(int(filter_no) + 1)
-                search_parameters['filter{0}'.format(filter_no)] = cat_query
-                filter_no = str(int(filter_no) + 1)
-            elif key == 'offspring':
-                kids_query = magicnumbers.get_kids_query(value)
-                search_parameters['filter{0}'.format(filter_no)] = kids_query
-                filter_no = str(int(filter_no) + 1)
-            elif key == 'languages':
-                language_query = magicnumbers.language_map[value.title()]
-                search_parameters['filter{0}'.format(filter_no)] = '22,{0}'.format(language_query)
-                filter_no = str(int(filter_no) + 1)
-            elif key == 'join_date':
-                join_date_query = magicnumbers.get_join_date_query(value)
-                search_parameters['filter{0}'.format(filter_no)] = join_date_query
-                filter_no = str(int(filter_no) + 1)
-            elif key == 'keywords':
-                search_parameters['keywords'] = value
-        profiles_request = self._session.get('http://www.okcupid.com/match', data=search_parameters, headers=self.headers)
+    def search(self, **kwargs):
+        profiles_request = Search(**kwargs).execute(self._session, count=18, headers=self.headers)
         profiles_tree = html.fromstring(profiles_request.content.decode('utf8'))
         match_card_elems = profiles_tree.xpath(".//div[@class='match_card opensans']")
         profiles = []

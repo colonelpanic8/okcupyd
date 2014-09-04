@@ -13,10 +13,10 @@ class n_partialable(object):
             # This is to handle the fact that self will get passed in automatically.
             function_args = function_args[1:]
         def evaluation_checker(*args, **kwargs):
-            acceptable_kargs = function_args[len(args):]
+            acceptable_kwargs = function_args[len(args):]
             kwarg_keys = set(kwargs.keys())
             # Make sure that we didn't get an argument we can't handle.
-            assert kwarg_keys.issubset(acceptable_kargs)
+            assert kwarg_keys.issubset(acceptable_kwargs)
             needed_args = function_args[len(args):]
             if function_info.defaults:
                 needed_args = needed_args[:-len(function_info.defaults)]
