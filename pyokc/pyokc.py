@@ -3,6 +3,7 @@ from lxml import html
 
 from . import helpers
 from . import magicnumbers
+from . import search
 from .objects import MessageThread, Question, Session
 from .settings import USERNAME, PASSWORD
 
@@ -124,11 +125,13 @@ class User:
             'authcode': authcode,
             'reply': '1',
             }
-        send_msg = self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
+        return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
 
-    def search(self, location='', radius=25, number=18, age_min=18, age_max=99,
-        order_by='match', last_online='week', status='single',
-        height_min=None, height_max=None, looking_for='', **kwargs):
+    def search(self, location='', radius=25, number=18, age_min=18,
+               age_max=99, order_by='match', last_online='week',
+               status='single', height_min=None, height_max=None,
+               looking_for='', attractiveness_min=0,
+               attractiveness_max=10000, **kwargs):
         """
         Search OKCupid profiles, return a list of matching profiles.
         See the search page on OKCupid for a better idea of the

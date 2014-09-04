@@ -19,7 +19,7 @@ CHAR_REPLACE = {
 
 def login(session, credentials, headers):
     """
-    Make a POST reguest to OKCupid using the login credentials provided
+    Make a POST request to OKCupid using the login credentials provided
     by the user.
     """
     login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers)

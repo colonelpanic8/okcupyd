@@ -221,6 +221,10 @@ def get_kids_query(kids):
                         kid_int += 2**(has_kids[has_option]['power'] + wants_kids[wants_option]['power'])
     return '18,{0}'.format(kid_int)
 
+
+def get_language_query(language):
+    return '22,{0}'.format(language_map[language.title()])
+
 def get_join_date_query(date):
     date_int = 0
     if isinstance(date, str) and not date.isdigit():
