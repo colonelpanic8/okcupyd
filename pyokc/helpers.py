@@ -132,7 +132,7 @@ class MatchCardExtractor(object):
 
     @property
     def username(self):
-        return self._div.xpath(".//div[@class = 'username']")[0].text_content()
+        return self._div.xpath(".//div[@class = 'username']/a")[0].text_content()
 
     @property
     def age(self):

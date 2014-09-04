@@ -201,7 +201,7 @@ class Search(object):
 
     def build_search_parameters(self, session, count=9):
         search_parameters = {
-            'timekey': '1',
+            'timekey': 1,
             'matchOrderBy': self.order_by.upper(),
             'custom_search': '0',
             'fromWhoOnline': '0',
@@ -211,6 +211,9 @@ class Search(object):
             'sa': '1',
             'count': str(count),
             'locid': str(helpers.get_locid(session, self.location)),
+            'ajax_load': 1,
+            'discard_prefs': 1,
+            'match_card_class': 'just_appended'
         }
         if self.keywords: search_parameters['keywords'] = self.keywords
         for filter_number, filter_string in enumerate(self.filters, 1):
@@ -218,4 +221,6 @@ class Search(object):
         return search_parameters
 
     def execute(self, session, count=9, headers=None):
-        return session.get('http://www.okcupid.com/match', data=self.build_search_parameters(session, count), headers=headers)
+        return session.get('https://www.okcupid.com/match',
+                           params=self.build_search_parameters(session, count),
+                           headers=headers).json()['html']

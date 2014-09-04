@@ -34,7 +34,11 @@ class User:
         self.visitors = []
         self._session = Session()
         self.headers = {
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36"
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36",
+            'accept-encoding': 'gzip,deflate,sdch',
+            'cache-control': 'max-age=0',
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'referer': 'https://www.okcupid.com/'
         }
         credentials = {'username': username, 'password': password}
         helpers.login(self._session, credentials, self.headers)
@@ -128,8 +132,9 @@ class User:
         return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
 
     def search(self, **kwargs):
-        profiles_request = Search(**kwargs).execute(self._session, count=18, headers=self.headers)
-        profiles_tree = html.fromstring(profiles_request.content.decode('utf8'))
+        profiles_response = Search(**kwargs).execute(self._session, headers=self.headers)
+        if not profiles_response: return []
+        profiles_tree = html.fromstring(profiles_response)
         match_card_elems = profiles_tree.xpath(".//div[@class='match_card opensans']")
         profiles = []
         for div in match_card_elems:
