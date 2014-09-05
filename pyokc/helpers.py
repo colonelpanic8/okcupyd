@@ -84,7 +84,7 @@ def get_locid(session, location):
         'func': 'query',
         'query': location,
         }
-    loc_query = session.post('http://www.okcupid.com/locquery', data=query_parameters)
+    loc_query = session.get('http://www.okcupid.com/locquery', params=query_parameters)
     p = html.fromstring(loc_query.content.decode('utf8'))
     js = loads(p.text)
     if 'results' in js and len(js['results']):
