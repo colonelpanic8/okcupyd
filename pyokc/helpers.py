@@ -35,11 +35,12 @@ def get_additional_info(tree):
     orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0].strip()
     status = tree.xpath("//*[@id = 'ajax_status']/text()")[0].strip()
     gender_result = tree.xpath("//*[@id = 'ajax_gender']/text()")[0].strip()
+    location = tree.xpath("//*[@id = 'ajax_location']/text()")[0].strip()
     if gender_result == "M":
         gender = 'Male'
     elif gender_result == "F":
         gender = 'Female'
-    return age, gender, orientation, status
+    return age, gender, orientation, status, location
 
 def get_authcode(inbox_tree):
     """

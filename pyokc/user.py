@@ -32,6 +32,9 @@ class User(object):
         self.questions = []
         self.visitors = []
         self._session = Session.login(username, password)
+        profile_response = self._session.get('https://www.okcupid.com/profile')
+        profile_tree = html.fromstring(profile_response.content.decode('utf8'))
+        self.age, self.gender, self.orientation, self.status, self.location = helpers.get_additional_info(profile_tree)
 
     def update_mailbox(self, box='inbox', pages=10):
         """
@@ -117,6 +120,10 @@ class User(object):
         return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
 
     def search(self, **kwargs):
+        kwargs.setdefault('gender', self.gender[0])
+        kwargs.setdefault('looking_for', helpers.get_looking_for(self.gender, self.orientation))
+        kwargs.setdefault('location', self.location)
+        kwargs.setdefault('radius', 25)
         return search(self._session, **kwargs)
 
     def visit(self, username, update_pics=False):
