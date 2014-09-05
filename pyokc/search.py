@@ -1,7 +1,11 @@
 import inspect
+import re
+
+from lxml import html
 
 from . import helpers
 from . import magicnumbers
+from . import objects
 from . import util
 
 
@@ -85,12 +89,10 @@ for key, function in [('pets', util.makelist_decorator(magicnumbers.get_pet_quer
                       ('join_date', magicnumbers.get_join_date_query),
                       ('languages', magicnumbers.get_language_query)]:
 
-    @register_filter_builder(keys=(key,))
-    def magicnumber_option_filter(value):
-        return function(value)
+    register_filter_builder(keys=(key,))(function)
 
 
-class Search(object):
+class SearchExecutor(object):
     """
     Search OKCupid profiles, return a list of matching profiles.
     See the search page on OKCupid for a better idea of the
@@ -166,7 +168,7 @@ class Search(object):
         spaces separate keywords, ie. `keywords="love cats"` will
         return profiles that contain both "love" and "cats" rather
         than the exact string "love cats".
-        """
+    """
 
     def __init__(self, **kwargs):
         self._options = kwargs
@@ -224,3 +226,88 @@ class Search(object):
         return session.get('https://www.okcupid.com/match',
                            params=self.build_search_parameters(session, count),
                            headers=headers).json()['html']
+
+
+class MatchCardExtractor(object):
+
+    def __init__(self, div):
+        self._div = div
+
+    @property
+    def username(self):
+        return self._div.xpath(".//div[@class = 'username']/a")[0].text_content()
+
+    @property
+    def age(self):
+        return int(self._div.xpath(".//span[@class = 'age']/text()")[0])
+
+    @property
+    def location(self):
+        return helpers.replace_chars(self._div.xpath(".//span[@class = 'location']/text()")[0])
+
+    @property
+    def id(self):
+        try:
+            raw_id = self._div.xpath(".//li[@class = 'current-rating']/@id")[0]
+            return re.search(r'\d{2,}', raw_id).group()
+        except IndexError:
+            return self._div.xpath(".//button[@id = 'personality-rating']/@data-tuid")[0]
+
+    @property
+    def match_percentage(self):
+        return int(self._div.xpath(
+            ".//div[@class = 'percentage_wrapper match']")[0].xpath(
+                ".//span[@class = 'percentage']")[0].text.strip('%'))
+
+    @property
+    def enemy_percentage(self):
+        return int(self._div.xpath(
+            ".//div[@class = 'percentage_wrapper enemy']")[0].xpath(
+                ".//span[@class = 'percentage']")[0].text.strip('%'))
+
+    @property
+    def rating(self):
+        try:
+            rating_div = self._div.xpath(".//li[@class = 'current-rating']")
+            rating_style = rating_div[0].attrib['style']
+            width_percent = int(''.join(c for c in rating_style if c.isdigit()))
+            return int((width_percent / 100) * 5)
+        except IndexError:
+            return 0
+
+    @property
+    def contacted(self):
+        return bool(self._div.xpath(".//span[@class = 'fancydate']"))
+
+    @property
+    def as_dict(self):
+        return {
+            'name': self.username,
+            'age': self.age,
+            'location': self.location,
+            'match': self.match_percentage,
+            'enemy': self.enemy_percentage,
+            'id': self.id,
+            'rating': self.rating,
+            'contacted': self.contacted
+        }
+
+
+def search(session=None, count=9, **kwargs):
+    session = session or objects.Session.login()
+    profiles_response = SearchExecutor(**kwargs).execute(session, count)
+    if not profiles_response.strip(): return []
+    profiles_tree = html.fromstring(profiles_response)
+    match_card_elems = profiles_tree.xpath(".//div[@class='match_card opensans']")
+    profiles = []
+    for div in match_card_elems:
+        match_card_extractor = MatchCardExtractor(div)
+        profiles.append(objects.Profile(session, match_card_extractor.username,
+                                match_card_extractor.age,
+                                match_card_extractor.location,
+                                match_card_extractor.match_percentage,
+                                enemy=match_card_extractor.enemy_percentage,
+                                id=match_card_extractor.id,
+                                rating=match_card_extractor.rating,
+                                contacted=match_card_extractor.contacted))
+        return profiles
