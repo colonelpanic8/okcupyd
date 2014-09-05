@@ -7,7 +7,7 @@ from .search import search
 from .settings import USERNAME, PASSWORD
 
 
-class User:
+class User(object):
     """
     Represent an OKCupid user. Username and password are only optional
     if you have already filled in your username and password in

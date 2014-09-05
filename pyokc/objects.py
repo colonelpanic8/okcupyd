@@ -79,7 +79,7 @@ class Question(object):
         return '<Question: {0}>'.format(self.text)
 
 
-class Profile:
+class Profile(object):
     """
     Represent another user on OKCupid. You should not initialize these
     on their own. Instead, User.search() returns a list of Profile

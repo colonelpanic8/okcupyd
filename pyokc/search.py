@@ -310,4 +310,4 @@ def search(session=None, count=9, **kwargs):
                                 id=match_card_extractor.id,
                                 rating=match_card_extractor.rating,
                                 contacted=match_card_extractor.contacted))
-        return profiles
+    return profiles
