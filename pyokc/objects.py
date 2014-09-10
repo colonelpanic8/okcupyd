@@ -61,7 +61,7 @@ class MessageRetriever(object):
     def get_usernames(self, tree):
         xpath_string = XPathBuilder().div.with_class('profile_info').div.with_class('username').span.with_class('name').xpath
         try:
-            self.them = tree.xpath(xpath_string)[0].text
+            them = tree.xpath(xpath_string)[0].text
         except IndexError:
             title_element = XPathBuilder().title.apply_(tree)[0]
             them = title_element.text.split()[-1]
@@ -126,6 +126,15 @@ class MessageThread(object):
     def refreshed_messages(self):
         if 'messages' in self.__dict__['messages']: del self.__dict__['messages']
         return self.messages
+
+    @property
+    def message_count(self):
+        return len(self.messages)
+
+    @property
+    def initiator(self):
+        if self.messages:
+            return self.messages[0].sender
 
 
 class Question(object):

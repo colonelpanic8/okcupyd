@@ -43,6 +43,9 @@ class XPathBuilder(object):
     def apply_(self, tree):
         return tree.xpath(self.xpath)
 
+    def get_text_(self, tree):
+        return self.apply_(tree)[0].text
+
 
 class XPathNode(object):
 

@@ -8,6 +8,7 @@ from . import util
 from .objects import MessageThread, Profile, Question, Session
 from .search import search
 from .settings import USERNAME, PASSWORD
+from .xpath import XPathBuilder
 
 
 class MailboxFetcher(object):
@@ -27,17 +28,21 @@ class MailboxFetcher(object):
 
     def process_message_element(self, message_element):
         thread_id = message_element.attrib['data-threadid']
-        correspondent = message_element.xpath(".//span[@class = 'subject']")[0].text_content()
+
+        correspondent = XPathBuilder().span.with_class('subject').get_text_(message_element)
+
         read = not 'unreadMessage' in message_element.attrib['class']
-        timestamp_span = util.find_elements_with_classes(message_element, 'span', ['timestamp'])
+
+        timestamp_span = XPathBuilder().span.with_class('timestamp').apply_(message_element)
         date_updated_text = timestamp_span[0][0].text
         date_updated = helpers.parse_date_updated(date_updated_text)
+
         return MessageThread(self._session, thread_id, correspondent, read, date_updated)
 
-    def get_messages(self, start_at=1, get_at_least=None):
-        start_at_iterator = (range(start_at, get_at_least + 1, self.step)
+    def get_threads(self, start_at=0, get_at_least=None):
+        start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
                                 if get_at_least
-                                else itertools.count(start_at, self.step))
+                                else itertools.count(start_at + 1, self.step))
         for start_at in start_at_iterator:
             messages_response = self._session.get('https://www.okcupid.com/messages',
                                                    params=self._form_data(start_at))
@@ -70,9 +75,6 @@ class User(object):
 
     def __init__(self, username=USERNAME, password=PASSWORD):
         self.username = username
-        self.inbox = []
-        self.outbox = []
-        self.drafts = []
         self.questions = []
         self.visitors = []
         self._session = Session.login(username, password)
@@ -81,7 +83,18 @@ class User(object):
         self.age, self.gender, self.orientation, self.status, self.location = helpers.get_additional_info(profile_tree)
         self.authcode = re.search('var AUTHCODE = "(.*?)";', profile_response.text).group(1)
 
-        self.inbox = MailboxFetcher(self._session, 1)
+
+    @util.cached_property
+    def inbox(self):
+        return list(MailboxFetcher(self._session, 1).get_threads())
+
+    @util.cached_property
+    def outbox(self):
+        return list(MailboxFetcher(self._session, 2).get_threads())
+
+    @util.cached_property
+    def drafts(self):
+        return list(MailboxFetcher(self._session, 4).get_threads())
 
     def update_essay(self, essay_id, essay_body):
         form_data = {
@@ -91,58 +104,6 @@ class User(object):
             "okc_api": 1
         }
         self._session.post('https://www.okcupid.com/profileedit2', data=form_data)
-
-    def update_mailbox(self, box='inbox', pages=10):
-        """
-        Update either `self.inbox`, `self.outbox`, or `self.drafts` with
-        MessageThread objects that represent a conversation with another
-        user.
-        Parameters
-        ----------
-        box : str, optional
-            Specifies which box to update. Valid choices are inbox, outbox,
-            drafts and all. Update the inbox by default.
-        """
-        for i in ('inbox', 'outbox', 'drafts'):
-            if box.lower() != 'all':
-                i = box.lower()
-            if i.lower() == 'inbox':
-                folder_number = 1
-                update_box = self.inbox
-                direction = 'from'
-            elif i.lower() == 'outbox':
-                folder_number = 2
-                update_box = self.outbox
-                direction = 'to'
-            elif i.lower() == 'drafts':
-                # What happened to folder 3? Who knows.
-                folder_number = 4
-                update_box = self.drafts
-                direction = 'to'
-            for page in range(pages):
-                inbox_data = {
-                    'low': 30 * page + 1,
-                    'folder': folder_number,
-                }
-                get_messages = self._session.post('http://www.okcupid.com/messages', data=inbox_data)
-                inbox_tree = html.fromstring(get_messages.content.decode('utf8'))
-                messages_container = inbox_tree.xpath("//ul[@id = 'messages']")[0]
-                for li in messages_container.iterchildren('li'):
-                   threadid = li.attrib['data-threadid'] + str(page)
-                   if threadid not in [thread.threadid for thread in update_box]:
-                        sender = li.xpath(".//span[@class = 'subject']")[0].text_content()
-                        if len(sender) > 3 and sender[:3] == 'To ':
-                            sender = sender[3:]
-                        if 'unreadMessage' in li.attrib['class']:
-                            unread = True
-                        else:
-                            unread = False
-                        update_box.append(MessageThread(sender, threadid, unread, self._session, direction))
-                next_disabled = inbox_tree.xpath("//li[@class = 'next disabled']")
-                if len(next_disabled):
-                    break
-            if box.lower() != 'all':
-                break
 
     def message(self, username, message_text):
         """

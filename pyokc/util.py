@@ -94,7 +94,7 @@ def find_elements_with_classes(tree, elem_type, elem_classes, is_or=False):
     return tree.xpath(find_elements_with_classes_xpath(elem_type, elem_classes, is_or=is_or))
 
 
-class LazyReusableContainer(object):
+class LazyList(object):
 
     def __init__(self, fetcher):
         self._fetcher = fetcher
@@ -107,3 +107,11 @@ class LazyReusableContainer(object):
             if item >= len(self._fetched):
                 self._fetcher.fetch(item, self._fetched)
         return self._fetched[item]
+
+    def __iter__(self):
+        for item in self._fetched:
+            yield item
+
+        for item in self._fetcher.fetch(start_at=len(self._fetched)):
+            self._fetched.append(item)
+            yield item
