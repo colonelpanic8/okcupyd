@@ -136,6 +136,14 @@ class MessageThread(object):
         if self.messages:
             return self.messages[0].sender
 
+    @property
+    def has_messages(self):
+        return bool(self.messages)
+
+    @property
+    def got_response(self):
+        return any(message.sender != self.initiator for message in self.messages)
+
 
 class Question(object):
 
