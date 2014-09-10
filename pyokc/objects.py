@@ -1,10 +1,13 @@
+from collections import namedtuple
 from time import clock
 
 import requests
 from lxml import html
 
 from .settings import DELAY, USERNAME, PASSWORD
+from .xpath import XPathBuilder
 from . import helpers
+from . import util
 
 
 class Session(requests.Session):
@@ -36,36 +39,93 @@ class Session(requests.Session):
         return response
 
 
-class MessageThread(object):
-    """
-    Represent a sequence of messages between the main user and
-    someone else.
-    Parameters
-    ----------
-    self.sender : str
-        The username of the other person with whom you are
-        communicating.
-    self.threadid : str
-        A unique threadid assigned by OKCupid.
-    self.unread : bool
-        True if you have never read this message. False otherwise.
-    self.messages : list of str
-        List of messages within this thread. Initially empty. Can be
-        updated by calling the read() method of the User class.
-    """
-    def __init__(self, sender, threadid, unread, session, direction):
-        self.sender = sender
-        self.threadid = threadid
-        self.unread = unread
-        self.messages = []
-        self._direction = direction
+class MessageRetriever(object):
 
-    def __repr__(self):
-        if self.unread:
-            unread_string = 'Unread'
-        else:
-            unread_string = 'Read'
-        return '<{0} message {1} {2}>'.format(unread_string, self._direction, self.sender)
+    def __init__(self, session, thread_id):
+        self._session = session
+        self.thread_id = thread_id
+
+    @property
+    def params(self):
+        return {
+            'readmsg': 'true',
+            'threadid': self.thread_id,
+            'folder': 1
+        }
+
+    def thread_tree(self):
+        messages_response = self._session.get('https://www.okcupid.com/messages',
+                                              params=self.params)
+        return html.fromstring(messages_response.content.decode('utf8'))
+
+    def get_usernames(self, tree):
+        xpath_string = XPathBuilder().div.with_class('profile_info').div.with_class('username').span.with_class('name').xpath
+        try:
+            self.them = tree.xpath(xpath_string)[0].text
+        except IndexError:
+            title_element = XPathBuilder().title.apply_(tree)[0]
+            them = title_element.text.split()[-1]
+
+        xpath_string = XPathBuilder().div(id='avatarborder').span(id='user_thumb').img.xpath
+        image_hover = tree.xpath(xpath_string)[0].attrib['alt']
+        me = image_hover.split()[-1]
+        return me, them
+
+    def get_message_elements(self, thread_tree):
+        return util.find_elements_with_classes(thread_tree, 'li',
+                                               ['to_me', 'from_me'], is_or=True)
+
+    def get_messages(self):
+        tree = self.thread_tree()
+        me, them = self.get_usernames(tree)
+        for message_element in self.get_message_elements(tree):
+            if 'from_me' in message_element.attrib['class']:
+                sender, recipient = me, them
+            else:
+                sender, recipient = them, me
+            message_id = message_element.attrib['id'].split('_')[-1]
+            message = util.find_elements_with_classes(message_element,
+                                                  'div', ['message_body'])
+            if message_id == 'compose':
+                continue
+            content = None
+            if message:
+                message = message[0]
+                content = message.text_content().replace(' \n \n', '\n').strip()
+
+            yield Message(message_id, sender, recipient, content)
+
+
+Message = namedtuple('Message', ('message_id', 'sender', 'recipient', 'content'))
+
+
+class MessageThread(object):
+
+    def __init__(self, session, thread_id, correspondent, read, date):
+        self._session = session
+        self._message_retriever = MessageRetriever(session, thread_id)
+        self.correspondent = correspondent
+        self.thread_id = thread_id
+        self.read = read
+        self.date = date
+
+    def __hash__(self):
+        return hash(self.thread_id)
+
+    def __eq__(self, other):
+        return self.thread_id == other.thread_id
+
+    @util.cached_property
+    def messages(self):
+        return self.get_messages()
+
+    def get_messages(self):
+        return list(self._message_retriever.get_messages())
+
+    @property
+    def refreshed_messages(self):
+        if 'messages' in self.__dict__['messages']: del self.__dict__['messages']
+        return self.messages
 
 
 class Question(object):

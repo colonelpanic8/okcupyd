@@ -1,10 +1,53 @@
+import itertools
 import re
+
 from lxml import html
 
 from . import helpers
+from . import util
 from .objects import MessageThread, Profile, Question, Session
 from .search import search
 from .settings import USERNAME, PASSWORD
+
+
+class MailboxFetcher(object):
+
+    step = 30
+
+    def __init__(self, session, mailbox_number):
+        self._session = session
+        self.mailbox_number = mailbox_number
+
+    def _form_data(self, start_at):
+        return {
+            'low': start_at,
+            'folder': self.mailbox_number,
+            'infiniscroll': 1
+        }
+
+    def process_message_element(self, message_element):
+        thread_id = message_element.attrib['data-threadid']
+        correspondent = message_element.xpath(".//span[@class = 'subject']")[0].text_content()
+        read = not 'unreadMessage' in message_element.attrib['class']
+        timestamp_span = util.find_elements_with_classes(message_element, 'span', ['timestamp'])
+        date_updated_text = timestamp_span[0][0].text
+        date_updated = helpers.parse_date_updated(date_updated_text)
+        return MessageThread(self._session, thread_id, correspondent, read, date_updated)
+
+    def get_messages(self, start_at=1, get_at_least=None):
+        start_at_iterator = (range(start_at, get_at_least + 1, self.step)
+                                if get_at_least
+                                else itertools.count(start_at, self.step))
+        for start_at in start_at_iterator:
+            messages_response = self._session.get('https://www.okcupid.com/messages',
+                                                   params=self._form_data(start_at))
+            messages_text = messages_response.content.decode('utf8').strip()
+            if not messages_text: break
+            inbox_tree = html.fromstring(messages_text)
+            message_elements = util.find_elements_with_classes(inbox_tree, 'li',
+                                                             ['thread', 'message'])
+            for message_element in message_elements:
+                yield self.process_message_element(message_element)
 
 
 class User(object):
@@ -24,6 +67,7 @@ class User(object):
         If you are unable to login with the username and password
         provided.
     """
+
     def __init__(self, username=USERNAME, password=PASSWORD):
         self.username = username
         self.inbox = []
@@ -35,6 +79,18 @@ class User(object):
         profile_response = self._session.get('https://www.okcupid.com/profile')
         profile_tree = html.fromstring(profile_response.content.decode('utf8'))
         self.age, self.gender, self.orientation, self.status, self.location = helpers.get_additional_info(profile_tree)
+        self.authcode = re.search('var AUTHCODE = "(.*?)";', profile_response.text).group(1)
+
+        self.inbox = MailboxFetcher(self._session, 1)
+
+    def update_essay(self, essay_id, essay_body):
+        form_data = {
+            "essay_id": essay_id,
+            "essay_body": essay_body,
+            "authcode": self.authcode,
+            "okc_api": 1
+        }
+        self._session.post('https://www.okcupid.com/profileedit2', data=form_data)
 
     def update_mailbox(self, box='inbox', pages=10):
         """
@@ -65,15 +121,15 @@ class User(object):
                 direction = 'to'
             for page in range(pages):
                 inbox_data = {
-                    'low': 30*page + 1,
+                    'low': 30 * page + 1,
                     'folder': folder_number,
-                    }
+                }
                 get_messages = self._session.post('http://www.okcupid.com/messages', data=inbox_data)
                 inbox_tree = html.fromstring(get_messages.content.decode('utf8'))
                 messages_container = inbox_tree.xpath("//ul[@id = 'messages']")[0]
                 for li in messages_container.iterchildren('li'):
-                    threadid = li.attrib['data-threadid'] + str(page)
-                    if threadid not in [thread.threadid for thread in update_box]:
+                   threadid = li.attrib['data-threadid'] + str(page)
+                   if threadid not in [thread.threadid for thread in update_box]:
                         sender = li.xpath(".//span[@class = 'subject']")[0].text_content()
                         if len(sender) > 3 and sender[:3] == 'To ':
                             sender = sender[3:]
@@ -116,7 +172,7 @@ class User(object):
             'threadid': threadid,
             'authcode': authcode,
             'reply': '1',
-            }
+        }
         return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
 
     def search(self, **kwargs):
@@ -183,15 +239,14 @@ class User(object):
         can take a while due to OKCupid displaying only ten questions
         on each page, potentially requiring a large number of requests.
         """
-        keep_going = True
         question_number = 0
-        while keep_going:
+        while True:
             questions_data = {
                 'low': 1 + question_number,
             }
             get_questions = self._session.post(
-            'http://www.okcupid.com/profile/{0}/questions'.format(self.username),
-            data=questions_data)
+                'http://www.okcupid.com/profile/{0}/questions'.format(self.username),
+                data=questions_data)
             tree = html.fromstring(get_questions.content.decode('utf8'))
             next_wrapper = tree.xpath("//li[@class = 'next']")
             # Get a list of each question div wrapper, ignore the first because it's an unanswered question
@@ -209,7 +264,7 @@ class User(object):
                     explanation = explanation_p[0].text
                 self.questions.append(Question(text, user_answer, explanation))
             if not len(next_wrapper):
-                keep_going = False
+                break
 
     def read(self, thread):
         """
@@ -266,7 +321,7 @@ class User(object):
             'target_objectid': '0',
             'vote_type': 'personality',
             'score': rating,
-            }
+        }
         self._session.post('http://www.okcupid.com/vote_handler',
                            data=parameters)
 
@@ -309,15 +364,12 @@ class User(object):
         return '<User {0}>'.format(self.username)
 
 
-
-
-
 class AttractivenessFinder(object):
 
     def __init__(self):
         self._session = Session.login()
 
-    def find_attractiveness(self, username, accuracy=10, _lower=0, _higher=10000):
+    def find_attractiveness(self, username, accuracy=250, _lower=0, _higher=10000):
         average = (_higher + _lower)//2
         print('searching between {0} and {1}'.format(average, _higher))
         if _higher - _lower < accuracy:

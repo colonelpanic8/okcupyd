@@ -1,6 +1,7 @@
+from datetime import datetime
 from json import loads
-from re import search
 from lxml import html
+from re import search
 
 from .errors import AuthenticationError, ProfileNotFoundError
 
@@ -25,6 +26,7 @@ def login(session, credentials, headers):
     login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers)
     if login_response.url == 'https://www.okcupid.com/login':
         raise AuthenticationError('Could not log in with the credentials provided')
+
 
 def get_additional_info(tree):
     """
@@ -54,6 +56,18 @@ def get_authcode(inbox_tree):
             authcode = re_search.group(1)
     return authcode
 
+
+def parse_date_updated(date_updated_text):
+    if '/' in date_updated_text:
+        return datetime.strptime(date_updated_text, '%m/%d/%y')
+
+    if date_updated_text[-2] == ' ':
+        month, day = date_updated_text.split()
+        date_updated_text = '{0} 0{1}'.format(month, day)
+
+    return datetime.strptime(date_updated_text, '%b %d').replace(year=datetime.now().year).date()
+
+
 def get_message_string(li_element, sender):
     """
     Parse <li> element to get a string containing a message from
@@ -69,6 +83,7 @@ def get_message_string(li_element, sender):
     div = li_element.xpath(".//div[@class = 'message_body']")[0]
     message_string += div.text_content().replace(' \n \n', '\n').strip()
     return message_string
+
 
 def get_locid(session, location):
     """

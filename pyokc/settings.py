@@ -1,6 +1,6 @@
 import os
 
 
-USERNAME = os.environ['OKC_USERNAME']
-PASSWORD = os.environ['OKC_PASSWORD']
-DELAY = 1
+USERNAME = os.environ.get('OKC_USERNAME')
+PASSWORD = os.environ.get('OKC_PASSWORD')
+DELAY = 0

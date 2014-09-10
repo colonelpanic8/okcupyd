@@ -1,4 +1,4 @@
-class XPathSpec(object):
+class XPathBuilder(object):
 
     def __init__(self, nodes=(), relative=True, direct_child=False):
         self.nodes = tuple(nodes)
@@ -37,25 +37,31 @@ class XPathSpec(object):
         return type(self)(self.nodes[:-1] + (updated_final_node,),
                           relative=self.relative, direct_child=self.direct_child)
 
+    def with_class(self, class_string):
+        return self.with_classes([class_string])
+
+    def apply_(self, tree):
+        return tree.xpath(self.xpath)
+
 
 class XPathNode(object):
 
     @staticmethod
-    def attribute_contains_predicate(attribute, contained_string):
+    def attribute_contains(attribute, contained_string):
         return "contains(concat(' ',normalize-space(@{0}),' '),' {1} ')".format(
             attribute, contained_string
         )
 
     @staticmethod
-    def attribute_equals_predicate(attribute, value):
+    def attribute_equal(attribute, value):
         return "@{0} = '{1}'".format(attribute, value)
 
-    def __init__(self, element='*', attributes=None, contains_attributes=None,
-                 predicates=None, direct_child=False, use_or=False):
+    def __init__(self, element='*', attributes=None, predicates=None,
+                 direct_child=False, use_or=False):
         self.element = element
         self.predicates = tuple(predicates) if predicates else ()
         if attributes:
-            self.predicates += tuple([self.attribute_equals_predicate(attribute, value)
+            self.predicates += tuple([self.attribute_equal(attribute, value)
                                       for attribute, value in attributes.items()])
         self.direct_child = direct_child
         self.use_or = use_or
@@ -82,17 +88,18 @@ class XPathNode(object):
             return ''
 
     def __call__(self, element=None, predicates=(), attributes=None,
-                 contains_attributes=None, direct_child=None, use_or=False):
+                 direct_child=None, use_or=False):
         direct_child = self.direct_child if direct_child is None else direct_child
         element = self.element if element is None else element
-        new_predicates = self.predicates + predicates
-        return type(self)(element, attributes, contains_attributes,
-                          new_predicates, direct_child, use_or)
+        new_predicates = self.predicates + tuple(predicates)
+        return type(self)(element, attributes, new_predicates,
+                          direct_child, use_or)
 
     def add_contains_predicates(self, kv_pairs):
-        return self(predicates=[self.attribute_contains_predicate(attribute, contains_string)
-                                for attribute, contains_string in kv_pairs])
+        predicates = [self.attribute_contains(attribute, contains_string)
+                      for attribute, contains_string in kv_pairs]
+        return self(predicates=predicates)
 
     def with_classes(self, classes):
-        self.add_contains_predicates(('class', class_string)
+        return self.add_contains_predicates(('class', class_string)
                                      for class_string in classes)
