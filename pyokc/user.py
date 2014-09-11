@@ -82,19 +82,16 @@ class User(object):
         if isinstance(username, Profile):
             username == username.name
         for thread in self.inbox[::-1]: # reverse, find most recent messages first
-            if thread.sender.lower() == username.lower():
+            if thread.correspondent.lower() == username.lower():
                 threadid = thread.threadid
                 break
-        get_messages = self._session.get('http://www.okcupid.com/messages')
-        inbox_tree = html.fromstring(get_messages.content.decode('utf8'))
-        authcode = helpers.get_authcode(inbox_tree)
         msg_data = {
             'ajax': '1',
             'sendmsg': '1',
             'r1': username,
             'body': message_text,
             'threadid': threadid,
-            'authcode': authcode,
+            'authcode': self.authcode,
             'reply': '1',
         }
         return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
