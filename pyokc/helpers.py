@@ -4,6 +4,7 @@ from lxml import html
 from re import search
 
 from .errors import AuthenticationError, ProfileNotFoundError
+from .xpath import XPathBuilder
 
 
 CHAR_REPLACE = {
@@ -18,6 +19,7 @@ CHAR_REPLACE = {
     "🌲": " ",
     }
 
+
 def login(session, credentials, headers):
     """
     Make a POST request to OKCupid using the login credentials provided
@@ -26,6 +28,12 @@ def login(session, credentials, headers):
     login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers)
     if login_response.url == 'https://www.okcupid.com/login':
         raise AuthenticationError('Could not log in with the credentials provided')
+
+
+def get_my_username(tree):
+    xpath_string = XPathBuilder().div(id='avatarborder').span(id='user_thumb').img.xpath
+    image_hover = tree.xpath(xpath_string)[0].attrib['alt']
+    return image_hover.split()[-1]
 
 
 def get_additional_info(tree):

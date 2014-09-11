@@ -1,13 +1,14 @@
 from collections import namedtuple
 from time import clock
+import itertools
 
-import requests
 from lxml import html
+import requests
 
-from .settings import DELAY, USERNAME, PASSWORD
-from .xpath import XPathBuilder
 from . import helpers
 from . import util
+from .settings import DELAY, USERNAME, PASSWORD
+from .xpath import XPathBuilder
 
 
 class Session(requests.Session):
@@ -39,6 +40,50 @@ class Session(requests.Session):
         return response
 
 
+class MailboxFetcher(object):
+
+    step = 30
+
+    def __init__(self, session, mailbox_number):
+        self._session = session
+        self.mailbox_number = mailbox_number
+
+    def _form_data(self, start_at):
+        return {
+            'low': start_at,
+            'folder': self.mailbox_number,
+            'infiniscroll': 1
+        }
+
+    def process_message_element(self, message_element):
+        thread_id = message_element.attrib['data-threadid']
+
+        correspondent = XPathBuilder().span.with_class('subject').get_text_(message_element)
+
+        read = not 'unreadMessage' in message_element.attrib['class']
+
+        timestamp_span = XPathBuilder().span.with_class('timestamp').apply_(message_element)
+        date_updated_text = timestamp_span[0][0].text
+        date_updated = helpers.parse_date_updated(date_updated_text)
+
+        return MessageThread(thread_id, correspondent, read, date_updated, session=self._session)
+
+    def get_threads(self, start_at=0, get_at_least=None):
+        start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
+                                if get_at_least
+                                else itertools.count(start_at + 1, self.step))
+        for start_at in start_at_iterator:
+            messages_response = self._session.get('https://www.okcupid.com/messages',
+                                                   params=self._form_data(start_at))
+            messages_text = messages_response.content.decode('utf8').strip()
+            if not messages_text: break
+            inbox_tree = html.fromstring(messages_text)
+            message_elements = util.find_elements_with_classes(inbox_tree, 'li',
+                                                               ['thread', 'message'])
+            for message_element in message_elements:
+                yield self.process_message_element(message_element)
+
+
 class MessageRetriever(object):
 
     def __init__(self, session, thread_id):
@@ -66,10 +111,7 @@ class MessageRetriever(object):
             title_element = XPathBuilder().title.apply_(tree)[0]
             them = title_element.text.split()[-1]
 
-        xpath_string = XPathBuilder().div(id='avatarborder').span(id='user_thumb').img.xpath
-        image_hover = tree.xpath(xpath_string)[0].attrib['alt']
-        me = image_hover.split()[-1]
-        return me, them
+        return helpers.get_my_username(tree), them
 
     def get_message_elements(self, thread_tree):
         return util.find_elements_with_classes(thread_tree, 'li',
@@ -96,12 +138,21 @@ class MessageRetriever(object):
             yield Message(message_id, sender, recipient, content)
 
 
-Message = namedtuple('Message', ('message_id', 'sender', 'recipient', 'content'))
+Message = namedtuple('Message', ('id', 'sender', 'recipient', 'content'))
 
 
 class MessageThread(object):
 
-    def __init__(self, session, thread_id, correspondent, read, date):
+    @classmethod
+    def restore(cls, thread_id, correspondent, read, date, session=None,
+                messages=None):
+
+        instance = cls(thread_id, correspondent, read, date, session)
+        if messages is not None:
+            instance.__dict__['messages'] = messages
+        return instance
+
+    def __init__(self, thread_id, correspondent, read, date, session=None):
         self._session = session
         self._message_retriever = MessageRetriever(session, thread_id)
         self.correspondent = correspondent
@@ -143,6 +194,25 @@ class MessageThread(object):
     @property
     def got_response(self):
         return any(message.sender != self.initiator for message in self.messages)
+
+    @property
+    def as_dict(self):
+        return {
+            'thread_id': self.thread_id,
+            'correspondent': self.correspondent,
+            'read': self.read,
+            'date': self.date.strftime('%Y-%m-%d'),
+            'messages': list(map(self.message_as_dict, self.messages))
+        }
+
+    @staticmethod
+    def message_as_dict(message):
+        return {
+            'id': message.id,
+            'sender': message.sender,
+            'recipient': message.recipient,
+            'content': message.content
+        }
 
 
 class Question(object):

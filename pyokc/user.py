@@ -1,58 +1,12 @@
-import itertools
 import re
 
 from lxml import html
 
 from . import helpers
 from . import util
-from .objects import MessageThread, Profile, Question, Session
+from .objects import MailboxFetcher, Profile, Question, Session
 from .search import search
-from .settings import USERNAME, PASSWORD
 from .xpath import XPathBuilder
-
-
-class MailboxFetcher(object):
-
-    step = 30
-
-    def __init__(self, session, mailbox_number):
-        self._session = session
-        self.mailbox_number = mailbox_number
-
-    def _form_data(self, start_at):
-        return {
-            'low': start_at,
-            'folder': self.mailbox_number,
-            'infiniscroll': 1
-        }
-
-    def process_message_element(self, message_element):
-        thread_id = message_element.attrib['data-threadid']
-
-        correspondent = XPathBuilder().span.with_class('subject').get_text_(message_element)
-
-        read = not 'unreadMessage' in message_element.attrib['class']
-
-        timestamp_span = XPathBuilder().span.with_class('timestamp').apply_(message_element)
-        date_updated_text = timestamp_span[0][0].text
-        date_updated = helpers.parse_date_updated(date_updated_text)
-
-        return MessageThread(self._session, thread_id, correspondent, read, date_updated)
-
-    def get_threads(self, start_at=0, get_at_least=None):
-        start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
-                                if get_at_least
-                                else itertools.count(start_at + 1, self.step))
-        for start_at in start_at_iterator:
-            messages_response = self._session.get('https://www.okcupid.com/messages',
-                                                   params=self._form_data(start_at))
-            messages_text = messages_response.content.decode('utf8').strip()
-            if not messages_text: break
-            inbox_tree = html.fromstring(messages_text)
-            message_elements = util.find_elements_with_classes(inbox_tree, 'li',
-                                                             ['thread', 'message'])
-            for message_element in message_elements:
-                yield self.process_message_element(message_element)
 
 
 class User(object):
@@ -73,16 +27,20 @@ class User(object):
         provided.
     """
 
-    def __init__(self, username=USERNAME, password=PASSWORD):
-        self.username = username
-        self.questions = []
-        self.visitors = []
-        self._session = Session.login(username, password)
+    @classmethod
+    def with_credentials(cls, username, password):
+        return cls(Session.login(username, password))
+
+    def __init__(self, session=None):
+        self._session = session or Session.login()
         profile_response = self._session.get('https://www.okcupid.com/profile')
-        profile_tree = html.fromstring(profile_response.content.decode('utf8'))
-        self.age, self.gender, self.orientation, self.status, self.location = helpers.get_additional_info(profile_tree)
+        self._profile_tree = html.fromstring(profile_response.content.decode('utf8'))
+        self.age, self.gender, self.orientation, self.status, self.location = helpers.get_additional_info(self._profile_tree)
         self.authcode = re.search('var AUTHCODE = "(.*?)";', profile_response.text).group(1)
 
+        self.username = helpers.get_my_username(self._profile_tree)
+        self.questions = []
+        self.visitors = []
 
     @util.cached_property
     def inbox(self):
@@ -211,7 +169,7 @@ class User(object):
             tree = html.fromstring(get_questions.content.decode('utf8'))
             next_wrapper = tree.xpath("//li[@class = 'next']")
             # Get a list of each question div wrapper, ignore the first because it's an unanswered question
-            question_wrappers = tree.xpath("//div[contains(@id, 'question_')]")[1:]
+            question_wrappers = XPathBuilder().div.attribute_contains('id', 'question_').apply_(tree)[1:]
             for div in question_wrappers:
                 if not div.attrib['id'][9:].isdigit():
                     question_wrappers.remove(div)
@@ -323,28 +281,3 @@ class User(object):
 
     def __str__(self):
         return '<User {0}>'.format(self.username)
-
-
-class AttractivenessFinder(object):
-
-    def __init__(self):
-        self._session = Session.login()
-
-    def find_attractiveness(self, username, accuracy=250, _lower=0, _higher=10000):
-        average = (_higher + _lower)//2
-        print('searching between {0} and {1}'.format(average, _higher))
-        if _higher - _lower < accuracy:
-            return average
-
-        results = search(self._session,
-                         looking_for='everybody',
-                         keywords=username,
-                         attractiveness_min=average,
-                         attractivenvess_max=_higher)
-
-        if results:
-            print('found')
-            return self.find_attractiveness(username, accuracy, average, _higher)
-        else:
-            print('not found')
-            return self.find_attractiveness(username, accuracy, _lower, average)

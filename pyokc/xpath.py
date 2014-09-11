@@ -32,13 +32,12 @@ class XPathBuilder(object):
         return type(self)(self.nodes[:-1] + (updated_final_node,),
                           relative=self.relative, direct_child=self.direct_child)
 
-    def with_classes(self, classes):
+    def with_classes(self, *classes):
         updated_final_node = self.nodes[-1].with_classes(classes)
         return type(self)(self.nodes[:-1] + (updated_final_node,),
                           relative=self.relative, direct_child=self.direct_child)
 
-    def with_class(self, class_string):
-        return self.with_classes([class_string])
+    with_class = with_classes
 
     def apply_(self, tree):
         return tree.xpath(self.xpath)

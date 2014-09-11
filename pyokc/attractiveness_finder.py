@@ -4,10 +4,10 @@ from .search import search
 
 class AttractivenessFinder(object):
 
-    def __init__(self):
-        self._session = Session.login()
+    def __init__(self, session=None):
+        self._session = session or Session.login()
 
-    def find_attractiveness(self, username, accuracy=200, _lower=0, _higher=10000):
+    def find_attractiveness(self, username, accuracy=900, _lower=0, _higher=10000):
         average = (_higher + _lower)//2
         if _higher - _lower < accuracy:
             return average
@@ -22,3 +22,53 @@ class AttractivenessFinder(object):
             return self.find_attractiveness(username, accuracy, average, _higher)
         else:
             return self.find_attractiveness(username, accuracy, _lower, average)
+
+    __call__ = find_attractiveness
+
+
+class AttractivenessFinderDecorator(object):
+
+    def __init__(self, attractiveness_finder=None):
+        self._finder = attractiveness_finder or AttractivenessFinder()
+
+    def __getattr__(self, attr):
+        return getattr(self._finder, attr)
+
+
+class CheckForExistenceAttractivenessFinder(AttractivenessFinderDecorator):
+
+    def __init__(self, attractiveness_finder=None):
+        self._finder = attractiveness_finder or AttractivenessFinder()
+
+    def _check_for_existence(self, username):
+        return bool(search(self._session,
+                           looking_for='everybody',
+                           keywords=username))
+
+
+    def find_attractiveness(self, username, *args, **kwargs):
+        if self._check_for_existence(username):
+            return self._finder(username, *args, **kwargs)
+
+
+class RoundedAttractivenessFinder(AttractivenessFinderDecorator):
+
+    def __init__(self, attractiveness_finder=None):
+        self._finder = attractiveness_finder or AttractivenessFinder()
+
+    def find_attractiveness(self, *args, **kwargs):
+        unrounded = self._finder.find_attractiveness(*args, **kwargs)
+        if unrounded is not None:
+            return int(round(unrounded/1000, 0)*1000)
+
+
+class CachedAttractivenessFinder(AttractivenessFinderDecorator):
+
+    def __init__(self, attractiveness_finder=None):
+        self._finder = attractiveness_finder or AttractivenessFinder()
+        self._cache = {}
+
+    def find_attractiveness(self, username, **kwargs):
+        if username not in self._cache:
+            self._cache[username] = self._finder.find_attractiveness(username, **kwargs)
+        return self._cache[username]
