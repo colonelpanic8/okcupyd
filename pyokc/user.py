@@ -55,6 +55,10 @@ class User(object):
     def drafts(self):
         return list(MailboxFetcher(self._session, 4).get_threads())
 
+    def force_refresh(self, inbox_name='inbox'):
+        del self.__dict__[inbox_name]
+        return getattr(self, inbox_name)
+
     def update_essay(self, essay_id, essay_body):
         form_data = {
             "essay_id": essay_id,
