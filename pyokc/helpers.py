@@ -52,17 +52,9 @@ def get_additional_info(tree):
         gender = 'Female'
     return age, gender, orientation, status, location
 
-def get_authcode(inbox_tree):
-    """
-    Get the current authcode necessary to send a message to another
-    profile.
-    """
-    authcode = ''
-    for source in inbox_tree.xpath("//iframe[@id = 'ad_frame_sky_r']/@src"):
-        re_search = search('authid=([a-z%0-9]+)', source)
-        if re_search is not None:
-            authcode = re_search.group(1)
-    return authcode
+
+def get_authcode(text_response):
+    search('var AUTHCODE = "(.*?)";', text_response).group(1)
 
 
 def parse_date_updated(date_updated_text):

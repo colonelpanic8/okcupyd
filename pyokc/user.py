@@ -5,7 +5,8 @@ from lxml import html
 from . import helpers
 from . import util
 from .messaging import MailboxFetcher
-from .objects import Profile, Question, Session
+from .objects import Question, Session
+from .profile import Profile
 from .search import search
 from .xpath import XPathBuilder
 
@@ -37,7 +38,7 @@ class User(object):
         profile_response = self._session.get('https://www.okcupid.com/profile')
         self._profile_tree = html.fromstring(profile_response.content.decode('utf8'))
         self.age, self.gender, self.orientation, self.status, self.location = helpers.get_additional_info(self._profile_tree)
-        self.authcode = re.search('var AUTHCODE = "(.*?)";', profile_response.text).group(1)
+        self.authcode = helpers.get_authcode(profile_response.content.decode('utf8'))
 
         self.username = helpers.get_my_username(self._profile_tree)
         self.questions = []
@@ -68,7 +69,7 @@ class User(object):
         }
         self._session.post('https://www.okcupid.com/profileedit2', data=form_data)
 
-    def message(self, username, message_text):
+    def message(self, user, message_text):
         """
         Send a message to the username specified.
         Parameters
@@ -79,23 +80,14 @@ class User(object):
             Text body of the message.
         """
         threadid = ''
-        if isinstance(username, Profile):
-            username = username.name
+        if isinstance(user, str):
+            user = Profile(self._session, user)
         for thread in self.inbox[::-1]: # reverse, find most recent messages first
-            if thread.correspondent.lower() == username.lower():
-                threadid = thread.threadid
+            if thread.correspondent.lower() == user.username.lower():
+                threadid = thread.thread_id
                 break
-        msg_data = {
-            'ajax': '1',
-            'sendmsg': '1',
-            'r1': username,
-            'body': message_text,
-            'threadid': 0,
-            'authcode': self.authcode,
-            'reply': '0',
-            'from_profile': '1'
-        }
-        return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
+
+        user.message(message_text, threadid)
 
     def search(self, **kwargs):
         kwargs.setdefault('gender', self.gender[0])

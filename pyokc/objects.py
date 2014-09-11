@@ -183,6 +183,3 @@ class Profile(object):
         pics_request = self._session.get('http://www.okcupid.com/profile/{0}/photos?cf=profile'.format(self.name))
         pics_tree = html.fromstring(pics_request.content.decode('utf8'))
         self.pics = pics_tree.xpath("//div[@id = 'album_0']//img/@src")
-
-    def __repr__(self):
-        return '<Profile of {0}>'.format(self.name)

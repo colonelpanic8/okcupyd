@@ -6,6 +6,7 @@ from lxml import html
 
 from . import helpers
 from . import util
+from .profile import Profile
 from .xpath import XPathBuilder
 
 

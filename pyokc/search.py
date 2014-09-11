@@ -9,6 +9,7 @@ from . import helpers
 from . import magicnumbers
 from . import objects
 from . import util
+from .profile import Profile
 
 
 log = logging.getLogger()
@@ -310,12 +311,12 @@ def search(session=None, count=9, **kwargs):
     profiles = []
     for div in match_card_elems:
         match_card_extractor = MatchCardExtractor(div)
-        profiles.append(objects.Profile(session, match_card_extractor.username,
-                                        match_card_extractor.age,
-                                        match_card_extractor.location,
-                                        match_card_extractor.match_percentage,
-                                        enemy=match_card_extractor.enemy_percentage,
-                                        id=match_card_extractor.id,
-                                        rating=match_card_extractor.rating,
-                                        contacted=match_card_extractor.contacted))
+        profiles.append(Profile(session, match_card_extractor.username,
+                                match_card_extractor.age,
+                                match_card_extractor.location,
+                                match_card_extractor.match_percentage,
+                                enemy=match_card_extractor.enemy_percentage,
+                                id=match_card_extractor.id,
+                                rating=match_card_extractor.rating,
+                                contacted=match_card_extractor.contacted))
     return profiles
