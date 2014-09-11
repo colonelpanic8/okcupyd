@@ -27,7 +27,7 @@ class Statistics(object):
         return self.with_filters(lambda mt: mt.has_messages)
 
     @util.cached_property
-    def with_responses(self):
+    def has_response(self):
         return self.with_filters(lambda mt: mt.got_response)
 
     @util.cached_property
@@ -86,7 +86,7 @@ class Statistics(object):
 
     @property
     def average_first_message_length(self):
-        return self._average(lambda thread: len(thread.messages[0]))
+        return self._average(lambda thread: len(thread.messages[0].content))
 
     @property
     def average_conversation_length(self):

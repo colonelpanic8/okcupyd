@@ -75,11 +75,11 @@ class Profile(object):
     contacted : bool
         Whether you've contacted this user or not.
     """
-    def __init__(self, _session, name, age=None, location='', match=None,
+    def __init__(self, _session, username, age=None, location='', match=None,
                  enemy=None, id=None, rating=0, contacted=False):
         self._session = _session
         self._id = id
-        self.name = name
+        self.username = username
         self.age = age
         self.location = location
         self.match = match

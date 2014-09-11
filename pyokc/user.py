@@ -80,7 +80,7 @@ class User(object):
         """
         threadid = ''
         if isinstance(username, Profile):
-            username == username.name
+            username = username.name
         for thread in self.inbox[::-1]: # reverse, find most recent messages first
             if thread.correspondent.lower() == username.lower():
                 threadid = thread.threadid
@@ -90,9 +90,10 @@ class User(object):
             'sendmsg': '1',
             'r1': username,
             'body': message_text,
-            'threadid': threadid,
+            'threadid': 0,
             'authcode': self.authcode,
-            'reply': '1',
+            'reply': '0',
+            'from_profile': '1'
         }
         return self._session.post('http://www.okcupid.com/mailbox', data=msg_data)
 

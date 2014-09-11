@@ -133,6 +133,18 @@ class MessageThread(object):
         self.read = read
         self.date = date
 
+    @property
+    def redact_messages(self):
+        return self.restore(self.thread_id, self.correspondent, self.read, self.date,
+                            session=self._session,
+                            messages=[self.redact_message(message)
+                                      for message in self.messages])
+
+    @staticmethod
+    def redact_message(message):
+        return Message(message.id, message.sender, message.recipient,
+                       'x'*len(message.content))
+
     def __hash__(self):
         return hash(self.thread_id)
 
