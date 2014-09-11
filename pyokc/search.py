@@ -1,12 +1,17 @@
 import inspect
+import logging
 import re
 
 from lxml import html
+import simplejson
 
 from . import helpers
 from . import magicnumbers
 from . import objects
 from . import util
+
+
+log = logging.getLogger()
 
 
 builder_to_keys = {}
@@ -223,8 +228,10 @@ class SearchExecutor(object):
         return search_parameters
 
     def execute(self, session, count=9, headers=None):
+        search_parameters = self.build_search_parameters(session, count)
+        log.info(simplejson.dumps({'search_parameters': search_parameters}))
         return session.get('https://www.okcupid.com/match',
-                           params=self.build_search_parameters(session, count),
+                           params=search_parameters,
                            headers=headers).json()['html']
 
 
@@ -296,6 +303,7 @@ class MatchCardExtractor(object):
 def search(session=None, count=9, **kwargs):
     session = session or objects.Session.login()
     profiles_response = SearchExecutor(**kwargs).execute(session, count)
+    log.info(simplejson.dumps({'profiles_response': profiles_response}))
     if not profiles_response.strip(): return []
     profiles_tree = html.fromstring(profiles_response)
     match_card_elems = profiles_tree.xpath(".//div[@class='match_card opensans']")
@@ -303,11 +311,11 @@ def search(session=None, count=9, **kwargs):
     for div in match_card_elems:
         match_card_extractor = MatchCardExtractor(div)
         profiles.append(objects.Profile(session, match_card_extractor.username,
-                                match_card_extractor.age,
-                                match_card_extractor.location,
-                                match_card_extractor.match_percentage,
-                                enemy=match_card_extractor.enemy_percentage,
-                                id=match_card_extractor.id,
-                                rating=match_card_extractor.rating,
-                                contacted=match_card_extractor.contacted))
+                                        match_card_extractor.age,
+                                        match_card_extractor.location,
+                                        match_card_extractor.match_percentage,
+                                        enemy=match_card_extractor.enemy_percentage,
+                                        id=match_card_extractor.id,
+                                        rating=match_card_extractor.rating,
+                                        contacted=match_card_extractor.contacted))
     return profiles

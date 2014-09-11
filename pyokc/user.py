@@ -4,7 +4,8 @@ from lxml import html
 
 from . import helpers
 from . import util
-from .objects import MailboxFetcher, Profile, Question, Session
+from .messaging import MailboxFetcher
+from .objects import Profile, Question, Session
 from .search import search
 from .xpath import XPathBuilder
 

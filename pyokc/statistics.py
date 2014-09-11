@@ -62,7 +62,7 @@ class Statistics(object):
             attractiveness = attractiveness_finder.find_attractiveness(
                 thread.correspondent
             )
-            return (isinstance(numbers.Number, attractiveness) and
+            return (isinstance(attractiveness, numbers.Number) and
                     min_attractiveness <= attractiveness <= max_attractiveness)
         return self.with_filters(_attractiveness_filter)
 
@@ -94,7 +94,7 @@ class Statistics(object):
 
     def _average_attractiveness(self, attractiveness_finder=None):
         attractiveness_finder = attractiveness_finder or self._attractiveness_finder
-        return self._average(lambda thread: attractiveness_finder.find_attractiveness(thread.correspondent))
+        return self.has_attractiveness._average(lambda thread: attractiveness_finder.find_attractiveness(thread.correspondent))
 
     @property
     def average_attractiveness(self):
