@@ -1,11 +1,16 @@
 from time import clock
-
+import logging
 
 from lxml import html
 import requests
+import simplejson
 
 from . import helpers
+from . import conftest
 from .settings import DELAY, USERNAME, PASSWORD
+
+
+log = logging.getLogger(__name__)
 
 
 class Session(requests.Session):
@@ -34,6 +39,7 @@ class Session(requests.Session):
         self.timestamp = clock()
         response = super().get(*args, **kwargs)
         response.raise_for_status()
+        log.debug(simplejson.dumps({'method': 'GET', 'args': args, 'kwargs': kwargs, 'content': response.content.decode('utf8')}))
         return response
 
 

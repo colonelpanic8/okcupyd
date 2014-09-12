@@ -52,8 +52,7 @@ class MailboxFetcher(object):
             messages_text = messages_response.content.decode('utf8').strip()
             if not messages_text: break
             inbox_tree = html.fromstring(messages_text)
-            message_elements = util.find_elements_with_classes(inbox_tree, 'li',
-                                                               ['thread', 'message'])
+            message_elements = XPathBuilder().li.with_classes('thread', 'message').apply_(inbox_tree)
             for message_element in message_elements:
                 yield self.process_message_element(message_element)
 
@@ -88,8 +87,7 @@ class MessageRetriever(object):
         return helpers.get_my_username(tree), them
 
     def get_message_elements(self, thread_tree):
-        return util.find_elements_with_classes(thread_tree, 'li',
-                                               ['to_me', 'from_me'], is_or=True)
+        return XPathBuilder().li.with_classes('to_me', 'from_me')._or.apply_(thread_tree)
 
     def get_messages(self):
         tree = self.thread_tree()
@@ -100,8 +98,7 @@ class MessageRetriever(object):
             else:
                 sender, recipient = them, me
             message_id = message_element.attrib['id'].split('_')[-1]
-            message = util.find_elements_with_classes(message_element,
-                                                      'div', ['message_body'])
+            message = XPathBuilder().div.with_class('message_body').apply_(message_element)
             if message_id == 'compose':
                 continue
             content = None

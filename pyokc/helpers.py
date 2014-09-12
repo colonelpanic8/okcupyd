@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from json import loads
 from lxml import html
 from re import search
@@ -54,18 +54,21 @@ def get_additional_info(tree):
 
 
 def get_authcode(text_response):
-    search('var AUTHCODE = "(.*?)";', text_response).group(1)
+    return search('var AUTHCODE = "(.*?)";', text_response).group(1)
 
 
 def parse_date_updated(date_updated_text):
     if '/' in date_updated_text:
-        return datetime.strptime(date_updated_text, '%m/%d/%y')
+        return datetime.strptime(date_updated_text, '%m/%d/%y').date()
 
     if date_updated_text[-2] == ' ':
         month, day = date_updated_text.split()
         date_updated_text = '{0} 0{1}'.format(month, day)
 
-    return datetime.strptime(date_updated_text, '%b %d').replace(year=datetime.now().year).date()
+    try:
+        return datetime.strptime(date_updated_text, '%b %d').replace(year=datetime.now().year).date()
+    except:
+        return date.today()
 
 
 def get_message_string(li_element, sender):

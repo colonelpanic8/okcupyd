@@ -79,15 +79,16 @@ class User(object):
         message_text : str
             Text body of the message.
         """
-        threadid = ''
+        threadid = None
         if isinstance(user, str):
             user = Profile(self._session, user)
-        for thread in self.inbox[::-1]: # reverse, find most recent messages first
+        for thread in sorted(set(self.inbox + self.outbox), key=lambda t: t.date,
+                             reverse=True):
             if thread.correspondent.lower() == user.username.lower():
                 threadid = thread.thread_id
                 break
 
-        user.message(message_text, threadid)
+        return user.message(message_text, threadid)
 
     def search(self, **kwargs):
         kwargs.setdefault('gender', self.gender[0])

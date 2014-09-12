@@ -9,6 +9,13 @@ class XPathBuilder(object):
     def xpath(self):
         return ('.' if self.relative else '') + ''.join(node.xpath
                                                         for node in self.nodes)
+
+    @property
+    def _or(self):
+        updated_final_node = self.nodes[-1].make_or
+        return type(self)(self.nodes[:-1] + (updated_final_node,),
+                          relative=self.relative, direct_child=self.direct_child)
+
     def add_node(self, **kwargs):
         if 'direct_child' not in kwargs:
             kwargs['direct_child'] = self.direct_child
@@ -67,6 +74,10 @@ class XPathNode(object):
                                       for attribute, value in attributes.items()])
         self.direct_child = direct_child
         self.use_or = use_or
+
+    @property
+    def make_or(self):
+        return self(use_or=True)
 
     @property
     def separator(self):

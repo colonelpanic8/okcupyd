@@ -14,7 +14,9 @@ class Profile(object):
 
     @util.cached_property
     def _profile_response(self):
-        return self._session.get('https://www.okcupid.com/profile/{0}'.format(self.username)).content.decode('utf8')
+        return self._session.get(
+            'https://www.okcupid.com/profile/{0}'.format(self.username)
+        ).content.decode('utf8')
 
     @util.cached_property
     def authcode(self):
@@ -36,10 +38,10 @@ class Profile(object):
             'from_profile': 1
         }
 
-
     def message(self, content, thread_id=None):
-        self._session.get('https://www.okcupid.com/mailbox',
-                          params=self.message_request_parameters(content, thread_id or 0))
+        response = self._session.get('https://www.okcupid.com/mailbox',
+                                     params=self.message_request_parameters(content, thread_id or 0))
+        return response
 
     def __repr__(self):
         return 'Profile("{0}")'.format(self.username)

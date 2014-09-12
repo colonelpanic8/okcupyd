@@ -75,26 +75,6 @@ class cached_property(object):
         return value
 
 
-def attribute_contains_xpath_string(attribute, contained_string):
-    return "contains(concat(' ',normalize-space(@{0}),' '),' {1} ')".format(
-        attribute, contained_string
-    )
-
-
-def attribute_contains_xpath_strings(attribute, contained_strings, is_or=False):
-    join_string = ' or ' if is_or else ' and '
-    return join_string.join(attribute_contains_xpath_string(attribute, contained_string)
-                        for contained_string in contained_strings)
-
-
-def find_elements_with_classes_xpath(elem_type, elem_classes, is_or=False):
-    return './/{0}[{1}]'.format(elem_type, attribute_contains_xpath_strings('class', elem_classes, is_or=is_or))
-
-
-def find_elements_with_classes(tree, elem_type, elem_classes, is_or=False):
-    return tree.xpath(find_elements_with_classes_xpath(elem_type, elem_classes, is_or=is_or))
-
-
 class LazyList(object):
 
     def __init__(self, fetcher):
@@ -116,3 +96,5 @@ class LazyList(object):
         for item in self._fetcher.fetch(start_at=len(self._fetched)):
             self._fetched.append(item)
             yield item
+
+

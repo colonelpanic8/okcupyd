@@ -1,11 +1,13 @@
 from .objects import Session
 from .search import search
+from . import settings
 
 
 class AttractivenessFinder(object):
 
     def __init__(self, session=None):
-        self._session = session or Session.login()
+        self._session = session or Session.login(settings.AF_USERNAME,
+                                                 settings.AF_PASSWORD)
 
     def find_attractiveness(self, username, accuracy=900, _lower=0, _higher=10000):
         average = (_higher + _lower)//2
