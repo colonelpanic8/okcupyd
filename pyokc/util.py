@@ -23,6 +23,12 @@ class n_partialable(object):
             return not needed_args or kwarg_keys.issuperset(needed_args)
         return evaluation_checker
 
+    @staticmethod
+    def count_evaluation_checker(count):
+        def function(*args, **kwargs):
+            return len(args) >= count
+        return function
+
     def __init__(self, function, evaluation_checker=None, args=None, kwargs=None):
         self.function = function
         self.evaluation_checker = (evaluation_checker or
@@ -75,26 +81,54 @@ class cached_property(object):
         return value
 
 
-class LazyList(object):
-
-    def __init__(self, fetcher):
-        self._fetcher = fetcher
-        self._fetched = []
-
-    def __getitem__(self, item):
-        if isinstance(item, slice):
-            pass
-        else:
-            if item >= len(self._fetched):
-                self._fetcher.fetch(item, self._fetched)
-        return self._fetched[item]
-
-    def __iter__(self):
-        for item in self._fetched:
-            yield item
-
-        for item in self._fetcher.fetch(start_at=len(self._fetched)):
-            self._fetched.append(item)
-            yield item
+def _compose2(f, g):
+    return lambda *args, **kwargs: f(g(*args, **kwargs))
 
 
+@n_partialable(evaluation_checker=n_partialable.count_evaluation_checker(2))
+def compose_with_joiner(joiner, *functions):
+    return functools.reduce(joiner, functions)
+
+
+compose_one_arg = compose_with_joiner(_compose2)
+
+
+compose = compose_with_joiner(lambda f, g: _compose2(make_single_arity(f),
+                                                force_args_return(g)))
+
+def make_single_arity(function):
+    @functools.wraps(function)
+    def wrapped(args):
+        return function(*args)
+    return wrapped
+
+
+def kwargs_make_single_arity(function):
+    @functools.wraps(function)
+    def wrapped(kwargs):
+        return function(**kwargs)
+    return wrapped
+
+
+def args_kwargs_make_single_arity(function):
+    @functools.wraps(function)
+    def wrapped(val):
+        (args, kwargs) = val
+        return function(*args, **kwargs)
+    return wrapped
+
+
+def force_args_return(function):
+    @functools.wraps(function)
+    def wrapped(*args, **kwargs):
+        value = function(*args, **kwargs)
+        if not isinstance(value, collections.Iterable):
+            value = (value,)
+        return value
+    return wrapped
+
+
+def tee(*functions):
+    def wrapped(*args, **kwargs):
+        return tuple(function(*args, **kwargs) for function in functions)
+    return wrapped

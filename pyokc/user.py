@@ -11,6 +11,29 @@ from .search import search
 from .xpath import XPathBuilder
 
 
+class Mailbox(object):
+
+    def __init__(self, session, mailbox_number):
+        self._mailbox_fetcher = MailboxFetcher(session, mailbox_number)
+
+    @util.cached_property
+    def threads(self):
+        return list(self._mailbox_fetcher.get_threads())
+
+    def refresh(self, use_existing=True):
+        if 'threads' in self.__dict__:
+            self.threads = list(self._mailbox_fetcher.get_threads(
+                existing=self.threads if use_existing else ()
+            ))
+        return self.threads
+
+    def __iter__(self):
+        return iter(self.threads)
+
+    def __getitem__(self, item):
+        return self.threads[item]
+
+
 class User(object):
     """
     Represent an OKCupid user. Username and password are only optional
@@ -43,22 +66,9 @@ class User(object):
         self.username = helpers.get_my_username(self._profile_tree)
         self.questions = []
         self.visitors = []
-
-    @util.cached_property
-    def inbox(self):
-        return list(MailboxFetcher(self._session, 1).get_threads())
-
-    @util.cached_property
-    def outbox(self):
-        return list(MailboxFetcher(self._session, 2).get_threads())
-
-    @util.cached_property
-    def drafts(self):
-        return list(MailboxFetcher(self._session, 4).get_threads())
-
-    def force_refresh(self, inbox_name='inbox'):
-        del self.__dict__[inbox_name]
-        return getattr(self, inbox_name)
+        self.inbox = Mailbox(self._session, 1)
+        self.outbox = Mailbox(self._session, 2)
+        self.drafts = Mailbox(self._session, 4)
 
     def update_essay(self, essay_id, essay_body):
         form_data = {
@@ -82,7 +92,7 @@ class User(object):
         threadid = None
         if isinstance(user, str):
             user = Profile(self._session, user)
-        for thread in sorted(set(self.inbox + self.outbox), key=lambda t: t.date,
+        for thread in sorted(set(self.inbox.threads + self.outbox.threads), key=lambda t: t.date,
                              reverse=True):
             if thread.correspondent.lower() == user.username.lower():
                 threadid = thread.thread_id

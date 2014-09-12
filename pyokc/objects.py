@@ -38,7 +38,7 @@ class Session(requests.Session):
         self.timestamp = clock()
         response = super().get(*args, **kwargs)
         response.raise_for_status()
-        log.debug(simplejson.dumps({'method': 'GET', 'args': args, 'kwargs': kwargs, 'content': response.content.decode('utf8')}))
+        # log.debug(simplejson.dumps({'method': 'GET', 'args': args, 'kwargs': kwargs, 'content': response.content.decode('utf8')}))
         return response
 
 

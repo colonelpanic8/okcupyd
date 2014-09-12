@@ -6,7 +6,7 @@ from . import util
 
 class Profile(object):
 
-    def __init__(self, session, username, **kwargs):
+    def __init__(self, session, username, *args, **kwargs):
         self.username = username
         self._session = session
         for key, value in kwargs.items():
