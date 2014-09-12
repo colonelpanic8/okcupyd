@@ -6,7 +6,6 @@ import requests
 import simplejson
 
 from . import helpers
-from . import conftest
 from .settings import DELAY, USERNAME, PASSWORD
 
 
