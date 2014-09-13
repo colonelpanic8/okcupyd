@@ -1,9 +1,8 @@
-from time import clock
+import time
 import logging
 
 from lxml import html
 import requests
-import simplejson
 
 from . import helpers
 from .settings import DELAY, USERNAME, PASSWORD
@@ -24,21 +23,21 @@ class Session(requests.Session):
         super().__init__(*args, **kwargs)
         self.timestamp = -DELAY
 
+    def _throttle(self):
+        while time.clock() - self.timestamp < DELAY:
+            time.sleep(.5)
+        self.timestamp = time.clock()
+
     def post(self, *args, **kwargs):
-        while clock() - self.timestamp < DELAY:
-            pass
-        self.timestamp = clock()
+        self._throttle()
         response = super().post(*args, **kwargs)
         response.raise_for_status()
         return response
 
     def get(self, *args, **kwargs):
-        while clock() - self.timestamp < DELAY:
-            pass
-        self.timestamp = clock()
+        self._throttle()
         response = super().get(*args, **kwargs)
         response.raise_for_status()
-        # log.debug(simplejson.dumps({'method': 'GET', 'args': args, 'kwargs': kwargs, 'content': response.content.decode('utf8')}))
         return response
 
 
