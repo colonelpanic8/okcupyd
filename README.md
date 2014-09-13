@@ -10,12 +10,13 @@ was inspired by
 <h3>First things first</h3>
 
 Go to settings.py and assign your OKCupid profile name to `USERNAME` and your password
-to `PASSWORD`. From now on you won't need to enter either for any pyokc scripts.
+to `PASSWORD`. Alternatively, you can store your username and password
+in the environment variables OKC_USERNAME and OKC_PASSWORD respectively. From now on you won't need to enter either for any pyokc scripts.
 
 <h3>Starting a new session</h3>
 
 ```python
-from pyokc import pyokc
+import pyokc
 
 u = pyokc.User()
 ```
@@ -89,7 +90,7 @@ its `messages` attribute will become available.
 pip install pyokc
 ```
 
-pyokc has two dependencies: requests and lxml.
+pyokc has three dependencies: requests and lxml and simplejson.
 
 <b>Note:</b> Windows users will likely run into issues installing lxml. If
 this happens, be sure to install the binaries
