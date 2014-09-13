@@ -3,35 +3,11 @@ import re
 from lxml import html
 
 from . import helpers
-from . import util
-from .messaging import MailboxFetcher
+from .messaging import Mailbox
 from .objects import Question, Session
 from .profile import Profile
 from .search import search
 from .xpath import XPathBuilder
-
-
-class Mailbox(object):
-
-    def __init__(self, session, mailbox_number):
-        self._mailbox_fetcher = MailboxFetcher(session, mailbox_number)
-
-    @util.cached_property
-    def threads(self):
-        return list(self._mailbox_fetcher.get_threads())
-
-    def refresh(self, use_existing=True):
-        if 'threads' in self.__dict__:
-            self.threads = list(self._mailbox_fetcher.get_threads(
-                existing=self.threads if use_existing else ()
-            ))
-        return self.threads
-
-    def __iter__(self):
-        return iter(self.threads)
-
-    def __getitem__(self, item):
-        return self.threads[item]
 
 
 class User(object):
@@ -66,6 +42,8 @@ class User(object):
         self.username = helpers.get_my_username(self._profile_tree)
         self.questions = []
         self.visitors = []
+
+        self._message_sender = helpers.MessageSender(self._session)
         self.inbox = Mailbox(self._session, 1)
         self.outbox = Mailbox(self._session, 2)
         self.drafts = Mailbox(self._session, 4)
@@ -79,7 +57,7 @@ class User(object):
         }
         self._session.post('https://www.okcupid.com/profileedit2', data=form_data)
 
-    def message(self, user, message_text):
+    def message(self, username, message_text):
         """
         Send a message to the username specified.
         Parameters
@@ -89,16 +67,17 @@ class User(object):
         message_text : str
             Text body of the message.
         """
-        threadid = None
-        if isinstance(user, str):
-            user = Profile(self._session, user)
+        thread_id = None
+        if not isinstance(username, str):
+            username = username.username
         for thread in sorted(set(self.inbox.threads + self.outbox.threads), key=lambda t: t.date,
                              reverse=True):
-            if thread.correspondent.lower() == user.username.lower():
-                threadid = thread.thread_id
+            if thread.correspondent.lower() == username.lower():
+                thread_id = thread.thread_id
                 break
 
-        return user.message(message_text, threadid)
+        return self._message_sender.send_message(username, message_text, thread_id=thread_id)
+
 
     def search(self, **kwargs):
         kwargs.setdefault('gender', self.gender[0])

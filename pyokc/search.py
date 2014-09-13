@@ -10,6 +10,7 @@ from . import magicnumbers
 from . import objects
 from . import util
 from .profile import Profile
+from .xpath import XPathBuilder
 
 
 log = logging.getLogger()

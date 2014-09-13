@@ -29,11 +29,11 @@ class n_partialable(object):
             return len(args) >= count
         return function
 
-    def __init__(self, function, evaluation_checker=None, args=None, kwargs=None):
+    def __init__(self, function, evaluation_checker=None, args=(), kwargs=None):
         self.function = function
         self.evaluation_checker = (evaluation_checker or
                                    self.arity_evaluation_checker(function))
-        self.args = args or ()
+        self.args = args
         self.kwargs = kwargs or {}
 
     def __call__(self, *args, **kwargs):
@@ -45,6 +45,12 @@ class n_partialable(object):
         else:
             return type(self)(self.function, self.evaluation_checker,
                               new_args, new_kwargs)
+
+    def __get__(self, obj, obj_type):
+        bound = type(self)(self.function, self.evaluation_checker,
+                           args=self.args + (obj,), kwargs=self.kwargs)
+        setattr(obj, self.function.__name__, bound)
+        return bound
 
 
 n_partialable = n_partialable(n_partialable)

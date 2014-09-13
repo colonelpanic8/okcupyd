@@ -19,14 +19,45 @@ CHAR_REPLACE = {
     "🌲": " ",
     }
 
+class MessageSender(object):
+
+    def __init__(self, session):
+        self._session = session
+
+    def _get_authcode(self, username):
+        response = self._session.get(
+            'https://www.okcupid.com/profile/{0}'.format(username)
+        ).content.decode('utf8')
+        return get_authcode(response)
+
+    def message_request_parameters(self, username, message, thread_id, authcode):
+        return {
+            'ajax': 1,
+            'sendmsg': 1,
+            'r1': username,
+            'body': message,
+            'threadid': thread_id,
+            'authcode': authcode,
+            'reply': 1 if thread_id else 0,
+            'from_profile': 1
+        }
+
+    def send_message(self, username, message, authcode=None, thread_id=None):
+        authcode = authcode or self._get_authcode(username)
+        params = self.message_request_parameters(username, message, thread_id or 0, authcode)
+        return self._session.get('https://www.okcupid.com/mailbox', params=params)
+
 
 def login(session, credentials, headers):
     """
     Make a POST request to OKCupid using the login credentials provided
     by the user.
     """
-    login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers)
-    if login_response.url == 'https://www.okcupid.com/login':
+    credentials.update({'okc_api': 1})
+    login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers or {
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36'
+    })
+    if login_response.status_code != 200:
         raise AuthenticationError('Could not log in with the credentials provided')
 
 

@@ -41,8 +41,8 @@ class HotOrNotBot(object):
                     break
                 else:
                     words = message.content.split()
-                    if len(words) == 1:
-                        requested_usernames.append(words[0])
+                    if len(words) < 5:
+                        requested_usernames += words
             if requested_usernames:
                 yield thread.correspondent, requested_usernames
             self._message_logger.log_thread(thread)
@@ -69,9 +69,9 @@ def out_of_five(attractiveness):
 
 class Introducer(object):
 
-    def __init__(self):
+    def __init__(self, met=None):
         self.user = pyokc.User()
-        self.met = set()
+        self.met = met or set()
         self.find_attractiveness = pyokc.AttractivenessFinder().find_attractiveness
 
     def run(self):
@@ -81,8 +81,9 @@ class Introducer(object):
             for thread in self.user.outbox.refresh():
                 thread.delete()
 
-    def do_introductions(self):
-        profiles = pyokc.search(self.user._session, order_by='SPECIAL_BLEND')
+    def do_introductions(self, **kwargs):
+        kwargs.setdefault('order_by', 'SPECIAL_BLEND')
+        profiles = pyokc.search(self.user._session, **kwargs)
         print(profiles)
         for profile in profiles:
             self.introduce(profile)
@@ -101,7 +102,7 @@ class Introducer(object):
         return """Hi {0},
 The OKCupid community rates your profile at {1} stars on average.
 
-Send me a message containing only the username of another user and I will reply with their attractiveness.""".format(profile.username, out_of_five(attractiveness))
+Send me a message containing the usernames of another user and I will reply with their attractiveness.""".format(profile.username, out_of_five(attractiveness))
 
 
 class MessageLogger(object):

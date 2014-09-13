@@ -38,10 +38,9 @@ class Profile(object):
             'from_profile': 1
         }
 
-    def message(self, content, thread_id=None):
-        response = self._session.get('https://www.okcupid.com/mailbox',
-                                     params=self.message_request_parameters(content, thread_id or 0))
-        return response
+    @util.n_partialable
+    def message(self, message, thread_id=None):
+        return helpers.MessageSender(self._session).send_message(self.username, message, self.authcode, thread_id)
 
     def __repr__(self):
         return 'Profile("{0}")'.format(self.username)

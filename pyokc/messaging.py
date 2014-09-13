@@ -6,10 +6,34 @@ from lxml import html
 
 from . import helpers
 from . import util
+from .profile import Profile
 from .xpath import XPathBuilder
 
 
 log = logging.getLogger()
+
+
+class Mailbox(object):
+
+    def __init__(self, session, mailbox_number):
+        self._mailbox_fetcher = MailboxFetcher(session, mailbox_number)
+
+    @util.cached_property
+    def threads(self):
+        return list(self._mailbox_fetcher.get_threads())
+
+    def refresh(self, use_existing=True):
+        if 'threads' in self.__dict__:
+            self.threads = list(self._mailbox_fetcher.get_threads(
+                existing=self.threads if use_existing else ()
+            ))
+        return self.threads
+
+    def __iter__(self):
+        return iter(self.threads)
+
+    def __getitem__(self, item):
+        return self.threads[item]
 
 
 class MailboxFetcher(object):
@@ -138,6 +162,7 @@ class MessageThread(object):
         self.thread_id = thread_id
         self.read = read
         self.date = date
+        self.reply = self.correspondent_profile.message(thread_id=self.thread_id)
 
     @property
     def redact_messages(self):
@@ -160,6 +185,10 @@ class MessageThread(object):
     @util.cached_property
     def messages(self):
         return self.get_messages()
+
+    @util.cached_property
+    def correspondent_profile(self):
+        return Profile(self._session, self.correspondent)
 
     def get_messages(self):
         return list(self._message_retriever.get_messages())
