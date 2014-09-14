@@ -2,6 +2,9 @@ from datetime import datetime, date
 from json import loads
 from lxml import html
 from re import search
+import logging
+
+import simplejson
 
 from .errors import AuthenticationError, ProfileNotFoundError
 from .xpath import XPathBuilder
@@ -18,6 +21,9 @@ CHAR_REPLACE = {
     "…": "...",
     "🌲": " ",
     }
+
+
+log = logging.getLogger(__name__)
 
 class MessageSender(object):
 
@@ -57,6 +63,7 @@ def login(session, credentials, headers):
     login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers or {
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36'
     })
+    log.debug(simplejson.dumps(login_response.json()))
     if login_response.status_code != 200:
         raise AuthenticationError('Could not log in with the credentials provided')
 

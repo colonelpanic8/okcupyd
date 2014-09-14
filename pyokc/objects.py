@@ -16,7 +16,8 @@ class Session(requests.Session):
     @classmethod
     def login(cls, username=USERNAME, password=PASSWORD, headers=None):
         session = cls()
-        helpers.login(session, {'username': username, 'password': password}, headers)
+        helpers.login(session, {'username': username,
+                                 'password': password}, headers)
         return session
 
     def __init__(self, *args, **kwargs):
