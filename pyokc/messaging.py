@@ -10,7 +10,7 @@ from .profile import Profile
 from .xpath import XPathBuilder
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 class Mailbox(object):

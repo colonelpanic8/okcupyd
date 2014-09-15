@@ -10,10 +10,10 @@ from . import magicnumbers
 from . import objects
 from . import util
 from .profile import Profile
-from .xpath import XPathBuilder
+from .xpath import xpb
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 builder_to_keys = {}
@@ -244,15 +244,17 @@ class MatchCardExtractor(object):
 
     @property
     def username(self):
-        return self._div.xpath(".//div[@class = 'username']/a")[0].text_content()
+        return xpb.div.with_class('username').get_text_(self._div)
 
     @property
     def age(self):
-        return int(self._div.xpath(".//span[@class = 'age']/text()")[0])
+        return xpb.span.with_class('age').get_text_(self.div)
 
     @property
     def location(self):
-        return helpers.replace_chars(self._div.xpath(".//span[@class = 'location']/text()")[0])
+        return helpers.replace_chars(
+            xpb.span.with_class('location').get_text_(self._div)
+        )
 
     @property
     def id(self):
@@ -277,16 +279,16 @@ class MatchCardExtractor(object):
     @property
     def rating(self):
         try:
-            rating_div = self._div.xpath(".//li[@class = 'current-rating']")
-            rating_style = rating_div[0].attrib['style']
+            rating_li = xpb.li.with_class('current-rating').apply_(self.div)
+            rating_style = rating_li[0].attrib['style']
             width_percent = int(''.join(c for c in rating_style if c.isdigit()))
-            return int((width_percent / 100) * 5)
+            return (width_percent // 100) * 5
         except IndexError:
             return 0
 
     @property
     def contacted(self):
-        return bool(self._div.xpath(".//span[@class = 'fancydate']"))
+        return bool(xpb.div.with_class('fancydate').apply_(self._div))
 
     @property
     def as_dict(self):
@@ -312,6 +314,7 @@ def search(session=None, count=9, **kwargs):
     profiles = []
     for div in match_card_elems:
         match_card_extractor = MatchCardExtractor(div)
+        import ipdb; ipdb.set_trace()
         profiles.append(Profile(session, match_card_extractor.username,
                                 match_card_extractor.age,
                                 match_card_extractor.location,

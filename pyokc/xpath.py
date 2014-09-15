@@ -116,3 +116,5 @@ class XPathNode(object):
     def with_classes(self, classes):
         return self.add_contains_predicates(('class', class_string)
                                      for class_string in classes)
+
+xpb = XPathBuilder()
