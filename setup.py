@@ -8,11 +8,10 @@ def read(fname):
 
 setup(
     name="pyokc",
-    version="0.2.3",
+    version="1.0.0",
     packages=find_packages(),
     install_requires=['lxml', 'requests', 'simplejson'],
     package_data={'': ['*.md', '*.rst']},
-    # metadata for upload to PyPI
     author="Evan Fredericksen",
     author_email="evfredericksen@gmail.com",
     description="A package for interacting with OKCupid.com",
