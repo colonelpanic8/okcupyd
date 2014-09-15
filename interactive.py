@@ -5,7 +5,7 @@ from pyokc import *
 
 def _debug():
     import logging
-    logging.bbasicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
 
 
 if os.environ.get('PYOKC_DEBUG'):
