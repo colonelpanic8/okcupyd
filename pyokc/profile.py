@@ -2,7 +2,17 @@ from lxml import html
 
 from . import helpers
 from . import util
-from .objects import Question
+
+
+class Question(object):
+
+    def __init__(self, text, user_answer, explanation):
+        self.text = text
+        self.user_answer = user_answer
+        self.explanation = explanation
+
+    def __repr__(self):
+        return '<Question: {0}>'.format(self.text)
 
 
 class Profile(object):

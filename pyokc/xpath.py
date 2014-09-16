@@ -50,7 +50,7 @@ class XPathBuilder(object):
         return tree.xpath(self.xpath)
 
     def get_text_(self, tree):
-        return self.apply_(tree)[0].text
+        return self.apply_(tree)[0].text_content()
 
 
 class XPathNode(object):

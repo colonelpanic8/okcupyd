@@ -4,9 +4,9 @@ from lxml import html
 
 from . import helpers
 from .messaging import Mailbox
-from .objects import Question, Session
-from .profile import Profile
+from .profile import Profile, Question
 from .search import search
+from .session import Session
 from .xpath import XPathBuilder
 
 

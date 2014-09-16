@@ -1,5 +1,5 @@
-from .objects import Session
 from .search import search
+from .session import Session
 from . import settings
 from . import util
 

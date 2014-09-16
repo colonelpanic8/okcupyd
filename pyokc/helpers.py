@@ -4,10 +4,8 @@ from lxml import html
 from re import search
 import logging
 
-import simplejson
-
-from .errors import AuthenticationError, ProfileNotFoundError
-from .xpath import XPathBuilder
+from .errors import ProfileNotFoundError
+from .xpath import xpb
 
 
 CHAR_REPLACE = {
@@ -20,10 +18,11 @@ CHAR_REPLACE = {
     "–": "-",
     "…": "...",
     "🌲": " ",
-    }
+}
 
 
 log = logging.getLogger(__name__)
+
 
 class MessageSender(object):
 
@@ -54,22 +53,8 @@ class MessageSender(object):
         return self._session.get('https://www.okcupid.com/mailbox', params=params)
 
 
-def login(session, credentials, headers):
-    """
-    Make a POST request to OKCupid using the login credentials provided
-    by the user.
-    """
-    credentials.update({'okc_api': 1})
-    login_response = session.post('https://www.okcupid.com/login', data=credentials, headers=headers or {
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36'
-    })
-    log.debug(simplejson.dumps(login_response.json()))
-    if login_response.status_code != 200:
-        raise AuthenticationError('Could not log in with the credentials provided')
-
-
 def get_my_username(tree):
-    xpath_string = XPathBuilder().div(id='avatarborder').span(id='user_thumb').img.xpath
+    xpath_string = xpb.div(id='avatarborder').span(id='user_thumb').img.xpath
     image_hover = tree.xpath(xpath_string)[0].attrib['alt']
     return image_hover.split()[-1]
 
@@ -79,7 +64,7 @@ def get_additional_info(tree):
     Make a request to OKCupid to get a user's age, gender, orientation,
     and relationship status.
     """
-    age = int(tree.xpath("//*[@id = 'ajax_age']/text()")[0].strip())
+    age = int(xpb.add_node(attributes=dict(id='ajax_age')).get_text_(tree).strip())
     orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0].strip()
     status = tree.xpath("//*[@id = 'ajax_status']/text()")[0].strip()
     gender_result = tree.xpath("//*[@id = 'ajax_gender']/text()")[0].strip()
@@ -167,6 +152,7 @@ def get_rating(div):
     except IndexError:
         return 0
 
+
 def get_contacted(div):
     """
     Get whether you've contacted this user.
@@ -208,6 +194,7 @@ def format_last_online(last_online):
         last_online_int = last_online
     return last_online_int
 
+
 def format_status(status):
     """
     Returns the int that OKCupid maps to relationship status for
@@ -223,6 +210,7 @@ def format_status(status):
     elif status.lower() == 'any':
         status_parameter = 0
     return status_parameter
+
 
 def get_percentages(profile_tree):
     """
@@ -251,6 +239,7 @@ def get_percentages(profile_tree):
     except IndexError:
         raise ProfileNotFoundError('Could not find the profile specified')
 
+
 def get_profile_id(tree):
     """
     Return a unique profile id string.
@@ -261,6 +250,7 @@ def get_profile_id(tree):
     except IndexError:
         return tree.xpath("//button[@id = 'rate_user_profile']/@data-tuid")[0]
         # <button id="rate_user_profile" data-tuid="2538582662150475561"
+
 
 def update_essays(tree, essays):
     """
@@ -294,6 +284,7 @@ def update_essays(tree, essays):
         elif title == "You should message me if":
             essays['message me if'] = text
 
+
 def update_looking_for(profile_tree, looking_for):
     """
     Update looking_for attribute of a Profile.
@@ -304,6 +295,7 @@ def update_looking_for(profile_tree, looking_for):
     looking_for['near'] = div.xpath(".//li[@id = 'ajax_near']/text()")[0].strip()
     looking_for['single'] = div.xpath(".//li[@id = 'ajax_single']/text()")[0].strip()
     looking_for['seeking'] = div.xpath(".//li[@id = 'ajax_lookingfor']/text()")[0].strip()
+
 
 def update_details(profile_tree, details):
     """
@@ -320,6 +312,7 @@ def update_details(profile_tree, details):
         else:
             continue
         details[title.lower()] = replace_chars(details[title.lower()])
+
 
 def get_looking_for(gender, orientation):
     """
@@ -345,6 +338,7 @@ def get_looking_for(gender, orientation):
         elif orientation == 'Bisexual':
             looking_for = 'both who like bi girls'
     return looking_for
+
 
 def replace_chars(astring):
     """

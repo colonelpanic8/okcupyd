@@ -1,3 +1,79 @@
+"""
+Search OKCupid profiles, return a list of matching profiles.
+See the search page on OKCupid for a better idea of the
+arguments expected.
+Parameters
+----------
+location : string, optional
+    Location of profiles returned. Accept ZIP codes, city
+    names, city & state combinations, and city & country
+    combinations. Default to user location if unable to
+    understand the string or if no value is given.
+radius : int, optional
+    Radius in miles searched, centered on the location.
+number : int, optional
+    Number of profiles returned. Default to 18, which is the
+    same number that OKCupid returns by default.
+age_min : int, optional
+    Minimum age of profiles returned. Cannot be lower than 18.
+age_max : int, optional
+    Maximum age of profiles returned. Cannot be higher than 99.
+order_by : str, optional
+    Order in which profiles are returned.
+last_online : str, optional
+    How recently online the profiles returned are. Can also be
+    an int that represents seconds.
+status : str, optional
+    Dating status of profiles returned. Default to 'single'
+    unless the argument is either 'not single', 'married', or
+    'any'.
+height_min : int, optional
+    Minimum height in inches of profiles returned.
+height_max : int, optional
+    Maximum height in inches of profiles returned.
+looking_for : str, optional
+    Describe the gender and orientation of profiles returned.
+    If left blank, return some variation of "guys/girls who
+    like guys/girls" or "both who like bi girls/guys, depending
+    on the user's gender and orientation.
+smokes : str or list of str, optional
+    Smoking habits of profiles returned.
+drinks : str or list of str, optional
+    Drinking habits of profiles returned.
+drugs : str or list of str, optional
+    Drug habits of profiles returned.
+education : str or list of str, optional
+    Highest level of education attained by profiles returned.
+job : str or list of str, optional
+    Industry in which the profile users work.
+income : str or list of str, optional
+    Income range of profiles returned.
+religion : str or list of str, optional
+    Religion of profiles returned.
+monogamy : str or list of str, optional
+    Whether the profiles returned are monogamous or non-monogamous.
+offspring : str or list of str, optional
+    Whether the profiles returned have or want children.
+pets : str or list of str, optional
+    Dog/cat ownership of profiles returned.
+languages : str or list of str, optional
+    Languages spoken for profiles returned.
+diet : str or list of str, optional
+    Dietary restrictions of profiles returned.
+sign : str or list of str, optional
+    Astrological sign of profiles returned.
+ethnicity : str or list of str, optional
+    Ethnicity of profiles returned.
+join_date : int or str, optional
+    Either a string describing the profile join dates ('last
+    week', 'last year' etc.) or an int indicating the number
+    of maximum seconds from the moment of joining OKCupid.
+keywords : str, optional
+    Keywords that the profiles returned must contain. Note that
+    spaces separate keywords, ie. `keywords="love cats"` will
+    return profiles that contain both "love" and "cats" rather
+    than the exact string "love cats".
+"""
 import inspect
 import logging
 import re
@@ -7,9 +83,9 @@ import simplejson
 
 from . import helpers
 from . import magicnumbers
-from . import objects
 from . import util
 from .profile import Profile
+from .session import Session
 from .xpath import xpb
 
 
@@ -99,90 +175,14 @@ for key, function in [('pets', util.makelist_decorator(magicnumbers.get_pet_quer
     register_filter_builder(keys=(key,))(function)
 
 
-class SearchExecutor(object):
-    """
-    Search OKCupid profiles, return a list of matching profiles.
-    See the search page on OKCupid for a better idea of the
-    arguments expected.
-    Parameters
-    ----------
-    location : string, optional
-        Location of profiles returned. Accept ZIP codes, city
-        names, city & state combinations, and city & country
-        combinations. Default to user location if unable to
-        understand the string or if no value is given.
-    radius : int, optional
-        Radius in miles searched, centered on the location.
-    number : int, optional
-        Number of profiles returned. Default to 18, which is the
-        same number that OKCupid returns by default.
-    age_min : int, optional
-        Minimum age of profiles returned. Cannot be lower than 18.
-    age_max : int, optional
-        Maximum age of profiles returned. Cannot be higher than 99.
-    order_by : str, optional
-        Order in which profiles are returned.
-    last_online : str, optional
-        How recently online the profiles returned are. Can also be
-        an int that represents seconds.
-    status : str, optional
-        Dating status of profiles returned. Default to 'single'
-        unless the argument is either 'not single', 'married', or
-        'any'.
-    height_min : int, optional
-        Minimum height in inches of profiles returned.
-    height_max : int, optional
-        Maximum height in inches of profiles returned.
-    looking_for : str, optional
-        Describe the gender and orientation of profiles returned.
-        If left blank, return some variation of "guys/girls who
-        like guys/girls" or "both who like bi girls/guys, depending
-        on the user's gender and orientation.
-    smokes : str or list of str, optional
-        Smoking habits of profiles returned.
-    drinks : str or list of str, optional
-        Drinking habits of profiles returned.
-    drugs : str or list of str, optional
-        Drug habits of profiles returned.
-    education : str or list of str, optional
-        Highest level of education attained by profiles returned.
-    job : str or list of str, optional
-        Industry in which the profile users work.
-    income : str or list of str, optional
-        Income range of profiles returned.
-    religion : str or list of str, optional
-        Religion of profiles returned.
-    monogamy : str or list of str, optional
-        Whether the profiles returned are monogamous or non-monogamous.
-    offspring : str or list of str, optional
-        Whether the profiles returned have or want children.
-    pets : str or list of str, optional
-        Dog/cat ownership of profiles returned.
-    languages : str or list of str, optional
-        Languages spoken for profiles returned.
-    diet : str or list of str, optional
-        Dietary restrictions of profiles returned.
-    sign : str or list of str, optional
-        Astrological sign of profiles returned.
-    ethnicity : str or list of str, optional
-        Ethnicity of profiles returned.
-    join_date : int or str, optional
-        Either a string describing the profile join dates ('last
-        week', 'last year' etc.) or an int indicating the number
-        of maximum seconds from the moment of joining OKCupid.
-    keywords : str, optional
-        Keywords that the profiles returned must contain. Note that
-        spaces separate keywords, ie. `keywords="love cats"` will
-        return profiles that contain both "love" and "cats" rather
-        than the exact string "love cats".
-    """
+class SearchParameterBuilder(object):
 
     def __init__(self, **kwargs):
         self._options = kwargs
 
     @property
     def location(self):
-        return self._options.get('location', '')
+        return self._options.get('location', None)
 
     @property
     def gender(self):
@@ -205,10 +205,10 @@ class SearchExecutor(object):
                 for builder in builders]
 
     def set_options(self, **kwargs):
-        self.options.update(kwargs)
-        return self.options
+        self._options.update(kwargs)
+        return self._options
 
-    def build_search_parameters(self, session, count=9):
+    def build(self, session, count=9):
         search_parameters = {
             'timekey': 1,
             'matchOrderBy': self.order_by.upper(),
@@ -219,7 +219,7 @@ class SearchExecutor(object):
             'sort_type': '0',
             'sa': '1',
             'count': str(count),
-            'locid': str(helpers.get_locid(session, self.location)),
+            'locid': str(helpers.get_locid(session, self.location)) if self.location else 0,
             'ajax_load': 1,
             'discard_prefs': 1,
             'match_card_class': 'just_appended'
@@ -229,13 +229,6 @@ class SearchExecutor(object):
             search_parameters['filter{0}'.format(filter_number)] = filter_string
         return search_parameters
 
-    def execute(self, session, count=9, headers=None):
-        search_parameters = self.build_search_parameters(session, count)
-        log.info(simplejson.dumps({'search_parameters': search_parameters}))
-        return session.get('https://www.okcupid.com/match',
-                           params=search_parameters,
-                           headers=headers).json()['html']
-
 
 class MatchCardExtractor(object):
 
@@ -244,11 +237,11 @@ class MatchCardExtractor(object):
 
     @property
     def username(self):
-        return xpb.div.with_class('username').get_text_(self._div)
+        return xpb.div.with_class('username').get_text_(self._div).strip()
 
     @property
     def age(self):
-        return xpb.span.with_class('age').get_text_(self.div)
+        return int(xpb.span.with_class('age').get_text_(self._div))
 
     @property
     def location(self):
@@ -279,7 +272,7 @@ class MatchCardExtractor(object):
     @property
     def rating(self):
         try:
-            rating_li = xpb.li.with_class('current-rating').apply_(self.div)
+            rating_li = xpb.li.with_class('current-rating').apply_(self._div)
             rating_style = rating_li[0].attrib['style']
             width_percent = int(''.join(c for c in rating_style if c.isdigit()))
             return (width_percent // 100) * 5
@@ -293,34 +286,52 @@ class MatchCardExtractor(object):
     @property
     def as_dict(self):
         return {
-            'name': self.username,
+            'username': self.username,
             'age': self.age,
             'location': self.location,
-            'match': self.match_percentage,
-            'enemy': self.enemy_percentage,
+            'match_percentage': self.match_percentage,
+            'enemy_percentage': self.enemy_percentage,
             'id': self.id,
             'rating': self.rating,
             'contacted': self.contacted
         }
 
 
+class Search(object):
+
+    def __init__(self, session=None, **kwargs):
+        self._session = session or Session.login()
+        self._parameter_builder = SearchParameterBuilder(**kwargs)
+        self.set_options = self._parameter_builder.set_options
+
+    def get_search_html(self, count=9):
+        search_parameters = self._parameter_builder.build(self._session, count)
+        log.info(simplejson.dumps({'search_parameters': search_parameters}))
+        search_html = self._session.get('https://www.okcupid.com/match',
+                                        params=search_parameters).json()['html']
+        log.info(simplejson.dumps({'search_html': search_html}))
+        return search_html
+
+    def get_profiles(self, count=9):
+        search_html = self.get_search_html(count)
+        if not search_html.strip(): return []
+        tree = html.fromstring(search_html)
+        match_card_elems = xpb.div.with_classes('match_card', 'opensans').apply_(tree)
+
+        profiles = []
+        for div in match_card_elems:
+            match_card_extractor = MatchCardExtractor(div)
+            profiles.append(Profile(self._session, match_card_extractor.username,
+                                    age=match_card_extractor.age,
+                                    location=match_card_extractor.location,
+                                    match_percentage=match_card_extractor.match_percentage,
+                                    enemy_percentage=match_card_extractor.enemy_percentage,
+                                    id=match_card_extractor.id,
+                                    rating=match_card_extractor.rating,
+                                    contacted=match_card_extractor.contacted))
+        return profiles
+
+
+
 def search(session=None, count=9, **kwargs):
-    session = session or objects.Session.login()
-    profiles_response = SearchExecutor(**kwargs).execute(session, count)
-    log.info(simplejson.dumps({'profiles_response': profiles_response}))
-    if not profiles_response.strip(): return []
-    profiles_tree = html.fromstring(profiles_response)
-    match_card_elems = profiles_tree.xpath(".//div[@class='match_card opensans']")
-    profiles = []
-    for div in match_card_elems:
-        match_card_extractor = MatchCardExtractor(div)
-        import ipdb; ipdb.set_trace()
-        profiles.append(Profile(session, match_card_extractor.username,
-                                match_card_extractor.age,
-                                match_card_extractor.location,
-                                match_card_extractor.match_percentage,
-                                enemy=match_card_extractor.enemy_percentage,
-                                id=match_card_extractor.id,
-                                rating=match_card_extractor.rating,
-                                contacted=match_card_extractor.contacted))
-    return profiles
+    Search(session, **kwargs).get_profiles(count)
