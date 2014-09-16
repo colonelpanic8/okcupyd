@@ -334,4 +334,4 @@ class Search(object):
 
 
 def search(session=None, count=9, **kwargs):
-    Search(session, **kwargs).get_profiles(count)
+    return Search(session, **kwargs).get_profiles(count)

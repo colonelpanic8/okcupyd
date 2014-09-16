@@ -1,6 +1,7 @@
 import pytest
 
-from pyokc.search import Search
+from pyokc.search import Search, search
+from pyokc.profile import Profile
 from . import util
 
 
@@ -49,3 +50,17 @@ class TestSearch(object):
         search.set_options(location=location, radius=25)
         profile, = search.get_profiles(count=1)
         assert profile.location == 'Portland, OR'
+
+    @util.use_cassette('search_function')
+    def test_search_function(self, session):
+        profile, = search(session, count=1)
+        assert isinstance(profile, Profile)
+
+        profile.username
+        profile.age
+        profile.location
+        profile.match_percentage
+        profile.enemy_percentage
+        profile.id
+        profile.rating
+        profile.contacted

@@ -1,15 +1,7 @@
 import os
 
 from pyokc import *
-
-
-def _debug():
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-
-
-if os.environ.get('PYOKC_DEBUG'):
-    _debug()
+from tests.util import enable_log
 
 
 af = AttractivenessFinder()
