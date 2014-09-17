@@ -54,9 +54,14 @@ def patch_vcrpy_filters(request):
             yield
 
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.yield_fixture(autouse=True, scope='session')
 def process_command_line_args(request):
     pyokc_util.handle_command_line_options(request.config.option)
+    if request.config.getoption('skip_vcrpy'):
+        with mock.patch.object(util, 'TESTING_USERNAME', settings.USERNAME):
+            yield
+    else:
+        yield
 
 
 @pytest.fixture
