@@ -1,6 +1,7 @@
+import mock
 import pytest
 
-from pyokc.search import Search, search
+from pyokc.search import Search, SearchParameterBuilder, search
 from pyokc.profile import Profile
 from . import util
 
@@ -34,7 +35,6 @@ class TestSearch(object):
         assert first_profile.id == '10558689643648617771'
         assert first_profile.contacted == False
         assert first_profile.rating == 0
-
 
     @util.use_cassette('search_count')
     def test_count_variable(self, search, request):
@@ -73,3 +73,17 @@ class TestSearch(object):
         profile.id
         profile.rating
         profile.contacted
+
+@mock.patch('pyokc.helpers.get_locid', return_value=2)
+def test_construction_of_all_search_parameters(mock_get_locid):
+    spb = SearchParameterBuilder()
+    spb.set_options(location='new york, ny', religion='buddhist',
+                              height_min=66, height_max=68, looking_for='everybody',
+                              smokes=['no', 'trying to quit'], age_min=18, age_max=24,
+                              radius=12, order_by='MATCH', last_online=1234125,
+                              status='single', drugs=['very_often', 'sometimes'],
+                              job=['retired'], education=['high school'],
+                              income='less than $20,000', monogomy='monogamous',
+                              diet='vegan', ethnicity=['asian', 'middle eastern'])
+
+    print(spb.build(mock.Mock(), count=10))

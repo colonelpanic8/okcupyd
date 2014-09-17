@@ -1,14 +1,20 @@
 import importlib
 import os
 
+import mock
+import pytest
+
 from . import util
+
+pytestmark = pytest.mark.skipif(False, reason='examples_tests are broken.')
 
 
 path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'examples')
 
 
 def build_example_test_function(module_name):
-    def function():
+    @mock.patch('pyokc.save_file')
+    def function(arg):
         with util.use_cassette('{0}_example'.format(module_name)):
             importlib.import_module('examples.{0}'.format(module_name))
     return function

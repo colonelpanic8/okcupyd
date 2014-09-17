@@ -4,6 +4,7 @@ import getpass
 import importlib
 import inspect
 import logging
+import shutil
 
 from . import settings
 
@@ -194,3 +195,8 @@ def update_settings_with_module(module_name):
         settings.AF_USERNAME = module.AF_USERNAME
     if hasattr(module, 'AF_PASSWORD') and module.AF_PASSWORD:
         settings.AF_PASSWORD = module.AF_PASSWORD
+
+
+def save_file(filename, data):
+    with open(filename, 'wb') as out_file:
+        shutil.copyfileobj(data, out_file)

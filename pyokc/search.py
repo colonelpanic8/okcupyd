@@ -158,13 +158,18 @@ def location_filter(radius):
     return '3,{0}'.format(radius)
 
 
-for key in ['smokes', 'drinks', 'drugs', 'education', 'job',
-            'income', 'religion', 'monogamy', 'diet', 'sign',
-            'ethnicity']:
+def build_option_filter(key):
     @register_filter_builder(keys=(key,))
     @util.makelist_decorator
     def option_filter(value):
-        magicnumbers.get_options_query(key, value)
+        return magicnumbers.get_options_query(key, value)
+
+
+
+for key in ['smokes', 'drinks', 'drugs', 'education', 'job',
+            'income', 'religion', 'monogamy', 'diet', 'sign',
+            'ethnicity']:
+    build_option_filter(key)
 
 
 for key, function in [('pets', util.makelist_decorator(magicnumbers.get_pet_queries)),
