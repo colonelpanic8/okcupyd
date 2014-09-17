@@ -26,7 +26,7 @@ for root, _, filenames in os.walk(path):
             module_name, extention = filename.split('.')
         except:
             continue
-        if extention != 'py':
+        if extention != 'py' or module_name == '__init__':
             continue
         function = build_example_test_function(module_name)
         locals()['test_{0}_example'.format(module_name)] = function

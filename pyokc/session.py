@@ -40,6 +40,7 @@ class Session(requests.Session):
             raise AuthenticationError('Could not log in as {0}'.format(username))
         if login_response.json()['screenname'] != username.lower():
             log.warning('Expected to log in as {0} but got {1}'.format(username, login_response.json()['screenname']))
+        log.debug(login_response.content.decode('utf8'))
         return session
 
     def __init__(self, *args, **kwargs):

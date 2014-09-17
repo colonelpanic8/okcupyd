@@ -91,11 +91,31 @@ before_record = util.compose(scrub_request_body,
                              remove_headers(headers_to_remove=('Set-Cookie', 'Cookie')))
 
 
-pyokc_vcr = vcr.VCR(match_on=('path', 'method', 'query'),
+def match_search_query(left, right):
+    left_filter = set([value for param_name, value in left.query
+                               if 'filter' in param_name])
+    right_filter = set([value for param_name, value in right.query
+                                if 'filter' in param_name])
+    left_rest = set([(param_name, value) for param_name, value in left.query
+                     if 'filter' not in param_name])
+    right_rest = set([(param_name, value) for param_name, value in right.query
+                      if 'filter' not in param_name])
+    return left_filter == right_filter and left_rest == right_rest
+
+
+def body_as_query_string(left, right):
+    try:
+        return urllib.parse.parse_qs(left.body) == urllib.parse.parse_qs(right.body)
+    except:
+        return left == right
+
+
+pyokc_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query', 'body_as_query_string'),
                     before_record=before_record,
                     before_record_response=scrub_login_response,)
-pyokc_vcr.register_matcher('body_as_query_string',
-                           lambda l, r: urllib.parse.parse_qs(l) == urllib.parse.parse_qs(r))
+pyokc_vcr.register_matcher('body_as_query_string', body_as_query_string)
+pyokc_vcr.register_matcher('match_search_query', match_search_query)
+
 
 
 def cassette_path(cassette_name):
