@@ -19,20 +19,28 @@ class TestSearch(object):
         assert profile.age == age
 
     @util.use_cassette('search')
-    def test_match_card_extractor(self, search):
-        profiles = search.get_profiles(count=22)
-        assert len(profiles) == 22
+    def test_match_card_extractor(self, search, request):
+        search.set_options(keywords='hannahmv', looking_for='everybody')
+        profiles = search.get_profiles(count=1)
+        assert len(profiles) == 1
 
+        # TODO(IvanMalison): This is crap -- clean this up.
         first_profile = profiles[0]
-
-        assert first_profile.username.lower() == 'BetterBeReal'.lower()
-        assert first_profile.age == 50
-        assert first_profile.location == 'Darby, MT'
-        assert first_profile.match_percentage == 99
-        assert first_profile.enemy_percentage == 3
-        assert first_profile.id == '14907401137919384845'
+        assert first_profile.username.lower() == 'hannahmv'.lower()
+        assert first_profile.age == 27
+        assert first_profile.location == 'Astoria, NY'
+        assert isinstance(first_profile.match_percentage, int)
+        assert isinstance(first_profile.enemy_percentage, int)
+        assert first_profile.id == '10558689643648617771'
         assert first_profile.contacted == False
         assert first_profile.rating == 0
+
+
+    @util.use_cassette('search_count')
+    def test_count_variable(self, search, request):
+        search.set_options(looking_for='everybody')
+        profiles = search.get_profiles(count=14)
+        assert len(profiles) == 14
 
         for profile in profiles:
             profile.username
@@ -43,6 +51,7 @@ class TestSearch(object):
             profile.id
             profile.rating
             profile.contacted
+
 
     @util.use_cassette('search_location_filter')
     def test_location_filter(self, search):

@@ -6,6 +6,7 @@ import logging
 
 from .errors import ProfileNotFoundError
 from .xpath import xpb
+from . import util
 
 
 CHAR_REPLACE = {
@@ -53,18 +54,12 @@ class MessageSender(object):
         return self._session.get('https://www.okcupid.com/mailbox', params=params)
 
 
-def get_my_username(tree):
-    xpath_string = xpb.div(id='avatarborder').span(id='user_thumb').img.xpath
-    image_hover = tree.xpath(xpath_string)[0].attrib['alt']
-    return image_hover.split()[-1]
-
-
 def get_additional_info(tree):
     """
     Make a request to OKCupid to get a user's age, gender, orientation,
     and relationship status.
     """
-    age = int(xpb.add_node(attributes=dict(id='ajax_age')).get_text_(tree).strip())
+    age = int(xpb.span(id='ajax_age').get_text_(tree).strip())
     orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0].strip()
     status = tree.xpath("//*[@id = 'ajax_status']/text()")[0].strip()
     gender_result = tree.xpath("//*[@id = 'ajax_gender']/text()")[0].strip()
@@ -76,8 +71,16 @@ def get_additional_info(tree):
     return age, gender, orientation, status, location
 
 
-def get_authcode(text_response):
-    return search('var AUTHCODE = "(.*?)";', text_response).group(1)
+@util.n_partialable
+def get_js_variable(html_response, variable_name):
+    if not isinstance(html_response, str):
+        html_response = html.tostring(html_response).decode('utf8')
+    return search('var {0} = "(.*?)";'.format(variable_name), html_response).group(1)
+
+
+get_authcode = get_js_variable(variable_name='AUTHCODE')
+get_username = get_js_variable(variable_name='SCREENNAME')
+get_my_username = get_username
 
 
 def parse_date_updated(date_updated_text):

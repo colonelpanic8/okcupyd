@@ -1,11 +1,11 @@
 '''
 Sample script that gives a 5-star rating to the profiles of all
 24-year-old straight/gay/bi women/men (depending on your
-gender/orientation) in Minneapolis who like the show Arrested 
+gender/orientation) in Minneapolis who like the show Arrested
 Development.
 '''
 
-from pyokc import pyokc
+import pyokc
 
 u = pyokc.User()
 profiles = u.search(location='minneapolis, mn', keywords='arrested development',

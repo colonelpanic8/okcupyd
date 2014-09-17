@@ -24,3 +24,12 @@ def test_partialable_method_behavior():
     hpm = HasPartialableMethods(2)
     assert hpm.on_instance(2, hpm) == 4
     assert hpm.on_class() == 3
+
+
+def test_partialable_with_kwargs_taking_function():
+    @util.n_partialable
+    def kwarg_taking_function(arg, **kwargs):
+        kwargs['k'] = arg
+        return kwargs
+
+    assert kwarg_taking_function(a=14)(2) == {'k': 2, 'a': 14}

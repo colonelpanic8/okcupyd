@@ -109,14 +109,13 @@ class Profile(object):
         OKCupid displaying only ten questions on each page, potentially
         requiring a large number of requests to the server.
         """
-        keep_going = True
         question_number = 0
-        while keep_going:
+        while True:
             questions_data = {
                 'low': 1 + question_number,
                 }
             get_questions = self._session.post(
-            'http://www.okcupid.com/profile/{0}/questions'.format(self.name),
+            'http://www.okcupid.com/profile/{0}/questions'.format(self.username),
             data=questions_data)
             tree = html.fromstring(get_questions.content.decode('utf8'))
             next_wrapper = tree.xpath("//li[@class = 'next']")
@@ -134,13 +133,13 @@ class Profile(object):
                     explanation = explanation_span[0].text.strip()
                 self.questions.append(Question(text, user_answer, explanation))
             if not len(next_wrapper):
-                keep_going = False
+                break
 
     def update_traits(self):
         """
         Fill `self.traits` the personality traits of this profile.
         """
-        get_traits = self._session.get('http://www.okcupid.com/profile/{0}/personality'.format(self.name))
+        get_traits = self._session.get('http://www.okcupid.com/profile/{0}/personality'.format(self.username))
         tree = html.fromstring(get_traits.content.decode('utf8'))
         self.traits = tree.xpath("//div[@class = 'pt_row']//label/text()")
 

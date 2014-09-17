@@ -20,7 +20,13 @@ class Session(requests.Session):
     }
 
     @classmethod
-    def login(cls, username=settings.USERNAME, password=settings.PASSWORD, headers=None):
+    def login(cls, username=None, password=None, headers=None):
+        # settings.USERNAME and settings.PASSWORD should not be made
+        # the defaults to their respective arguments because doing so
+        # would prevent this function from picking up any changes made
+        # to those values after import time.
+        username = username or settings.USERNAME
+        password = password or settings.PASSWORD
         session = cls()
         credentials = {
             'username': username,
@@ -30,10 +36,10 @@ class Session(requests.Session):
         login_response = session.post('https://www.okcupid.com/login',
                                       data=credentials,
                                       headers=headers or cls.default_login_headers)
-        if login_response.json()['screenname'] is None or  (
-            login_response.json()['screenname'].lower() != username.lower()
-        ):
-            raise AuthenticationError('Could not log in with the credentials provided')
+        if login_response.json()['screenname'] is None:
+            raise AuthenticationError('Could not log in as {0}'.format(username))
+        if login_response.json()['screenname'] != username.lower():
+            log.warning('Expected to log in as {0} but got {1}'.format(username, login_response.json()['screenname']))
         return session
 
     def __init__(self, *args, **kwargs):

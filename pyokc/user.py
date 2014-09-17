@@ -115,10 +115,10 @@ class User(object):
             'cf': 'leftbar_match',
             'leftbar_match': 1,
             }
-        profile_request = self._session.post('http://www.okcupid.com/profile/{0}'.format(prfl.name), data=params)
+        profile_request = self._session.post('http://www.okcupid.com/profile/{0}'.format(prfl.username), data=params)
         profile_tree = html.fromstring(profile_request.content.decode('utf8'))
         prfl.match, prfl.enemy = helpers.get_percentages(profile_tree)
-        prfl.age, prfl.gender, prfl.orientation, prfl.status = helpers.get_additional_info(profile_tree)
+        prfl.age, prfl.gender, prfl.orientation, prfl.status, prfl.location = helpers.get_additional_info(profile_tree)
         if len(profile_tree.xpath("//div[@id = 'rating']")):
             prfl.rating = helpers.get_rating(profile_tree.xpath("//div[@id = 'rating']")[0])
         elif len(profile_tree.xpath("//button[@class = 'flatbutton white binary_rating_button like liked']")):
@@ -132,8 +132,8 @@ class User(object):
         # it makes only 1 request instead of 2.
         if update_pics:
             prfl.update_pics()
-        if prfl._id is None:
-            prfl._id = helpers.get_profile_id(profile_tree)
+        if prfl.id is None:
+            prfl.id = helpers.get_profile_id(profile_tree)
         return prfl
 
     def update_questions(self):
@@ -220,7 +220,7 @@ class User(object):
         if isinstance(profile, str):
             profile = self.visit(profile)
         parameters = {
-            'target_userid': profile._id,
+            'target_userid': profile.id,
             'type': 'vote',
             'target_objectid': '0',
             'vote_type': 'personality',

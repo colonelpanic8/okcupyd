@@ -5,15 +5,17 @@ living in New York, NY who either do not smoke or are trying to quit.
 
 from shutil import copyfileobj
 from requests import get
-from pyokc import pyokc
+
+import pyokc
+
 
 u = pyokc.User()
 profiles = u.search(location='new york, ny', religion='buddhist',
                     height_min=66, height_max=68, looking_for='everybody',
-                    smokes=['no', 'trying to quit'], number=1000)
+                    smokes=['no', 'trying to quit'], number=1)
 for profile in profiles:
-    u.visit(profile, update_pics=True) # you can also ignore the update_pics kwarg and later call profile.update_pics() 
-    print("Downloading {0}'s pictures...".format(profile.name))
+    u.visit(profile, update_pics=True) # you can also ignore the update_pics kwarg and later call profile.update_pics()
+    print("Downloading {0}'s pictures...".format(profile.usernamename))
     for count, url in enumerate(profile.pics, start=1):
         extension = url.split('.')[-1]
         response = get(url, stream=True)

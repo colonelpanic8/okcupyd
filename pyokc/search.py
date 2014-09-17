@@ -164,7 +164,7 @@ for key in ['smokes', 'drinks', 'drugs', 'education', 'job',
     @register_filter_builder(keys=(key,))
     @util.makelist_decorator
     def option_filter(value):
-        magicnumbers.get_options_query(key, [value])
+        magicnumbers.get_options_query(key, value)
 
 
 for key, function in [('pets', util.makelist_decorator(magicnumbers.get_pet_queries)),

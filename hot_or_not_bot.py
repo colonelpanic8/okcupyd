@@ -1,9 +1,11 @@
+import argparse
 import logging
 import time
 
 import simplejson
 
 import pyokc
+import interactive
 
 
 log = logging.getLogger(__name__)
@@ -124,6 +126,7 @@ class MessageLogger(object):
 
 
 if __name__ == '__main__':
-    import logging; logging.basicConfig(level=logging.DEBUG)
+    interactive.parse_command_line_options(argparse.ArgumentParser())
+    interactive.get_credentials()
     message_logger = MessageLogger('logs/threads.json', 'logs/requests.json')
     HotOrNotBot(pyokc.User(), message_logger=message_logger).continuously_respond_to_messages()

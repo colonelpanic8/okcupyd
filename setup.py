@@ -10,7 +10,7 @@ setup(
     name="pyokc",
     version="1.0.0",
     packages=find_packages(),
-    install_requires=['lxml', 'requests', 'simplejson'],
+    install_requires=['lxml', 'requests', 'simplejson', 'tox'],
     package_data={'': ['*.md', '*.rst']},
     author="Evan Fredericksen",
     author_email="evfredericksen@gmail.com",
