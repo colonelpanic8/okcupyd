@@ -2,6 +2,7 @@ from lxml import html
 
 from . import helpers
 from . import util
+from .xpath import xpb
 
 
 class Question(object):
@@ -15,11 +16,25 @@ class Question(object):
         return '<Question: {0}>'.format(self.text)
 
 
+class QuestionFetcher(object):
+
+    def __init__(self, session, username):
+        self.session = session
+        self.username = username
+
+    def get(self):
+        pass
+
+
 class Profile(object):
 
+    attributes = set(('username', 'id', 'age', 'location', 'match_percentage',
+                      'enemy_percentage', 'rating', 'contacted'))
+
     def __init__(self, session, username, *args, **kwargs):
-        self.username = username
         self._session = session
+        self.username = username
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -30,10 +45,6 @@ class Profile(object):
         return self._session.get(
             'https://www.okcupid.com/profile/{0}'.format(self.username)
         ).content.decode('utf8')
-
-    @util.cached_property
-    def authcode(self):
-        return helpers.get_authcode(self._profile_response)
 
     @util.cached_property
     def _profile_tree(self):
@@ -51,10 +62,19 @@ class Profile(object):
             'from_profile': 1
         }
 
+    @util.cached_property
+    def authcode(self):
+        return helpers.get_authcode(self._profile_response)
+
+    @util.cached_property
+    def picture_uris(self):
+        pics_request = self._session.get('https://www.okcupid.com/profile/{0}/photos?cf=profile'.format(self.username))
+        pics_tree = html.fromstring(pics_request.content.decode('utf8'))
+        return xpb.div(id='album_0').img.select_attribute_('src', pics_tree)
+
     @util.n_partialable
     def message(self, message, thread_id=None):
         return helpers.MessageSender(self._session).send_message(self.username, message, self.authcode, thread_id)
-
 
     def _initialize_fillable_traits(self):
         self.pics = []
@@ -142,14 +162,6 @@ class Profile(object):
         get_traits = self._session.get('http://www.okcupid.com/profile/{0}/personality'.format(self.username))
         tree = html.fromstring(get_traits.content.decode('utf8'))
         self.traits = tree.xpath("//div[@class = 'pt_row']//label/text()")
-
-    def update_pics(self):
-        """
-        Fill `self.pics` with url strings of pictures for this profile.
-        """
-        pics_request = self._session.get('http://www.okcupid.com/profile/{0}/photos?cf=profile'.format(self.username))
-        pics_tree = html.fromstring(pics_request.content.decode('utf8'))
-        self.pics = pics_tree.xpath("//div[@id = 'album_0']//img/@src")
 
     def __repr__(self):
         return 'Profile("{0}")'.format(self.username)

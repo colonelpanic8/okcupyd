@@ -1,5 +1,4 @@
 from collections import namedtuple
-import itertools
 import logging
 
 from lxml import html
@@ -7,95 +6,82 @@ from lxml import html
 from . import helpers
 from . import util
 from .profile import Profile
-from .xpath import XPathBuilder
+from .xpath import XPathBuilder, xpb
 
 
 log = logging.getLogger(__name__)
 
 
-class Mailbox(object):
-
-    def __init__(self, session, mailbox_number):
-        self._mailbox_fetcher = MailboxFetcher(session, mailbox_number)
-
-    @util.cached_property
-    def threads(self):
-        return list(self._mailbox_fetcher.get_threads())
-
-    def refresh(self, use_existing=True):
-        if 'threads' in self.__dict__:
-            self.threads = list(self._mailbox_fetcher.get_threads(
-                existing=self.threads if use_existing else ()
-            ))
-        return self.threads
-
-    def __iter__(self):
-        return iter(self.threads)
-
-    def __getitem__(self, item):
-        return self.threads[item]
+def ThreadFetcher(session, mailbox_number):
+    return util.StepObjectFetcher(ThreadHTMLFetcher(session, mailbox_number),
+                                  ThreadProcessor(session))
 
 
-class MailboxFetcher(object):
+class ThreadHTMLFetcher(object):
 
-    step = 30
-
-    def __init__(self, session, mailbox_number):
+    def __init__(self, session, mailbox_number, step=30):
         self._session = session
-        self.mailbox_number = mailbox_number
+        self._mailbox_number = mailbox_number
+        self.step = step
 
-    def _form_data(self, start_at):
+    def _query_params(self, start_at):
         return {
             'low': start_at,
-            'folder': self.mailbox_number,
+            'folder': self._mailbox_number,
             'infiniscroll': 1
         }
 
-    def process_message_element(self, message_element, id_to_existing_thread):
-        thread_id = message_element.attrib['data-threadid']
-        if thread_id in id_to_existing_thread:
-            return id_to_existing_thread[thread_id]
+    def fetch(self, start_at):
+        return self._session.okc_get(
+            'messages',
+            params=self._query_params(start_at)
+        ).content.decode('utf8').strip()
 
-        correspondent_id = message_element.attrib['data-personid']
 
-        correspondent = XPathBuilder().div.with_class('inner').a.with_class('photo').img.apply_(message_element)[0].attrib['alt'].split()[-1]
+class ThreadProcessor(object):
 
-        read = not 'unreadMessage' in message_element.attrib['class']
+    def __init__(self, session, id_to_existing=None):
+        self._session = session
+        self.id_to_existing = id_to_existing or {}
 
-        timestamp_span = XPathBuilder().span.with_class('timestamp').apply_(message_element)
+    def process(self, text_response):
+        tree = html.fromstring(text_response)
+        thread_elements = XPathBuilder(relative=False).li.\
+                          with_classes('thread','message').apply_(tree)
+        for thread_element in thread_elements:
+            yield self._process_thread_element(thread_element)
+
+    def _process_thread_element(self, thread_element):
+        thread_id = thread_element.attrib['data-threadid']
+        if self.id_to_existing is not None and thread_id in self.id_to_existing:
+            return self.id_to_existing[thread_id]
+
+        correspondent_id = thread_element.attrib['data-personid']
+
+        correspondent = xpb.div.with_class('inner').a.with_class('photo').\
+                        img.select_attribute_('alt', thread_element)[0].split()[-1]
+
+        read = not 'unreadMessage' in thread_element.attrib['class']
+
+        timestamp_span = xpb.span.with_class('timestamp').apply_(thread_element)
         date_updated_text = timestamp_span[0][0].text_content()
         date_updated = helpers.parse_date_updated(date_updated_text)
 
         return MessageThread(thread_id, correspondent, correspondent_id, read,
                              date_updated, session=self._session)
 
-    def get_threads(self, start_at=0, get_at_least=None, existing=()):
-        id_to_existing_thread = {thread.thread_id: thread for thread in existing}
-        start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
-                                if get_at_least
-                                else itertools.count(start_at + 1, self.step))
-        for start_at in start_at_iterator:
-            messages_response = self._session.get('https://www.okcupid.com/messages',
-                                                   params=self._form_data(start_at))
-            messages_text = messages_response.content.decode('utf8').strip()
-            if not messages_text: break
-            inbox_tree = html.fromstring(messages_text)
-            message_elements = XPathBuilder(relative=False).li.with_classes('thread', 'message').apply_(inbox_tree)
-            for message_element in message_elements:
-                yield self.process_message_element(message_element,
-                                                   id_to_existing_thread)
-
 
 class MessageRetriever(object):
 
-    def __init__(self, session, thread_id):
+    def __init__(self, session, thread_id, read_messages=False):
         self._session = session
+        self._read_messages = read_messages
         self.thread_id = thread_id
 
     @property
     def params(self):
         return {
-            'readmsg': 'true',
+            'readmsg': str(self._read_messages).lower(),
             'threadid': self.thread_id,
             'folder': 1
         }
@@ -106,17 +92,18 @@ class MessageRetriever(object):
         return html.fromstring(messages_response.content.decode('utf8'))
 
     def get_usernames(self, tree):
-        xpath_string = XPathBuilder().div.with_class('profile_info').div.with_class('username').span.with_class('name').xpath
+        xpath_string = xpb.div.with_class('profile_info').div.\
+                       with_class('username').span.with_class('name').xpath
         try:
             them = tree.xpath(xpath_string)[0].text
         except IndexError:
-            title_element = XPathBuilder().title.apply_(tree)[0]
+            title_element = xpb.title.apply_(tree)[0]
             them = title_element.text.split()[-1]
 
         return helpers.get_my_username(tree), them
 
     def get_message_elements(self, thread_tree):
-        return XPathBuilder().li.with_classes('to_me', 'from_me')._or.apply_(thread_tree)
+        return xpb.li.with_classes('to_me', 'from_me')._or.apply_(thread_tree)
 
     def get_messages(self):
         tree = self.thread_tree()
@@ -127,7 +114,7 @@ class MessageRetriever(object):
             else:
                 sender, recipient = them, me
             message_id = message_element.attrib['id'].split('_')[-1]
-            message = XPathBuilder().div.with_class('message_body').apply_(message_element)
+            message = xpb.div.with_class('message_body').apply_(message_element)
             if message_id == 'compose':
                 continue
             content = None

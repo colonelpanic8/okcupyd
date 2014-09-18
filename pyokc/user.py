@@ -3,7 +3,8 @@ import re
 from lxml import html
 
 from . import helpers
-from .messaging import Mailbox
+from . import util
+from .messaging import ThreadFetcher
 from .profile import Profile, Question
 from .search import search
 from .session import Session
@@ -11,22 +12,6 @@ from .xpath import XPathBuilder
 
 
 class User(object):
-    """
-    Represent an OKCupid user. Username and password are only optional
-    if you have already filled in your username and password in
-    settings.py.
-    Parameters
-    ----------
-    username : str, optional
-        The username for your OKCupid account.
-    password : str, optional
-        The password for your OKCupid account.
-    Raises
-    ----------
-    AuthenticationError
-        If you are unable to login with the username and password
-        provided.
-    """
 
     @classmethod
     def with_credentials(cls, username, password):
@@ -44,9 +29,9 @@ class User(object):
         self.visitors = []
 
         self._message_sender = helpers.MessageSender(self._session)
-        self.inbox = Mailbox(self._session, 1)
-        self.outbox = Mailbox(self._session, 2)
-        self.drafts = Mailbox(self._session, 4)
+        self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
+        self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
+        self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
 
     def update_essay(self, essay_id, essay_body):
         form_data = {
@@ -70,7 +55,7 @@ class User(object):
         thread_id = None
         if not isinstance(username, str):
             username = username.username
-        for thread in sorted(set(self.inbox.threads + self.outbox.threads), key=lambda t: t.date,
+        for thread in sorted(set(self.inbox.items + self.outbox.items), key=lambda t: t.date,
                              reverse=True):
             if thread.correspondent.lower() == username.lower():
                 thread_id = thread.thread_id
@@ -86,7 +71,7 @@ class User(object):
         kwargs.setdefault('radius', 25)
         return search(self._session, **kwargs)
 
-    def visit(self, username, update_pics=False):
+    def visit(self, username):
         """Visit another user's profile. Automatically update the
         `essays`, `details`, and `looking_for` attributes of the
         visited profile. Accept either a string or a Profile object as
@@ -126,12 +111,6 @@ class User(object):
         helpers.update_essays(profile_tree, prfl.essays)
         helpers.update_looking_for(profile_tree, prfl.looking_for)
         helpers.update_details(profile_tree, prfl.details)
-        # If update_pics is False, you will need to call Profile.update_pics()
-        # manually if you wish to access urls in this profile's pics attribute,
-        # however this method will be approximately 3 seconds quicker because
-        # it makes only 1 request instead of 2.
-        if update_pics:
-            prfl.update_pics()
         if prfl.id is None:
             prfl.id = helpers.get_profile_id(profile_tree)
         return prfl

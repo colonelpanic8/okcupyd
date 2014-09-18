@@ -1,6 +1,8 @@
+import contextlib
+
 import mock
 import pytest
-from vcr.cassette import use_cassette
+from vcr.cassette import use_cassette, Cassette
 
 from . import util
 from pyokc import settings
@@ -22,36 +24,38 @@ def pytest_addoption(parser):
                      help="Resave cassettes. Use to retoractively scrub cassettes.")
 
 
-
-@pytest.yield_fixture(autouse=True, scope='session')
-def patch_settings(request):
-    if not request.config.getoption('credentials_modules'):
-        with mock.patch.object(settings, 'USERNAME', 'username'), \
-             mock.patch.object(settings, 'PASSWORD', 'password'), \
-             mock.patch.object(settings, 'AF_USERNAME', 'username'), \
-             mock.patch.object(settings, 'AF_PASSWORD', 'password'), \
-             mock.patch.object(settings, 'DELAY', 0):
+def patch_when_option_set(option, *patches, **kwargs):
+    negate = kwargs.get('negate', False)
+    @pytest.yield_fixture(autouse=True, scope='session')
+    def patch_conditionally(request):
+        condition = bool(request.config.getoption(option))
+        if negate: condition = not condition
+        if condition:
+            with contextlib.ExitStack() as exit_stack:
+                for patch in patches:
+                    exit_stack.enter_context(patch)
+                yield
+        else:
             yield
-    else:
-        yield
+    return patch_conditionally
 
 
-@pytest.yield_fixture(autouse=True, scope='session')
-def patch_use_cassette_enabled(request):
-    if request.config.getoption('skip_vcrpy'):
-        with mock.patch.object(use_cassette, '_enabled', False):
-            yield
-    else:
-        yield
-
-
-@pytest.yield_fixture(autouse=True, scope='session')
-def patch_vcrpy_filters(request):
-    if request.config.getoption('scrub'):
-        yield
-    else:
-        with mock.patch.object(util, 'SHOULD_SCRUB', False):
-            yield
+patch_settings = patch_when_option_set('credentials_modules',
+                                       mock.patch.object(settings, 'USERNAME', 'username'),
+                                       mock.patch.object(settings, 'PASSWORD', 'password'),
+                                       mock.patch.object(settings, 'AF_USERNAME', 'username'),
+                                       mock.patch.object(settings, 'AF_PASSWORD', 'password'),
+                                       mock.patch.object(settings, 'DELAY', 0), negate=True)
+patch_save = patch_when_option_set('resave_cassettes',
+                                   mock.patch.object(
+                                       Cassette, '_save',
+                                       pyokc_util.n_partialable(Cassette._save)(force=True)))
+patch_use_cassette_enabled = patch_when_option_set('skip_vcrpy',
+                                                   mock.patch.object(use_cassette, '__enter__'),
+                                                   mock.patch.object(use_cassette, '__exit__'),
+                                                   negate=False)
+patch_vcrpy_filters = patch_when_option_set('scrub',
+                                            mock.patch.object(util, 'SHOULD_SCRUB', False), negate=True)
 
 
 @pytest.yield_fixture(autouse=True, scope='session')

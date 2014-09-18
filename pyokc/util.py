@@ -3,10 +3,14 @@ import functools
 import getpass
 import importlib
 import inspect
+import itertools
 import logging
 import shutil
 
 from . import settings
+
+
+BASE_URI = 'https://www.okcupid.com/'
 
 
 class n_partialable(object):
@@ -164,15 +168,14 @@ def get_credentials():
 
 
 def add_command_line_options(add_argument, use_short_options=True):
-    args = ("--enable-logger",)
+    logger_args = ("--enable-logger",)
+    credentials_args = ("--credentials",)
     if use_short_options:
-        args += ('-l',)
-    add_argument(*args, dest='enabled_loggers',
-                 action="append", default=[], help="Enable the specified log.")
-    args = ("--credentials",)
-    if use_short_options:
-        args += ('-c',)
-    add_argument(*args, dest='credentials_modules',
+        logger_args += ('-l',)
+        credentials_args += ('-c',)
+    add_argument(*logger_args, dest='enabled_loggers',
+                 action="append", default=[], help="Enable the specified logger.")
+    add_argument(*credentials_args, dest='credentials_modules',
                  action="append", default=[],
                  help="Use the specified credentials module to update "
                  "the values in pyokc.settings.")
@@ -200,3 +203,46 @@ def update_settings_with_module(module_name):
 def save_file(filename, data):
     with open(filename, 'wb') as out_file:
         shutil.copyfileobj(data, out_file)
+
+
+class Fetchable(object):
+
+    def __init__(self, fetcher):
+        self._fetcher = fetcher
+
+    @cached_property
+    def items(self):
+        return list(self._fetcher.get())
+
+    def refresh(self, use_existing=True):
+        if 'items' in self.__dict__:
+            self.items = list(self._fetcher.get(
+                existing=self.items if use_existing else ()
+            ))
+        return self.threads
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+
+class StepObjectFetcher(object):
+
+    def __init__(self, fetcher, processor, step=None):
+        self._processor = processor
+        self._fetcher = fetcher
+        self.step = step or self._fetcher.step
+
+    def get(self, start_at=0, get_at_least=None, id_to_existing=None):
+        self._processor.id_to_existing = id_to_existing
+        start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
+                             if get_at_least
+                             else itertools.count(start_at + 1, self.step))
+        generators = []
+        for start_at in start_at_iterator:
+            text_response = self._fetcher.fetch(start_at)
+            if not text_response: break
+            generators.append(self._processor.process(text_response))
+        return itertools.chain(*generators)

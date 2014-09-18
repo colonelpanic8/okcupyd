@@ -25,6 +25,10 @@ class XPathBuilder(object):
     def __getattr__(self, attr):
         return self.add_node(element=attr)
 
+    def update_final_node(self, updated_final_node):
+        return type(self)(self.nodes[:-1] + (updated_final_node,),
+                          relative=self.relative, direct_child=self.direct_child)
+
     def __call__(self, *predicates, **attributes):
         direct_child = attributes.pop('direct_child', None)
         assert len(self.nodes)
@@ -35,14 +39,19 @@ class XPathBuilder(object):
                           relative=self.relative, direct_child=self.direct_child)
 
     def attribute_contains(self, attribute, contains_string):
-        updated_final_node = self.nodes[-1].add_contains_predicates(((attribute, contains_string),))
-        return type(self)(self.nodes[:-1] + (updated_final_node,),
-                          relative=self.relative, direct_child=self.direct_child)
+        updated_final_node = self.nodes[-1].add_contains_predicates(
+            ((attribute, contains_string),))
+        return self.update_final_node(updated_final_node)
 
     def with_classes(self, *classes):
-        updated_final_node = self.nodes[-1].with_classes(classes)
-        return type(self)(self.nodes[:-1] + (updated_final_node,),
-                          relative=self.relative, direct_child=self.direct_child)
+        return self.update_final_node(self.nodes[-1].with_classes(classes))
+
+    def select_attribute_(self, attribute, elem=None):
+        builder = self.update_final_node(self.nodes[-1](selected_attribute=attribute))
+        if elem is not None:
+            return builder.apply_(elem)
+        else:
+            return builder
 
     with_class = with_classes
 
@@ -66,7 +75,7 @@ class XPathNode(object):
         return "@{0} = '{1}'".format(attribute, value)
 
     def __init__(self, element='*', attributes=None, predicates=None,
-                 direct_child=False, use_or=False):
+                 direct_child=False, use_or=False, selected_attribute=None):
         self.element = element
         self.predicates = tuple(predicates) if predicates else ()
         if attributes:
@@ -74,6 +83,7 @@ class XPathNode(object):
                                       for attribute, value in attributes.items()])
         self.direct_child = direct_child
         self.use_or = use_or
+        self.selected_attribute = selected_attribute
 
     @property
     def make_or(self):
@@ -85,8 +95,9 @@ class XPathNode(object):
 
     @property
     def xpath(self):
-        return '{0}{1}{2}'.format(self.separator, self.element,
-                                  self.predicate_string)
+        return '{0}{1}{2}{3}'.format(self.separator, self.element,
+                                     self.predicate_string,
+                                     self.selected_attribute_string)
 
     @property
     def predicate_joiner(self):
@@ -100,13 +111,18 @@ class XPathNode(object):
         else:
             return ''
 
+    @property
+    def selected_attribute_string(self):
+        return '/@{0}'.format(self.selected_attribute) \
+            if self.selected_attribute else ''
+
     def __call__(self, element=None, predicates=(), attributes=None,
-                 direct_child=None, use_or=False):
+                 direct_child=None, use_or=False, selected_attribute=None):
         direct_child = self.direct_child if direct_child is None else direct_child
         element = self.element if element is None else element
         new_predicates = self.predicates + tuple(predicates)
         return type(self)(element, attributes, new_predicates,
-                          direct_child, use_or)
+                          direct_child, use_or, selected_attribute)
 
     def add_contains_predicates(self, kv_pairs):
         predicates = [self.attribute_contains(attribute, contains_string)

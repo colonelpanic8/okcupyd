@@ -2,7 +2,7 @@ import itertools
 import numbers
 
 from . import util
-from .attractiveness_finder import CachedAttractivenessFinder, CheckForExistenceAttractivenessFinder, RoundedAttractivenessFinder
+from .attractiveness_finder import AttractivenessFinder
 
 
 class Statistics(object):
@@ -13,7 +13,7 @@ class Statistics(object):
         self._message_threads = message_threads or set(itertools.chain(user.inbox,
                                                                        user.outbox))
         self._filters = filters
-        self._attractiveness_finder = attractiveness_finder or CachedAttractivenessFinder(RoundedAttractivenessFinder(CheckForExistenceAttractivenessFinder()))
+        self._attractiveness_finder = attractiveness_finder or AttractivenessFinder()
 
     def _thread_matches(self, message_thread):
         return all(f(message_thread) for f in self._filters)
@@ -44,7 +44,8 @@ class Statistics(object):
 
     @util.cached_property
     def has_attractiveness(self):
-        return self.with_filters(lambda mt: self._attractiveness_finder.find_attractiveness(mt.correspondent) is not None)
+        return self.with_filters(lambda mt: self._attractiveness_finder.find_attractiveness(
+            mt.correspondent) is not None)
 
     def time_filter(self, min_date=None, max_date=None):
         def _time_filter(thread):
@@ -94,7 +95,8 @@ class Statistics(object):
 
     def _average_attractiveness(self, attractiveness_finder=None):
         attractiveness_finder = attractiveness_finder or self._attractiveness_finder
-        return self.has_attractiveness._average(lambda thread: attractiveness_finder.find_attractiveness(thread.correspondent))
+        return self.has_attractiveness._average(lambda thread: attractiveness_finder.find_attractiveness(
+            thread.correspondent))
 
     @property
     def average_attractiveness(self):

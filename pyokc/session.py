@@ -5,6 +5,7 @@ import requests
 
 from .errors import AuthenticationError
 from . import settings
+from . import util
 
 
 log = logging.getLogger(__name__)
@@ -63,3 +64,9 @@ class Session(requests.Session):
         response = super().get(*args, **kwargs)
         response.raise_for_status()
         return response
+
+    def okc_get(self, path, *args, **kwargs):
+        return self.get('{0}{1}'.format(util.BASE_URI, path), *args, **kwargs)
+
+    def okc_post(self, path, *args, **kwargs):
+        return self.post('{0}{1}'.format(util.BASE_URI, path), *args, **kwargs)
