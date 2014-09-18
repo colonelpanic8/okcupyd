@@ -2,7 +2,7 @@ import contextlib
 
 import mock
 import pytest
-from vcr.cassette import use_cassette, Cassette
+from vcr.cassette import CassetteContextDecorator, Cassette
 
 from . import util
 from pyokc import settings
@@ -51,8 +51,8 @@ patch_save = patch_when_option_set('resave_cassettes',
                                        Cassette, '_save',
                                        pyokc_util.n_partialable(Cassette._save)(force=True)))
 patch_use_cassette_enabled = patch_when_option_set('skip_vcrpy',
-                                                   mock.patch.object(use_cassette, '__enter__'),
-                                                   mock.patch.object(use_cassette, '__exit__'),
+                                                   mock.patch.object(CassetteContextDecorator, '__enter__'),
+                                                   mock.patch.object(CassetteContextDecorator, '__exit__'),
                                                    negate=False)
 patch_vcrpy_filters = patch_when_option_set('scrub',
                                             mock.patch.object(util, 'SHOULD_SCRUB', False), negate=True)
