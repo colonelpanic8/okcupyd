@@ -58,6 +58,9 @@ class XPathBuilder(object):
     def apply_(self, tree):
         return tree.xpath(self.xpath)
 
+    def one_(self, tree):
+        return self.apply_(tree)[0]
+
     def get_text_(self, tree):
         return self.apply_(tree)[0].text_content()
 

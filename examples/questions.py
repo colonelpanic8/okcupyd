@@ -7,9 +7,9 @@ import pyokc
 
 u = pyokc.User()
 p = u.quickmatch()
+
 print('Questions for {0}'.format(p.username))
 print('----------')
-p.update_questions()
 for q in p.questions:
     if 'marijuana' in q.text.lower():
         print(q.text)

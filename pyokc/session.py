@@ -70,3 +70,6 @@ class Session(requests.Session):
 
     def okc_post(self, path, *args, **kwargs):
         return self.post('{0}{1}'.format(util.BASE_URI, path), *args, **kwargs)
+
+    def decoded_okc_get(self, *args, **kwargs):
+        return self.okc_get(*args, **kwargs).content.decode('utf8')

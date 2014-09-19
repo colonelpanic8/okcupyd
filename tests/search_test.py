@@ -74,6 +74,7 @@ class TestSearch(object):
         profile.rating
         profile.contacted
 
+
 @mock.patch('pyokc.helpers.get_locid', return_value=2)
 def test_construction_of_all_search_parameters(mock_get_locid):
     spb = SearchParameterBuilder()

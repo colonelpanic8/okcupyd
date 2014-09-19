@@ -5,10 +5,9 @@ from lxml import html
 from . import helpers
 from . import util
 from .messaging import ThreadFetcher
-from .profile import Profile, Question
-from .search import search
+from .profile import Profile
+from .search import SearchManager
 from .session import Session
-from .xpath import XPathBuilder
 
 
 class User(object):
@@ -65,11 +64,14 @@ class User(object):
 
 
     def search(self, **kwargs):
+        return self.search_manager(**kwargs).get_profiles()
+
+    def search_manager(self, **kwargs):
         kwargs.setdefault('gender', self.gender[0])
         kwargs.setdefault('looking_for', helpers.get_looking_for(self.gender, self.orientation))
         kwargs.setdefault('location', self.location)
         kwargs.setdefault('radius', 25)
-        return search(self._session, **kwargs)
+        return SearchManager(**kwargs)
 
     def visit(self, username):
         """Visit another user's profile. Automatically update the
@@ -104,69 +106,12 @@ class User(object):
         profile_tree = html.fromstring(profile_request.content.decode('utf8'))
         prfl.match, prfl.enemy = helpers.get_percentages(profile_tree)
         prfl.age, prfl.gender, prfl.orientation, prfl.status, prfl.location = helpers.get_additional_info(profile_tree)
-        if len(profile_tree.xpath("//div[@id = 'rating']")):
-            prfl.rating = helpers.get_rating(profile_tree.xpath("//div[@id = 'rating']")[0])
-        elif len(profile_tree.xpath("//button[@class = 'flatbutton white binary_rating_button like liked']")):
-           prfl.rating = 5
         helpers.update_essays(profile_tree, prfl.essays)
         helpers.update_looking_for(profile_tree, prfl.looking_for)
         helpers.update_details(profile_tree, prfl.details)
         if prfl.id is None:
             prfl.id = helpers.get_profile_id(profile_tree)
         return prfl
-
-    def update_questions(self):
-        """
-        Update `self.questions` with a sequence of question objects,
-        whose properties can be found in objects.py. Note that this
-        can take a while due to OKCupid displaying only ten questions
-        on each page, potentially requiring a large number of requests.
-        """
-        question_number = 0
-        while True:
-            questions_data = {
-                'low': 1 + question_number,
-            }
-            get_questions = self._session.post(
-                'http://www.okcupid.com/profile/{0}/questions'.format(self.username),
-                data=questions_data)
-            tree = html.fromstring(get_questions.content.decode('utf8'))
-            next_wrapper = tree.xpath("//li[@class = 'next']")
-            # Get a list of each question div wrapper, ignore the first because it's an unanswered question
-            question_wrappers = XPathBuilder().div.attribute_contains('id', 'question_').apply_(tree)[1:]
-            for div in question_wrappers:
-                if not div.attrib['id'][9:].isdigit():
-                    question_wrappers.remove(div)
-            for div in question_wrappers:
-                question_number += 1
-                explanation = ''
-                text = helpers.replace_chars(div.xpath(".//div[@class = 'qtext']/p/text()")[0])
-                user_answer = div.xpath(".//li[contains(@class, 'mine')]/text()")[0]
-                explanation_p = div.xpath(".//p[@class = 'value']")
-                if explanation_p[0].text is not None:
-                    explanation = explanation_p[0].text
-                self.questions.append(Question(text, user_answer, explanation))
-            if not len(next_wrapper):
-                break
-
-    def read(self, thread):
-        """
-        Update messages attribute of a thread object with a list of
-        messages to and from the main User and another profile.
-        Parameters
-        ----------
-        thread : MessageThread
-            Instance of MessageThread whose `messages` attribute you
-            wish to update.
-        """
-        thread_data = {'readmsg': 'true', 'threadid': thread.threadid[:-1], 'folder': 1}
-        get_thread = self._session.get('http://www.okcupid.com/messages', params=thread_data)
-        thread_tree = html.fromstring(get_thread.content.decode('utf8'))
-        helpers.add_newlines(thread_tree)
-        for li in thread_tree.iter('li'):
-            if 'class' in li.attrib and li.attrib['class'] in ('to_me', 'from_me', 'from_me preview'):
-                message_string = helpers.get_message_string(li, thread.sender)
-                thread.messages.append(message_string)
 
     def update_visitors(self):
         """

@@ -19,9 +19,11 @@ def pytest_addoption(parser):
     parser.addoption('--no-scrub', dest='scrub', action='store_false', default=True,
                     help="USE WITH CAUTION. Don't scrub PII from "
                     "http requests/responses. This is useful for recording cassetes.")
-    parser.addoption('--resave-cassettes', dest='resave_cassettes',
+    parser.addoption('--resave', dest='resave_cassettes',
                      action='store_true', default=False,
                      help="Resave cassettes. Use to retoractively scrub cassettes.")
+    parser.addoption('--cassette-mode', dest='cassette_mode', action='store', default='once',
+                    help="Accept new requests in all tests.")
 
 
 def patch_when_option_set(option, *patches, **kwargs):
@@ -50,18 +52,25 @@ patch_save = patch_when_option_set('resave_cassettes',
                                    mock.patch.object(
                                        Cassette, '_save',
                                        pyokc_util.n_partialable(Cassette._save)(force=True)))
-patch_use_cassette_enabled = patch_when_option_set('skip_vcrpy',
-                                                   mock.patch.object(CassetteContextDecorator, '__enter__'),
-                                                   mock.patch.object(CassetteContextDecorator, '__exit__'),
-                                                   negate=False)
+# patch_use_cassette_enabled = patch_when_option_set('skip_vcrpy',
+#                                                    mock.patch.object(CassetteContextDecorator,
+#                                                                      '__enter__'),
+#                                                    mock.patch.object(CassetteContextDecorator,
+#                                                                      '__exit__'))
 patch_vcrpy_filters = patch_when_option_set('scrub',
-                                            mock.patch.object(util, 'SHOULD_SCRUB', False), negate=True)
+                                            mock.patch.object(util, 'SHOULD_SCRUB', False),
+                                            negate=True)
+
+
+@pytest.fixture(autouse=True, scope='session')
+def set_vcr_options(request):
+    util.pyokc_vcr.record_mode = request.config.getoption('cassette_mode')
 
 
 @pytest.yield_fixture(autouse=True, scope='session')
 def process_command_line_args(request):
     pyokc_util.handle_command_line_options(request.config.option)
-    if request.config.getoption('skip_vcrpy'):
+    if request.config.getoption('skip_vcrpy') or request.config.getoption('credentials_modules'):
         with mock.patch.object(util, 'TESTING_USERNAME', settings.USERNAME):
             yield
     else:
@@ -71,4 +80,4 @@ def process_command_line_args(request):
 @pytest.fixture
 def session():
     with util.use_cassette('session_success'):
-        return Session.login(username=settings.USERNAME, password=settings.PASSWORD)
+        return Session.login()

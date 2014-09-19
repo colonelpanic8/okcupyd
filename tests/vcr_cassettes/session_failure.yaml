@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: password=password&username=username&okc_api=1
+    body: password=wrong_password&username=pyokc_testing&okc_api=1
     headers:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
@@ -14,17 +14,20 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA6tWKi5JLCktji8uKVKyUsgrzcnRUYCKAfmGBiZAbmlxalFmCogL5JRklOYm5SVm
-        5gD5SkogxclFqal5eYm5qVADagFnk7CVVQAAAA==
+        H4sIAAAAAAAAA6pWKk4uSk3Ny0vMTVVSsFLIK83J0VFQKi5JLCktji8uKUISLC1OLcpMAQkoGZlZ
+        GFuaWVpYGpuaGJuaG1gYGirBtYFUGBqY1HIBAAAA//8DABl2aD9dAAAA
     headers:
-      CF-RAY: [16b5b6adaae90d7f-SJC]
+      CF-RAY: [16be3f8d2ada11b3-SJC]
       Cache-control: [private]
       Connection: [keep-alive]
       Content-Encoding: [gzip]
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Wed, 17 Sep 2014 13:40:05 GMT']
+      Date: ['Thu, 18 Sep 2014 14:31:37 GMT']
       P3P: ['CP="NOI CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="http://www.okcupid.com/w3c/p3p.xml"']
       Server: [cloudflare-nginx]
+      Set-Cookie: ['__cfduid=ddb6122747dc3afc653821fe5ca6aa54c1411050697785; expires=Mon,
+          23-Dec-2019 23:50:00 GMT; path=/; domain=.okcupid.com; HttpOnly', 'guest=13163834896775057596;
+          Expires=Fri, 18 Sep 2015 14:31:37 GMT; Path=/; Domain=okcupid.com; HttpOnly']
       Transfer-Encoding: [chunked]
       X-OKWS-Version: [OKWS/3.1.28.1]
       X-XSS-Protection: [1; mode=block]

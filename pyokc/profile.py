@@ -1,3 +1,5 @@
+import itertools
+
 from lxml import html
 
 from . import helpers
@@ -7,7 +9,8 @@ from .xpath import xpb
 
 class Question(object):
 
-    def __init__(self, text, user_answer, explanation):
+    def __init__(self, id_, text, user_answer, explanation):
+        self.id = id_
         self.text = text
         self.user_answer = user_answer
         self.explanation = explanation
@@ -18,12 +21,81 @@ class Question(object):
 
 class QuestionFetcher(object):
 
-    def __init__(self, session, username):
-        self.session = session
-        self.username = username
+    step = 10
 
-    def get(self):
-        pass
+    @classmethod
+    def build(cls, session, username):
+        return cls(QuestionHTMLFetcher(session, username), QuestionProcessor(session))
+
+    _page_data_xpb = xpb.div.with_class('pages_data')
+    _current_page_xpb = _page_data_xpb.input(id='questions_pages_page').select_attribute_('value')
+    _total_page_xpb = _page_data_xpb.input(id='questions_pages_total').select_attribute_('value')
+
+    def __init__(self, html_fetcher, processor):
+        self._html_fetcher = html_fetcher
+        self._processor = processor
+
+    def _pages_left(self, tree):
+        return int(self._current_page_xpb.one_(tree)) < int(self._total_page_xpb.one_(tree))
+
+    def fetch(self, start_at=0, get_at_least=None, id_to_existing=None):
+        current_offset = start_at + 1
+        generators = []
+        while True:
+            tree = html.fromstring(self._html_fetcher.fetch(current_offset))
+            generators.append(self._processor.process(tree))
+            if not self._pages_left(tree):
+                break
+            current_offset = current_offset + self.step
+        return itertools.chain(*generators)
+
+
+class QuestionHTMLFetcher(object):
+
+    def __init__(self, session, username, step=10, **additional_parameters):
+        self._session = session
+        self._username = username
+        self.step = step
+        self._additional_parameters = additional_parameters
+
+    @property
+    def _uri(self):
+        return 'profile/{0}/questions'.format(self._username)
+
+    def _query_params(self, start_at):
+        parameters = {'low': start_at, 'leanmode': 1}
+        parameters.update(self._additional_paramters)
+        return parameters
+
+    def fetch(self, start_at):
+        response = self._session.okc_get(self._uri,
+                                         params=self._query_params(start_at))
+        return response.content.decode('utf8')
+
+
+class QuestionProcessor(object):
+
+    _question_xpb = xpb.div.with_class('question')
+
+    def __init__(self, session, id_to_existing=None):
+        self._session = session
+        self.id_to_existing = id_to_existing or {}
+
+    def _process_question_element(self, question_element):
+        id_ = question_element.attrib['data-qid']
+        text = xpb.div.with_class('qtext').p.get_text_(question_element).strip()
+        answer = None
+        explanation = None
+        if 'not_answered' not in question_element.attrib['class']:
+            answer = xpb.span.attribute_contains('id', 'answer_target').\
+                     get_text_(question_element).strip()
+
+            explanation = xpb.div.span.with_class('note').get_text_(question_element).strip()
+        return Question(id_, text, answer, explanation)
+
+    def process(self, tree):
+        for question_element in self._question_xpb.apply_(tree):
+                yield self._process_question_element(question_element)
 
 
 class Profile(object):
@@ -34,6 +106,8 @@ class Profile(object):
     def __init__(self, session, username, *args, **kwargs):
         self._session = session
         self.username = username
+        self._question_fetcher = QuestionFetcher.build(session, username)
+        self.questions = util.Fetchable(self._question_fetcher)
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -48,7 +122,7 @@ class Profile(object):
 
     @util.cached_property
     def _profile_tree(self):
-        return html(self._profile_response)
+        return html.fromstring(self._profile_response)
 
     def message_request_parameters(self, content, thread_id):
         return {
@@ -68,13 +142,26 @@ class Profile(object):
 
     @util.cached_property
     def picture_uris(self):
-        pics_request = self._session.get('https://www.okcupid.com/profile/{0}/photos?cf=profile'.format(self.username))
+        pics_request = self._session.okc_get('profile/{0}/photos?cf=profile'.format(self.username))
         pics_tree = html.fromstring(pics_request.content.decode('utf8'))
         return xpb.div(id='album_0').img.select_attribute_('src', pics_tree)
 
+    rating_xpath = xpb.ul.li.with_class('current-rating').select_attribute_('style')
+
+    @util.cached_property
+    def rating(self):
+        rating_style = self.rating_xpath.one_(self._profile_tree)
+        width_percentage = int(''.join(c for c in rating_style if c.isdigit()))
+        return (width_percentage // 100) * 5
+
+    @util.cached_property
+    def age(self):
+        return int(xpb.span(id='ajax_age').get_text_(self._profile_tree).strip())
+
     @util.n_partialable
     def message(self, message, thread_id=None):
-        return helpers.MessageSender(self._session).send_message(self.username, message, self.authcode, thread_id)
+        return helpers.MessageSender(self._session).send_message(self.username, message,
+                                                                 self.authcode, thread_id)
 
     def _initialize_fillable_traits(self):
         self.pics = []
@@ -119,41 +206,6 @@ class Profile(object):
             'pets': '',
             'speaks': '',
             }
-
-    def update_questions(self):
-        """
-        Update self.questions with Question instances, which contain
-        text, user_answer, and explanation attributes. See
-        the Question class in objects.py for more details. Like
-        User.update_questions(), note that this can take a while due to
-        OKCupid displaying only ten questions on each page, potentially
-        requiring a large number of requests to the server.
-        """
-        question_number = 0
-        while True:
-            questions_data = {
-                'low': 1 + question_number,
-                }
-            get_questions = self._session.post(
-            'http://www.okcupid.com/profile/{0}/questions'.format(self.username),
-            data=questions_data)
-            tree = html.fromstring(get_questions.content.decode('utf8'))
-            next_wrapper = tree.xpath("//li[@class = 'next']")
-            question_wrappers = tree.xpath("//div[contains(@id, 'question_')]")
-            for div in question_wrappers:
-                if not div.attrib['id'][9:].isdigit():
-                    question_wrappers.remove(div)
-            for div in question_wrappers:
-                question_number += 1
-                explanation = ''
-                text = helpers.replace_chars(div.xpath(".//div[@class = 'qtext']/p/text()")[0])
-                user_answer = div.xpath(".//span[contains(@id, 'answer_target_')]/text()")[0].strip()
-                explanation_span = div.xpath(".//span[@class = 'note']")
-                if explanation_span[0].text is not None:
-                    explanation = explanation_span[0].text.strip()
-                self.questions.append(Question(text, user_answer, explanation))
-            if not len(next_wrapper):
-                break
 
     def update_traits(self):
         """

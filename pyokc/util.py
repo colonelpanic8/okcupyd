@@ -212,11 +212,11 @@ class Fetchable(object):
 
     @cached_property
     def items(self):
-        return list(self._fetcher.get())
+        return list(self._fetcher.fetch())
 
     def refresh(self, use_existing=True):
         if 'items' in self.__dict__:
-            self.items = list(self._fetcher.get(
+            self.items = list(self._fetcher.fetch(
                 existing=self.items if use_existing else ()
             ))
         return self.threads
@@ -235,7 +235,7 @@ class StepObjectFetcher(object):
         self._fetcher = fetcher
         self.step = step or self._fetcher.step
 
-    def get(self, start_at=0, get_at_least=None, id_to_existing=None):
+    def fetch(self, start_at=0, get_at_least=None, id_to_existing=None):
         self._processor.id_to_existing = id_to_existing
         start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
                              if get_at_least

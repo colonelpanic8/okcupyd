@@ -97,23 +97,6 @@ def parse_date_updated(date_updated_text):
         return date.today()
 
 
-def get_message_string(li_element, sender):
-    """
-    Parse <li> element to get a string containing a message from
-    one profile to another.
-    Returns
-    ---------
-    str
-    """
-    if 'to_me' in li_element.attrib['class']:
-        message_string = '{0}: '.format(sender)
-    elif 'from_me' in li_element.attrib['class']:
-        message_string = 'Me: '
-    div = li_element.xpath(".//div[@class = 'message_body']")[0]
-    message_string += div.text_content().replace(' \n \n', '\n').strip()
-    return message_string
-
-
 def get_locid(session, location):
     """
     Make a request to locquery resource to translate a string location
@@ -127,48 +110,13 @@ def get_locid(session, location):
     query_parameters = {
         'func': 'query',
         'query': location,
-        }
+    }
     loc_query = session.get('http://www.okcupid.com/locquery', params=query_parameters)
     p = html.fromstring(loc_query.content.decode('utf8'))
     js = loads(p.text)
     if 'results' in js and len(js['results']):
         locid = js['results'][0]['locid']
     return locid
-
-def get_rating(div):
-    """
-    Get the rating from a match card.
-    Parameters
-    ---------
-    div : element
-        Element used by xpath.
-    Returns
-    ---------
-    int
-        The rating you've given this user.
-    """
-    try:
-        rating_div = div.xpath(".//li[@class = 'current-rating']")
-        rating_style = rating_div[0].attrib['style']
-        width_percent = int(''.join(c for c in rating_style if c.isdigit()))
-        return int((width_percent / 100) * 5)
-    except IndexError:
-        return 0
-
-
-def get_contacted(div):
-    """
-    Get whether you've contacted this user.
-    Parameters
-    ---------
-    div : element
-        Element used by xpath.
-    Returns
-    ---------
-    bool
-        Whether you've contacted this user or not.
-    """
-    return bool(div.xpath(".//span[@class = 'fancydate']"))
 
 
 def format_last_online(last_online):
@@ -198,22 +146,6 @@ def format_last_online(last_online):
     return last_online_int
 
 
-def format_status(status):
-    """
-    Returns the int that OKCupid maps to relationship status for
-    searching profiles.
-    Returns
-    ----------
-    int
-    """
-
-    status_parameter = 2  # single, default
-    if status.lower() in ('not single', 'married'):
-        status_parameter = 12
-    elif status.lower() == 'any':
-        status_parameter = 0
-    return status_parameter
-
 
 def get_percentages(profile_tree):
     """
@@ -241,18 +173,6 @@ def get_percentages(profile_tree):
         return percentage_list
     except IndexError:
         raise ProfileNotFoundError('Could not find the profile specified')
-
-
-def get_profile_id(tree):
-    """
-    Return a unique profile id string.
-    """
-    try:
-        js_call_string = tree.xpath("//a[@class = 'one-star']/@href")[0]
-        return search(r'\d{2,}', js_call_string).group()
-    except IndexError:
-        return tree.xpath("//button[@id = 'rate_user_profile']/@data-tuid")[0]
-        # <button id="rate_user_profile" data-tuid="2538582662150475561"
 
 
 def update_essays(tree, essays):
@@ -354,6 +274,7 @@ def replace_chars(astring):
     for k, v in CHAR_REPLACE.items():
         astring = astring.replace(k, v)
     return astring
+
 
 def add_newlines(tree):
     """

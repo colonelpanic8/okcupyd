@@ -5,9 +5,11 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
+      Cookie: [__cfduid=db0ba670e0dd171228551dbfb1b74f2021411050696877; override_session=0;
+          session=2683969893543570811%3a5144500537173097453]
       User-Agent: [python-requests/2.4.1 CPython/3.4.1 Darwin/13.3.0]
     method: GET
-    uri: http://www.okcupid.com/locquery?query=Portland%2C+OR&func=query
+    uri: http://www.okcupid.com/locquery?func=query&query=Portland%2C+OR
   response:
     body:
       string: !!binary |
@@ -15,81 +17,12 @@ interactions:
         0dVKOfnJmSkgtomhmaWpoQVQQUlqRQm6zqLU9Pw8pVodBWQdRpZmZsbm2HX4JmbmpSrVxgJl4RoM
         arkAAAAA//8DAFp5xdynAAAA
     headers:
-      CF-RAY: [16b5b6a431690d7f-SJC]
+      CF-RAY: [16be3f8b8d7211b3-SJC]
       Cache-control: [private]
       Connection: [keep-alive]
       Content-Encoding: [gzip]
       Content-Type: [text/javascript]
-      Date: ['Wed, 17 Sep 2014 13:40:03 GMT']
-      P3P: ['CP="NOI CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="http://www.okcupid.com/w3c/p3p.xml"']
-      Server: [cloudflare-nginx]
-      Transfer-Encoding: [chunked]
-      X-OKWS-Version: [OKWS/3.1.28.1]
-      X-XSS-Protection: [1; mode=block]
-    status: {code: 200, message: OK}
-- request:
-    body: null
-    headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: [python-requests/2.4.1 CPython/3.4.1 Darwin/13.3.0]
-    method: GET
-    uri: https://www.okcupid.com:443/match?filter1=3%2C25&fromWhoOnline=0&locid=4169518&matchOrderBy=MATCH&mygender=m&timekey=1&sa=1&count=1&custom_search=0&update_prefs=1&discard_prefs=1&ajax_load=1&sort_type=0&match_card_class=just_appended
-  response:
-    body: {string: ''}
-    headers:
-      CF-RAY: [16b5b6a546d80d7f-SJC]
-      Connection: [keep-alive]
-      Date: ['Wed, 17 Sep 2014 13:40:04 GMT']
-      Location: ['http://www.okcupid.com/match?filter1=3%2C25&fromWhoOnline=0&locid=4169518&matchOrderBy=MATCH&mygender=m&timekey=1&sa=1&count=1&custom_search=0&update_prefs=1&discard_prefs=1&ajax_load=1&sort_type=0&match_card_class=just_appended']
-      P3P: ['CP="NOI CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="http://www.okcupid.com/w3c/p3p.xml"']
-      Server: [cloudflare-nginx]
-      Transfer-Encoding: [chunked]
-      X-OKWS-Version: [OKWS/3.1.28.1]
-      X-XSS-Protection: [1; mode=block]
-    status: {code: 302, message: ''}
-- request:
-    body: null
-    headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: [python-requests/2.4.1 CPython/3.4.1 Darwin/13.3.0]
-    method: GET
-    uri: http://www.okcupid.com/match?filter1=3%2C25&fromWhoOnline=0&locid=4169518&matchOrderBy=MATCH&mygender=m&timekey=1&sa=1&count=1&custom_search=0&update_prefs=1&discard_prefs=1&ajax_load=1&sort_type=0&match_card_class=just_appended
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAA+Ll4gIAAAD//7RXC2/bNhD+K4SL1i0QWZJfcWzHxRAMKzCsXbO1QAcDAi3RFm2K
-        VEnKjxX97ztSD0t2kmVrAkMWxTvefffikd9asU5YC41Ra87nfBrRLaLR9byVKekkciHWmK8YUX3f
-        d3YSpymR8xYKGVYKmBKswzgIsYyCgogyRaTDhXZiGkWEo3WmdGBIPCLRvDUDLXpKeZrpXM/I7w+6
-        Q2847A+7A//K7zlGQoQ1Bj36kBLgyUXBt5m2dI4TQ2gCLBlWRpcEcjWj4yxZwIS3H126g+5gP/S7
-        btf1L4eXo8Go510Ner7X96+ufK+zTsmqxJlWlmZGpLW0oMEv/9dTjGJJlsD04h2NCOi0hgFoEiw0
-        DwwKwUNGw40RpCnrZCnAIn9orNXrtnUiUgRLeDnIrGtfIP8CtUORcU0kfLV/Ga62f/p63U/C9zRc
-        xd2bX/9O+ltXfd5ct99M0Dvrok/gGtUxEkBswzdGhlUEg29S7MZtv/0d1kmiM8nREjNFJmCasQCl
-        UiwpI1MX10yduqn5MqMHkuTO5EACwq8wV7nvSpG88F65gCZ4RapEghwKmMCQNQiv8d6OgwJZwCjf
-        gKrC724x7TaxvA2X15KsMoZlmQhM7Op5YTU6mWQmXlqnY9fd9DpiE4YR74QicdM4da1imAssd8dM
-        2ZFy+563h6d6Pza93m6vKwgPZPOsCEDuJ+P0O+pOk72uu1XPJYxkUcrlgtJvlC+F4ZZVHKsEL3BU
-        1HpiP8rBpSQj5f6QNcMwawq0BufYXAB3H86GFUBXKeYVA0QGaL4RZuZnTWokjLdeJVAuQk/uZGEi
-        xJoK2G9mvwupGebRBfpwW/CewqsBrULQdD2RIeHaJIyt7UDwIBZbs4+W1XX/kqoabMQbK07tPi4C
-        Nu9lCfcR/AHDC8Jg1W9GydnCwsJHQyWcJIfnhvqzUfIvUKuvkn5853mTsXwbA/lKcMyoPjgSYs9X
-        zllbqiW40lgWfKhWicXMkmEdGBaFYA06omE01xZmUoI1Tl3reRf0agrLFbkGICh9YGbH2NFIx2Pk
-        vZzY3YLRurbZsX7XeItVKGmqx1COIVHqs9DkPTyv21v4N92hBqdoP2egYN42CqC188dmzA1YbwQC
-        to6R9mZiWjfVFmLNDMGJYxxjytNUugX8o0C7zwBU74QFavpV98mQ9p4DKaAhFdbek2HtPwPWpchk
-        BbX/ZFAHzwGVbo9eHVRQ66Vc1SaGwtSEsVpZRlSlDB/GcIbh9lT1I/Z5d9p3gnx2g3lbI4PjYbTm
-        FOrgHT40UL0oD631PenIazajmf1E5vNEw9TNWD4s99Xmvps3xuZ5JBSwnYc6WOCyDTbIWgimaWoP
-        N6g8/c9uScoodFGx1IQft/pmr6iWSrpa1Zpskwv0ohWUDrf7ZtVFqmHNBH5iUPl/2gnNwSTIsQam
-        vUMCnJx7bTQ+bPDhAu3IK6m+ZmKyJYV9SMck6VQxW8hj/O6+X2S8ccM4XlTMtPxvdw4Vi935nSMk
-        XwdfRkyK/u3H+LD86P70lzeiy67sfzm7cxgJ//fO8clCPt42al2c10PRukAtuNqZy6pd+/0fAAAA
-        //8DALyyhqfADgAA
-    headers:
-      CF-RAY: [16b5b6a7b1710d7f-SJC]
-      Cache-control: [private]
-      Connection: [keep-alive]
-      Content-Encoding: [gzip]
-      Content-Type: [text/html; charset=utf-8]
-      Date: ['Wed, 17 Sep 2014 13:40:04 GMT']
+      Date: ['Thu, 18 Sep 2014 14:31:37 GMT']
       P3P: ['CP="NOI CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="http://www.okcupid.com/w3c/p3p.xml"']
       Server: [cloudflare-nginx]
       Transfer-Encoding: [chunked]

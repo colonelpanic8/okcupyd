@@ -32,23 +32,20 @@ class ThreadHTMLFetcher(object):
         }
 
     def fetch(self, start_at):
-        return self._session.okc_get(
-            'messages',
-            params=self._query_params(start_at)
-        ).content.decode('utf8').strip()
+        return self._session.decoded_okc_get('messages',
+                                             params=self._query_params(start_at)).strip()
 
 
 class ThreadProcessor(object):
+
+    xpath_builder = XPathBuilder(relative=False).li.with_classes('thread','message')
 
     def __init__(self, session, id_to_existing=None):
         self._session = session
         self.id_to_existing = id_to_existing or {}
 
     def process(self, text_response):
-        tree = html.fromstring(text_response)
-        thread_elements = XPathBuilder(relative=False).li.\
-                          with_classes('thread','message').apply_(tree)
-        for thread_element in thread_elements:
+        for thread_element in self.xpath_builder.apply_(html.fromstring(text_response)):
             yield self._process_thread_element(thread_element)
 
     def _process_thread_element(self, thread_element):
@@ -91,11 +88,12 @@ class MessageRetriever(object):
                                               params=self.params)
         return html.fromstring(messages_response.content.decode('utf8'))
 
+    user_xpath = xpb.div.with_class('profile_info').div.\
+                 with_class('username').span.with_class('name').xpath
+
     def get_usernames(self, tree):
-        xpath_string = xpb.div.with_class('profile_info').div.\
-                       with_class('username').span.with_class('name').xpath
         try:
-            them = tree.xpath(xpath_string)[0].text
+            them = tree.xpath(self.user_xpath)[0].text
         except IndexError:
             title_element = xpb.title.apply_(tree)[0]
             them = title_element.text.split()[-1]

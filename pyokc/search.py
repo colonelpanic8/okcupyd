@@ -150,7 +150,12 @@ def last_online_filter(last_online):
 
 @register_filter_builder
 def status_filter(status):
-    return '35,{0}'.format(helpers.format_status(status))
+    status_int = 2  # single, default
+    if status.lower() in ('not single', 'married'):
+        status_int = 12
+    elif status.lower() == 'any':
+        status_int = 0
+    return '35,{0}'.format(status_int)
 
 
 @register_filter_builder
@@ -213,7 +218,7 @@ class SearchParameterBuilder(object):
         self._options.update(kwargs)
         return self._options
 
-    def build(self, session, count=9):
+    def build(self, session, count=9, low=None):
         search_parameters = {
             'timekey': 1,
             'matchOrderBy': self.order_by.upper(),
@@ -229,6 +234,8 @@ class SearchParameterBuilder(object):
             'discard_prefs': 1,
             'match_card_class': 'just_appended'
         }
+        if low:
+            search_parameters['low'] = low
         if self.keywords: search_parameters['keywords'] = self.keywords
         for filter_number, filter_string in enumerate(self.filters, 1):
             search_parameters['filter{0}'.format(filter_number)] = filter_string
@@ -302,15 +309,16 @@ class MatchCardExtractor(object):
         }
 
 
-class Search(object):
+class SearchManager(object):
 
-    def __init__(self, session=None, **kwargs):
+    def __init__(self, session=None, low=1, **kwargs):
         self._session = session or Session.login()
         self._parameter_builder = SearchParameterBuilder(**kwargs)
         self.set_options = self._parameter_builder.set_options
+        self._low = low
 
     def get_search_html(self, count=9):
-        search_parameters = self._parameter_builder.build(self._session, count)
+        search_parameters = self._parameter_builder.build(self._session, count, self._low)
         log.info(simplejson.dumps({'search_parameters': search_parameters}))
         search_html = self._session.get('https://www.okcupid.com/match',
                                         params=search_parameters).json()['html']
@@ -319,6 +327,7 @@ class Search(object):
 
     def get_profiles(self, count=9):
         search_html = self.get_search_html(count)
+        self._low += count
         if not search_html.strip(): return []
         tree = html.fromstring(search_html)
         match_card_elems = xpb.div.with_classes('match_card', 'opensans').apply_(tree)
@@ -339,4 +348,4 @@ class Search(object):
 
 
 def search(session=None, count=9, **kwargs):
-    return Search(session, **kwargs).get_profiles(count)
+    return SearchManager(session, **kwargs).get_profiles(count)
