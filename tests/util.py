@@ -47,7 +47,6 @@ def scrub_query_string(query_string):
 
     for key in request_dict:
         request_dict[key] = request_dict[key][0]
-
     request_dict['username'] = TESTING_USERNAME
     request_dict['password'] = TESTING_PASSWORD
     return urllib.parse.urlencode(request_dict)
@@ -110,7 +109,8 @@ def body_as_query_string(left, right):
         return left == right
 
 
-pyokc_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query', 'body_as_query_string'),
+pyokc_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
+                              'body_as_query_string'),
                     before_record=before_record,
                     before_record_response=scrub_login_response,)
 pyokc_vcr.register_matcher('body_as_query_string', body_as_query_string)

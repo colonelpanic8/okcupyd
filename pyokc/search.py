@@ -263,23 +263,25 @@ class MatchCardExtractor(object):
 
     @property
     def id(self):
-        try:
-            raw_id = self._div.xpath(".//li[@class = 'current-rating']/@id")[0]
-            return re.search(r'\d{2,}', raw_id).group()
-        except IndexError:
-            return self._div.xpath(".//button[@id = 'personality-rating']/@data-tuid")[0]
+        return xpb.ul.with_classes('star-rating').select_attribute_('id', self._div)[0].split('-')[-1]
+
+    _match_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'match').span.with_classes('percentage')
 
     @property
     def match_percentage(self):
-        return int(self._div.xpath(
-            ".//div[@class = 'percentage_wrapper match']")[0].xpath(
-                ".//span[@class = 'percentage']")[0].text.strip('%'))
+        try:
+            return int(self._match_percentage_xpb.get_text_(self._div).strip('%'))
+        except:
+            return 0
+
+    _enemy_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'enemy').span.with_classes('percentage')
 
     @property
     def enemy_percentage(self):
-        return int(self._div.xpath(
-            ".//div[@class = 'percentage_wrapper enemy']")[0].xpath(
-                ".//span[@class = 'percentage']")[0].text.strip('%'))
+        try:
+            return int(self._enemy_percentage_xpb.get_text_(self._div).strip('%'))
+        except ValueError:
+            return 0
 
     @property
     def rating(self):
@@ -288,7 +290,7 @@ class MatchCardExtractor(object):
             rating_style = rating_li[0].attrib['style']
             width_percent = int(''.join(c for c in rating_style if c.isdigit()))
             return (width_percent // 100) * 5
-        except IndexError:
+        except ValueError:
             return 0
 
     @property
@@ -330,7 +332,7 @@ class SearchManager(object):
         self._low += count
         if not search_html.strip(): return []
         tree = html.fromstring(search_html)
-        match_card_elems = xpb.div.with_classes('match_card', 'opensans').apply_(tree)
+        match_card_elems = xpb.div.with_classes('match_card').apply_(tree)
 
         profiles = []
         for div in match_card_elems:

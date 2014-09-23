@@ -217,7 +217,10 @@ def update_looking_for(profile_tree, looking_for):
     looking_for['ages'] = replace_chars(div.xpath(".//li[@id = 'ajax_ages']/text()")[0].strip())
     looking_for['near'] = div.xpath(".//li[@id = 'ajax_near']/text()")[0].strip()
     looking_for['single'] = div.xpath(".//li[@id = 'ajax_single']/text()")[0].strip()
-    looking_for['seeking'] = div.xpath(".//li[@id = 'ajax_lookingfor']/text()")[0].strip()
+    try:
+        looking_for['seeking'] = div.xpath(".//li[@id = 'ajax_lookingfor']/text()")[0].strip()
+    except:
+        pass
 
 
 def update_details(profile_tree, details):

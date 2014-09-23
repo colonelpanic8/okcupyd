@@ -2,7 +2,7 @@ import contextlib
 
 import mock
 import pytest
-from vcr.cassette import CassetteContextDecorator, Cassette
+from vcr.cassette import Cassette
 
 from . import util
 from pyokc import settings
@@ -13,17 +13,17 @@ from pyokc.session import Session
 def pytest_addoption(parser):
     pyokc_util.add_command_line_options(parser.addoption, use_short_options=False)
     parser.addoption('--live', dest='skip_vcrpy', action='store_true', default=False,
-                    help="Skip the patching of http requests in tests. "
-                    "USE WITH CAUTION. This will interact with the okcupid "
-                    "website and send messages with any provided user credentials.")
+                     help="Skip the patching of http requests in tests. "
+                     "USE WITH CAUTION. This will interact with the okcupid "
+                     "website and send messages with any provided user credentials.")
     parser.addoption('--no-scrub', dest='scrub', action='store_false', default=True,
-                    help="USE WITH CAUTION. Don't scrub PII from "
-                    "http requests/responses. This is useful for recording cassetes.")
+                     help="USE WITH CAUTION. Don't scrub PII from "
+                     "http requests/responses. This is useful for recording cassetes.")
     parser.addoption('--resave', dest='resave_cassettes',
                      action='store_true', default=False,
                      help="Resave cassettes. Use to retoractively scrub cassettes.")
     parser.addoption('--cassette-mode', dest='cassette_mode', action='store', default='once',
-                    help="Accept new requests in all tests.")
+                     help="Accept new requests in all tests.")
 
 
 def patch_when_option_set(option, *patches, **kwargs):
