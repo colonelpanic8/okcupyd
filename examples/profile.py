@@ -3,9 +3,9 @@ Sample script that visits a random profile from the quickmatch page,
 and prints out most of the information in the profile.
 '''
 
-import pyokc
+import okcupyd
 
-u = pyokc.User()
+u = okcupyd.User()
 p = u.quickmatch() # p is an instance of the Profile class
 u.visit(p)
 p.update_traits() # only necessary for if you want to fill in p.traits

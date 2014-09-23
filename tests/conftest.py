@@ -5,13 +5,13 @@ import pytest
 from vcr.cassette import Cassette
 
 from . import util
-from pyokc import settings
-from pyokc import util as pyokc_util
-from pyokc.session import Session
+from okcupyd import settings
+from okcupyd import util as okcupyd_util
+from okcupyd.session import Session
 
 
 def pytest_addoption(parser):
-    pyokc_util.add_command_line_options(parser.addoption, use_short_options=False)
+    okcupyd_util.add_command_line_options(parser.addoption, use_short_options=False)
     parser.addoption('--live', dest='skip_vcrpy', action='store_true', default=False,
                      help="Skip the patching of http requests in tests. "
                      "USE WITH CAUTION. This will interact with the okcupid "
@@ -51,7 +51,7 @@ patch_settings = patch_when_option_set('credentials_modules',
 patch_save = patch_when_option_set('resave_cassettes',
                                    mock.patch.object(
                                        Cassette, '_save',
-                                       pyokc_util.n_partialable(Cassette._save)(force=True)))
+                                       okcupyd_util.n_partialable(Cassette._save)(force=True)))
 # patch_use_cassette_enabled = patch_when_option_set('skip_vcrpy',
 #                                                    mock.patch.object(CassetteContextDecorator,
 #                                                                      '__enter__'),
@@ -64,12 +64,12 @@ patch_vcrpy_filters = patch_when_option_set('scrub',
 
 @pytest.fixture(autouse=True, scope='session')
 def set_vcr_options(request):
-    util.pyokc_vcr.record_mode = request.config.getoption('cassette_mode')
+    util.okcupyd_vcr.record_mode = request.config.getoption('cassette_mode')
 
 
 @pytest.yield_fixture(autouse=True, scope='session')
 def process_command_line_args(request):
-    pyokc_util.handle_command_line_options(request.config.option)
+    okcupyd_util.handle_command_line_options(request.config.option)
     if request.config.getoption('skip_vcrpy') or request.config.getoption('credentials_modules'):
         with mock.patch.object(util, 'TESTING_USERNAME', settings.USERNAME):
             yield

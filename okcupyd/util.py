@@ -178,7 +178,7 @@ def add_command_line_options(add_argument, use_short_options=True):
     add_argument(*credentials_args, dest='credentials_modules',
                  action="append", default=[],
                  help="Use the specified credentials module to update "
-                 "the values in pyokc.settings.")
+                 "the values in okcupyd.settings.")
 
 
 def handle_command_line_options(args):

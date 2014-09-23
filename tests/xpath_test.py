@@ -1,6 +1,6 @@
 from lxml import etree
 
-from pyokc import xpath
+from okcupyd import xpath
 
 
 def test_selected_attribute():

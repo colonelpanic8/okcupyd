@@ -4,10 +4,10 @@ living in New York, NY who either do not smoke or are trying to quit.
 '''
 from requests import get
 
-import pyokc
+import okcupyd
 
 
-u = pyokc.User()
+u = okcupyd.User()
 profiles = u.search(location='new york, ny', religion='buddhist',
                     height_min=66, height_max=68, looking_for='everybody',
                     smokes=['no', 'trying to quit'], count=1)
@@ -19,5 +19,5 @@ for profile in profiles:
         extension = url.split('.')[-1].split('?')[0]
         response = get(url, stream=True)
         filename = '{0}{1}.{2}'.format(profile.username, count, extension)
-        pyokc.save_file(filename, response.raw)
+        okcupyd.save_file(filename, response.raw)
         del response

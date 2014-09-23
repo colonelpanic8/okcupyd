@@ -6,8 +6,8 @@ import zlib
 import simplejson
 import vcr
 
-from pyokc import settings
-from pyokc import util
+from okcupyd import settings
+from okcupyd import util
 
 TESTING_USERNAME = 'username'
 TESTING_PASSWORD = 'password'
@@ -109,12 +109,12 @@ def body_as_query_string(left, right):
         return left == right
 
 
-pyokc_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
+okcupyd_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
                               'body_as_query_string'),
                     before_record=before_record,
                     before_record_response=scrub_login_response,)
-pyokc_vcr.register_matcher('body_as_query_string', body_as_query_string)
-pyokc_vcr.register_matcher('match_search_query', match_search_query)
+okcupyd_vcr.register_matcher('body_as_query_string', body_as_query_string)
+okcupyd_vcr.register_matcher('match_search_query', match_search_query)
 
 
 
@@ -124,4 +124,4 @@ def cassette_path(cassette_name):
 
 @util.n_partialable
 def use_cassette(cassette_name, *args, **kwargs):
-    return pyokc_vcr.use_cassette(cassette_path(cassette_name), *args, **kwargs)
+    return okcupyd_vcr.use_cassette(cassette_path(cassette_name), *args, **kwargs)

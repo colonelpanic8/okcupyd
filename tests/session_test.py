@@ -1,8 +1,8 @@
 import pytest
 
-from pyokc import settings
-from pyokc.session import Session
-from pyokc.errors import AuthenticationError
+from okcupyd import settings
+from okcupyd.session import Session
+from okcupyd.errors import AuthenticationError
 from . import util
 
 

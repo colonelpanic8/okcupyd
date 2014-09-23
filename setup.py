@@ -17,7 +17,7 @@ setup(
     description="A package for interacting with OKCupid.com",
     license="MIT",
     keywords="python okcupid",
-    url="https://github.com/IvanMalison/pyokc",
+    url="https://github.com/IvanMalison/okcupyd",
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",

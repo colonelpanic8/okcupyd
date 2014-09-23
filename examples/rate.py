@@ -5,9 +5,9 @@ gender/orientation) in Minneapolis who like the show Arrested
 Development.
 '''
 
-import pyokc
+import okcupyd
 
-u = pyokc.User()
+u = okcupyd.User()
 profiles = u.search(location='minneapolis, mn', keywords='arrested development',
                     age_min=24, age_max=24, number=1000)
 for profile in profiles:

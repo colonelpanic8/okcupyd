@@ -1,5 +1,5 @@
 from . import util
-from pyokc import User
+from okcupyd import User
 
 
 @util.use_cassette('user_no_picture')

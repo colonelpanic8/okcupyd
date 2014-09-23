@@ -1,4 +1,4 @@
-from pyokc import util
+from okcupyd import util
 
 
 @util.n_partialable

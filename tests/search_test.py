@@ -1,9 +1,9 @@
 import mock
 import pytest
 
-from pyokc.search import SearchManager, SearchParameterBuilder, search
-from pyokc.profile import Profile
-from pyokc.session import Session
+from okcupyd.search import SearchManager, SearchParameterBuilder, search
+from okcupyd.profile import Profile
+from okcupyd.session import Session
 from . import util
 
 
@@ -75,7 +75,7 @@ class TestSearch(object):
         profile.contacted
 
 
-@mock.patch('pyokc.helpers.get_locid', return_value=2)
+@mock.patch('okcupyd.helpers.get_locid', return_value=2)
 def test_construction_of_all_search_parameters(mock_get_locid):
     spb = SearchParameterBuilder()
     spb.set_options(location='new york, ny', religion='buddhist',

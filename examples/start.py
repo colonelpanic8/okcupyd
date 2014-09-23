@@ -1,5 +1,5 @@
-from pyokc import *
-from pyokc.util import enable_logger
+from okcupyd import *
+from okcupyd.util import enable_logger
 
 
 af = AttractivenessFinder()

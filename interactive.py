@@ -4,7 +4,7 @@ import sys
 
 from IPython import start_ipython
 
-from pyokc import util
+from okcupyd import util
 
 
 def go():
