@@ -10,7 +10,7 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=['lxml', 'requests', 'simplejson'],
-    tests_require=['tox', 'pytest', 'mock'],
+    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'six', 'vcrpy'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",
     author_email="ivanmalison@gmail.com",

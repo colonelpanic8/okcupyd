@@ -45,7 +45,7 @@ class Session(requests.Session):
         return session
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(Session, self).__init__(*args, **kwargs)
         self.timestamp = -settings.DELAY
 
     def _throttle(self):
@@ -55,13 +55,13 @@ class Session(requests.Session):
 
     def post(self, *args, **kwargs):
         self._throttle()
-        response = super().post(*args, **kwargs)
+        response = super(Session, self).post(*args, **kwargs)
         response.raise_for_status()
         return response
 
     def get(self, *args, **kwargs):
         self._throttle()
-        response = super().get(*args, **kwargs)
+        response = super(Session, self).get(*args, **kwargs)
         response.raise_for_status()
         return response
 

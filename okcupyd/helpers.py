@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime, date
 from json import loads
-from lxml import html
+from lxml import html, etree
 from re import search
 import logging
+import sys
 
 from .errors import ProfileNotFoundError
 from .xpath import xpb
@@ -10,15 +12,15 @@ from . import util
 
 
 CHAR_REPLACE = {
-    "′": "'",
-    '″': '"',
-    '“': '"',
-    '”': '"',
-    "’": "'",
-    "—": "-",
-    "–": "-",
-    "…": "...",
-    "🌲": " ",
+    u"′": "'",
+    u'″': '"',
+    u'“': '"',
+    u'”': '"',
+    u"’": "'",
+    u"—": "-",
+    u"–": "-",
+    u"…": "...",
+    u"🌲": " ",
 }
 
 
@@ -71,10 +73,15 @@ def get_additional_info(tree):
     return age, gender, orientation, status, location
 
 
+utf8_parser = etree.XMLParser(encoding='utf-8')
+
+
 @util.n_partialable
 def get_js_variable(html_response, variable_name):
-    if not isinstance(html_response, str):
-        html_response = html.tostring(html_response).decode('utf8')
+    if not isinstance(html_response, basestring if sys.version_info.major == 2 else str):
+        script_elements = xpb.script.apply_(html_response)
+        html_response = '\n'.join(script_element.text_content()
+                                  for script_element in script_elements)
     return search('var {0} = "(.*?)";'.format(variable_name), html_response).group(1)
 
 

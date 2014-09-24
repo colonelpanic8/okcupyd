@@ -1,8 +1,8 @@
 import collections
 import functools
 import getpass
-import importlib
 import inspect
+import importlib
 import itertools
 import logging
 import shutil
@@ -17,9 +17,12 @@ class n_partialable(object):
 
     @staticmethod
     def arity_evaluation_checker(function):
+        is_class = inspect.isclass(function)
+        if is_class:
+            function = function.__init__
         function_info = inspect.getargspec(function)
         function_args = function_info.args
-        if inspect.isclass(function):
+        if is_class:
             # This is to handle the fact that self will get passed in automatically.
             function_args = function_args[1:]
         def evaluation_checker(*args, **kwargs):
@@ -46,6 +49,7 @@ class n_partialable(object):
                                    self.arity_evaluation_checker(function))
         self.args = args
         self.kwargs = kwargs or {}
+        self.__name__ = function.__name__
 
     def __call__(self, *args, **kwargs):
         new_args = self.args + args

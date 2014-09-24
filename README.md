@@ -1,23 +1,27 @@
-<h1>pyokc</h1>
-
-pyokc is a Python 3 package for interacting with OKCupid.com that
-was inspired by
-<a href="http://www.wired.com/wiredscience/2014/01/how-to-hack-okcupid/">this guy</a>
-(sort of).
+<h1>okcupyd</h1>
+[![Build Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://travis-ci.org/IvanMalison/okcupyd)
 
 <h2>Installation</h2>
 
-<h3>virtualenv/tox</h3>
+<h3>pip/PyPI</h3>
 
-Running pyokc is much easier if you have virtualenv and tox installed. They are both available from pypi, so you can simply run
+okcupyd is available for install from PyPI. If you have pip you can simply run:
+```bash
+pip install okcupyd
+```
+to make okcupyd available from import in python.
+
+<h3>development</h3>
+
+If you wish to contribute to this project, it is recommended that you use tox to run tests and enter the interactive environment. You can get tox by running
 
 ```bash
-pip install pyokc
+pip install tox
 ```
 
-if they are not installed on your machine.
+if you do not already have it.
 
-Installation can be triggered from tox by running the tox interactive testenv:
+Once you have cloned the project, and installed tox, run:
 
 ```shell
 tox -e interactive
@@ -51,18 +55,18 @@ export OKC_PASSWORD='your_password'
 
 and run source credentials.sh to do this.
 
-3. Manually set your username and password in pyokc/settings.py. This method is not recommended because settings.py is a source controlled file and you could accidentally commit your username and password.
+3. Manually set your username and password in okcupyd/settings.py. This method is not recommended because settings.py is a source controlled file and you could accidentally commit your username and password.
 
 <h2>Use</h2>
 
 Running `tox -e interactive` provides an interactive shell with the environment from examples/start.py:
 
 ```python
-import pyokc
-from pyokc.util import enable_log
+import okcupyd
+from okcupyd.util import enable_log
 
-af = pyokc.AttractivenessFinder()
-u = pyokc.User()
+af = okcupyd.AttractivenessFinder()
+u = okcupyd.User()
 ```
 
 <h3>Searching profiles</h3>
@@ -77,7 +81,7 @@ this will automatically provide certain filters like 'looking for', 'location' a
 You can also use the search function directly. Note that this will create a new session.
 
 ```python
-profile_list = pyokc.search(age_min=26, age_max=32)
+profile_list = okcupyd.search(age_min=26, age_max=32)
 ```
 
 <h3>Messaging another user</h3>
@@ -95,7 +99,7 @@ object. Note that this will cause you to show up in that user's visitors list,
 unless you've turned on invisible browsing. Once you have visited a profile, you
 should have access to just about every piece of information that is also
 available on the website. You can check out the docstrings and source code of
-the Profile class in pyokc.py to get a better idea of what is available to you.
+the Profile class in okcupyd.py to get a better idea of what is available to you.
 
 <h3>Rating a profile</h3>
 
@@ -129,7 +133,7 @@ its `messages` attribute will become available.
 <h2>Installation</h2>
 
 
-pyokc has three dependencies: requests and lxml and simplejson.
+okcupyd has three dependencies: requests and lxml and simplejson.
 
 <b>Note:</b> Windows users will likely run into issues installing lxml. If
 this happens, be sure to install the binaries
@@ -140,7 +144,7 @@ pip again.
 
 <h3>Why is my program going slowly?</h3>
 
-pyokc overrides the `get` and `post` methods of Requests.Session to include a
+okcupyd overrides the `get` and `post` methods of Requests.Session to include a
 3-second delay between requests to OKCupid. Hopefully, this will prevent
 someone from making too many requests in too short of a timespan and bringing
 down the wrath of the OKCupid powers-that-be. This length of time can be

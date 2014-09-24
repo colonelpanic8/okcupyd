@@ -1,8 +1,8 @@
 import copy
 import os
-import urllib
 import zlib
 
+from six.moves import urllib
 import simplejson
 import vcr
 
@@ -53,10 +53,14 @@ def scrub_query_string(query_string):
 
 
 def gzip_string(incoming):
-    if isinstance(incoming, str):
+    if isinstance(incoming, str) and bytes is not str:
         incoming = bytes(incoming, 'utf8')
-    compress_object = zlib.compressobj(wbits=WBITS)
-    return compress_object.compress(incoming) + compress_object.flush()
+    else:
+        incoming = incoming.encode('utf8')
+    compress_object = zlib.compressobj(6, zlib.DEFLATED, WBITS)
+    start = compress_object.compress(incoming)
+    end = compress_object.flush()
+    return ''.join([start, end])
 
 
 def scrub_login_response(response):
@@ -87,7 +91,8 @@ def scrub_login_response(response):
 
 
 before_record = util.compose(scrub_request_body,
-                             remove_headers(headers_to_remove=('Set-Cookie', 'Cookie')))
+                             remove_headers(headers_to_remove=('Set-Cookie',
+                                                               'Cookie')))
 
 
 def match_search_query(left, right):
@@ -106,13 +111,13 @@ def body_as_query_string(left, right):
     try:
         return urllib.parse.parse_qs(left.body) == urllib.parse.parse_qs(right.body)
     except:
-        return left == right
+        return left.body == right.body
 
 
 okcupyd_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
-                              'body_as_query_string'),
-                    before_record=before_record,
-                    before_record_response=scrub_login_response,)
+                                'body_as_query_string'),
+                      before_record=before_record,
+                      before_record_response=scrub_login_response,)
 okcupyd_vcr.register_matcher('body_as_query_string', body_as_query_string)
 okcupyd_vcr.register_matcher('match_search_query', match_search_query)
 

@@ -1,8 +1,7 @@
-import contextlib
-
 import mock
+import contextlib2 as contextlib
 import pytest
-from vcr.cassette import Cassette
+from vcr.cassette import Cassette, CassetteContextDecorator
 
 from . import util
 from okcupyd import settings
@@ -16,17 +15,17 @@ def pytest_addoption(parser):
                      help="Skip the patching of http requests in tests. "
                      "USE WITH CAUTION. This will interact with the okcupid "
                      "website and send messages with any provided user credentials.")
-    parser.addoption('--no-scrub', dest='scrub', action='store_false', default=True,
+    parser.addoption('--scrub', dest='scrub', action='store_true', default=False,
                      help="USE WITH CAUTION. Don't scrub PII from "
                      "http requests/responses. This is useful for recording cassetes.")
     parser.addoption('--resave', dest='resave_cassettes',
                      action='store_true', default=False,
                      help="Resave cassettes. Use to retoractively scrub cassettes.")
-    parser.addoption('--cassette-mode', dest='cassette_mode', action='store', default='once',
-                     help="Accept new requests in all tests.")
+    parser.addoption('--cassette-mode', dest='cassette_mode', action='store',
+                     default='once', help="Accept new requests in all tests.")
 
 
-def patch_when_option_set(option, *patches, **kwargs):
+def patch(option, *patches, **kwargs):
     negate = kwargs.get('negate', False)
     @pytest.yield_fixture(autouse=True, scope='session')
     def patch_conditionally(request):
@@ -42,24 +41,24 @@ def patch_when_option_set(option, *patches, **kwargs):
     return patch_conditionally
 
 
-patch_settings = patch_when_option_set('credentials_modules',
-                                       mock.patch.object(settings, 'USERNAME', 'username'),
-                                       mock.patch.object(settings, 'PASSWORD', 'password'),
-                                       mock.patch.object(settings, 'AF_USERNAME', 'username'),
-                                       mock.patch.object(settings, 'AF_PASSWORD', 'password'),
-                                       mock.patch.object(settings, 'DELAY', 0), negate=True)
-patch_save = patch_when_option_set('resave_cassettes',
-                                   mock.patch.object(
-                                       Cassette, '_save',
-                                       okcupyd_util.n_partialable(Cassette._save)(force=True)))
-# patch_use_cassette_enabled = patch_when_option_set('skip_vcrpy',
-#                                                    mock.patch.object(CassetteContextDecorator,
-#                                                                      '__enter__'),
-#                                                    mock.patch.object(CassetteContextDecorator,
-#                                                                      '__exit__'))
-patch_vcrpy_filters = patch_when_option_set('scrub',
-                                            mock.patch.object(util, 'SHOULD_SCRUB', False),
-                                            negate=True)
+patch_settings = patch('credentials_modules',
+                       mock.patch.object(settings, 'USERNAME', 'username'),
+                       mock.patch.object(settings, 'PASSWORD', 'password'),
+                       mock.patch.object(settings, 'AF_USERNAME', 'username'),
+                       mock.patch.object(settings, 'AF_PASSWORD', 'password'),
+                       mock.patch.object(settings, 'DELAY', 0), negate=True)
+patch_save = patch('resave_cassettes',
+                   mock.patch.object(
+                       Cassette, '_save',
+                       okcupyd_util.n_partialable(Cassette._save)(force=True)))
+patch_use_cassette_enabled = patch('skip_vcrpy',
+                                   mock.patch.object(CassetteContextDecorator,
+                                                     '__enter__'),
+                                   mock.patch.object(CassetteContextDecorator,
+                                                     '__exit__'))
+patch_vcrpy_filters = patch('scrub',
+                            mock.patch.object(util, 'SHOULD_SCRUB', False),
+                            negate=True)
 
 
 @pytest.fixture(autouse=True, scope='session')
