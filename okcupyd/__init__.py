@@ -11,7 +11,7 @@ def go():
     util.add_command_line_options(parser.add_argument)
     util.handle_command_line_options(parser.parse_args())
     util.get_credentials()
-    sys.exit(start_ipython(['-i', os.path.join('examples', 'start.py')]))
+    sys.exit(start_ipython(['-i', os.path.join(os.path.dirname(__file__), 'start.py')]))
 
 
 from .search import search

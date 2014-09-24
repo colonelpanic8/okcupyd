@@ -1,5 +1,5 @@
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 def read(fname):
@@ -8,7 +8,7 @@ def read(fname):
 setup(
     name="okcupyd",
     version="0.3.0",
-    packages=find_packages(),
+    packages=['okcupyd'],
     install_requires=['lxml', 'requests', 'simplejson'],
     tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'six', 'vcrpy', 'wrapt'],
     package_data={'': ['*.md', '*.rst']},
