@@ -21,7 +21,7 @@ pip install tox
 
 if you do not already have it.
 
-Once you have cloned the project, and installed tox, run:
+Once you have cloned the project and installed tox, run:
 
 ```shell
 tox -e interactive
@@ -120,36 +120,5 @@ can then access Question information via attributes like `q.text` and
 
 ```python
 first_thread = u.inbox[0]
-
-u.read(first_thread)
-
 print(first_thread.messages)
 ```
-
-Because reading each thread requires a request to the server, you must
-first pass a MessageThread object as an argument to `User.read()` before
-its `messages` attribute will become available.
-
-<h2>Installation</h2>
-
-
-okcupyd has three dependencies: requests and lxml and simplejson.
-
-<b>Note:</b> Windows users will likely run into issues installing lxml. If
-this happens, be sure to install the binaries
-<a href="http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml">here</a> and then use
-pip again.
-
-<h2>FAQ</h2>
-
-<h3>Why is my program going slowly?</h3>
-
-okcupyd overrides the `get` and `post` methods of Requests.Session to include a
-3-second delay between requests to OKCupid. Hopefully, this will prevent
-someone from making too many requests in too short of a timespan and bringing
-down the wrath of the OKCupid powers-that-be. This length of time can be
-modified by changing the number assigned to `DELAY` in settings.py.
-
-<h3>Why is x/y/z giving me an error message?</h3>
-
-OKCupid updates its site frequently, and it can be difficult to keep up. If you run into an error, feel free to create an issue or send a pull request, and I'll get to it as quickly as possible.
