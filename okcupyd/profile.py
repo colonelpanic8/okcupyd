@@ -136,7 +136,7 @@ class QuestionHTMLFetcher(object):
 
     def _query_params(self, start_at):
         parameters = {'low': start_at, 'leanmode': 1}
-        parameters.update(self._additional_paramters)
+        parameters.update(self._additional_parameters)
         return parameters
 
     def fetch(self, start_at):

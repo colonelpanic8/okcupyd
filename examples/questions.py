@@ -14,6 +14,6 @@ for q in p.questions:
     if 'marijuana' in q.text.lower():
         print(q.text)
         print(q.user_answer)
-        if len(q.explanation):
+        if q.explanation and len(q.explanation):
             print(q.explanation)
         print('')

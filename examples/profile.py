@@ -28,9 +28,6 @@ print('')
 
 print('Essays')
 print('----------')
-for title, essay in p.essays.items():
-    print('{0}: {1}'.format(title, essay))
-print('')
 
 print('Looking For')
 print('----------')
