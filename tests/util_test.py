@@ -1,3 +1,5 @@
+import operator
+
 from okcupyd import util
 
 
@@ -33,3 +35,29 @@ def test_partialable_with_kwargs_taking_function():
         return kwargs
 
     assert kwarg_taking_function(a=14)(2) == {'k': 2, 'a': 14}
+
+
+def test_get_cached_properties():
+    class PropClass(object):
+        def __init__(self):
+            self.count = 0
+
+        @util.cached_property
+        def count_prop(self):
+            self.count += 1
+            return self.count
+
+        @util.cached_property
+        def other_prop(self):
+            return 4
+
+    instance = PropClass()
+    assert ['count_prop', 'other_prop'] == \
+        list(map(operator.itemgetter(0),
+                 util.cached_property.get_cached_properties(instance)))
+
+    assert instance.count_prop == 1
+
+    util.cached_property.bust_caches(instance)
+
+    assert instance.count_prop == 2

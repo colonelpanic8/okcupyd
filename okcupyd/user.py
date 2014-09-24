@@ -5,7 +5,7 @@ from lxml import html
 from . import helpers
 from . import util
 from .messaging import ThreadFetcher
-from .profile import Profile
+from .profile import Profile, Essays
 from .search import SearchManager
 from .session import Session
 
@@ -32,14 +32,20 @@ class User(object):
         self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
 
-    def update_essay(self, essay_id, essay_body):
-        form_data = {
-            "essay_id": essay_id,
-            "essay_body": essay_body,
-            "authcode": self.authcode,
-            "okc_api": 1
-        }
-        self._session.post('https://www.okcupid.com/profileedit2', data=form_data)
+    def refresh(self):
+        if hasattr(self, '_profile_tree'):
+            delattr(self, '_profile_tree')
+        return self._profile_tree
+
+    @util.cached_property
+    def _profile_tree(self):
+        profile_response = self._session.get('https://www.okcupid.com/profile')
+        return html.fromstring(profile_response.content.decode('utf8'))
+
+    @util.cached_property
+    def essays(self):
+        return Essays(self._session, self._profile_tree, updatable=True,
+                      profile_tree_getter=self.refresh)
 
     def message(self, username, message_text):
         """
@@ -73,7 +79,7 @@ class User(object):
                                                                  self.orientation))
         kwargs.setdefault('location', self.location)
         kwargs.setdefault('radius', 25)
-        return SearchManager(**kwargs)
+        return SearchManager(session=self._session, **kwargs)
 
     def visit(self, username):
         """Visit another user's profile. Automatically update the

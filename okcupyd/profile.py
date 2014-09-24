@@ -7,6 +7,78 @@ from . import util
 from .xpath import xpb
 
 
+class CantUpdateOtherUsersEssaysError(Exception): pass
+
+
+class Essays(object):
+
+    @staticmethod
+    def build_essay_property(essay_index):
+        essay_xpb = xpb.div(id='essay_{0}'.format(essay_index)).\
+                    div.with_class('text').\
+                    div.with_class('essay')
+        @property
+        def essay(self):
+            try:
+                return essay_xpb.get_text_(self._essays).strip()
+            except IndexError:
+                return None
+
+        @essay.setter
+        def set_essay_text(self, essay_text):
+            if not self._updatable:
+                raise CantUpdateOtherUsersEssaysError()
+            self._submit_essay(essay_index, essay_text)
+
+        return set_essay_text
+
+    @classmethod
+    def _init_essay_properties(cls):
+        for essay_index, essay_name in enumerate(cls._essay_names, 1):
+            setattr(cls, essay_name, cls.build_essay_property(essay_index))
+
+    _essays_xpb = xpb.div(id='main_column')
+    _essay_names = ['self_summary', 'my_life', 'good_at', 'people_first_notice',
+                    'favorites', 'six_things', 'think_about', 'private_admission',
+                    'message_me_if']
+
+    def __init__(self, session, profile_tree, updatable=False,
+                 profile_tree_getter=None):
+        self._session = session
+        self._profile_tree = profile_tree
+        self._updatable = updatable
+        self._profile_tree_getter = profile_tree_getter
+
+
+    @util.cached_property
+    def _essays(self):
+        return self._essays_xpb.one_(self._profile_tree)
+
+    @util.cached_property
+    def _authcode(self):
+        return helpers.get_authcode(self._profile_tree)
+
+    def _submit_essay(self, essay_id, essay_body):
+        self._session.post('https://www.okcupid.com/profileedit2', data={
+            "essay_id": essay_id,
+            "essay_body": essay_body,
+            "authcode": self._authcode,
+            "okc_api": 1
+        })
+        self.refresh()
+
+    def refresh(self, profile_tree=None):
+        if profile_tree is None:
+            assert self._profile_tree_getter, (
+                "Must provide a profile_tree or a profile_tree_getter"
+            )
+            self._profile_tree = self._profile_tree_getter()
+        util.cached_property.bust_caches(self)
+
+
+Essays._init_essay_properties()
+
+
 class Question(object):
 
     def __init__(self, id_, text, user_answer, explanation):
@@ -114,6 +186,10 @@ class Profile(object):
 
         self._initialize_fillable_traits()
 
+    def refresh(self):
+        util.cached_property.bust_caches(self)
+        return self._profile_tree
+
     @util.cached_property
     def _profile_response(self):
         return self._session.get(
@@ -142,7 +218,9 @@ class Profile(object):
 
     @util.cached_property
     def picture_uris(self):
-        pics_request = self._session.okc_get('profile/{0}/photos?cf=profile'.format(self.username))
+        pics_request = self._session.okc_get(
+            'profile/{0}/photos?cf=profile'.format(self.username)
+        )
         pics_tree = html.fromstring(pics_request.content.decode('utf8'))
         return xpb.div(id='album_0').img.select_attribute_('src', pics_tree)
 
@@ -155,30 +233,27 @@ class Profile(object):
         return (width_percentage // 100) * 5
 
     @util.cached_property
+    def essays(self):
+        return Essays(self._session, self._profile_tree,
+                      profile_tree_getter=self.refresh)
+
+    @util.cached_property
     def age(self):
         return int(xpb.span(id='ajax_age').get_text_(self._profile_tree).strip())
 
     @util.n_partialable
     def message(self, message, thread_id=None):
-        return helpers.MessageSender(self._session).send_message(self.username, message,
-                                                                 self.authcode, thread_id)
+        return helpers.MessageSender(
+            self._session
+        ).send_message(self.username, message,
+                       self.authcode, thread_id)
+
+    @util.n_partialable
+    def traits(self):
+        return []
 
     def _initialize_fillable_traits(self):
-        self.pics = []
-        self.questions = []
         self.traits = []
-        self.essays = {
-            'self summary': '',
-            'life': '',
-            'good at': '',
-            'first things': '',
-            'favorites': '',
-            'six things': '',
-            'thinking': '',
-            'friday night': '',
-            'private thing': '',
-            'message me if': '',
-            }
         self.looking_for = {
             'gentation': '',
             'ages': '',

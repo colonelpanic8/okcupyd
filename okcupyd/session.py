@@ -39,7 +39,7 @@ class Session(requests.Session):
                                       headers=headers or cls.default_login_headers)
         if login_response.json()['screenname'] is None:
             raise AuthenticationError('Could not log in as {0}'.format(username))
-        if login_response.json()['screenname'] != username.lower():
+        if login_response.json()['screenname'].lower() != username.lower():
             log.warning('Expected to log in as {0} but got {1}'.format(username, login_response.json()['screenname']))
         log.debug(login_response.content.decode('utf8'))
         return session

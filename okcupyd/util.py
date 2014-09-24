@@ -102,6 +102,16 @@ class cached_property(object):
         setattr(obj, self.func.__name__, value)
         return value
 
+    @classmethod
+    def bust_caches(cls, obj):
+        for name, _ in cls.get_cached_properties(obj):
+            if hasattr(obj, name):
+                delattr(obj, name)
+
+    @classmethod
+    def get_cached_properties(cls, obj):
+        return inspect.getmembers(type(obj), lambda x: isinstance(x, cls))
+
 
 def _compose2(f, g):
     return lambda *args, **kwargs: f(g(*args, **kwargs))
