@@ -76,7 +76,6 @@ keywords : str, optional
 """
 import inspect
 import logging
-import re
 
 from lxml import html
 import simplejson
@@ -320,7 +319,8 @@ class SearchManager(object):
         self._low = low
 
     def get_search_html(self, count=9):
-        search_parameters = self._parameter_builder.build(self._session, count, self._low)
+        search_parameters = self._parameter_builder.build(self._session,
+                                                          count, self._low)
         log.info(simplejson.dumps({'search_parameters': search_parameters}))
         search_html = self._session.get('https://www.okcupid.com/match',
                                         params=search_parameters).json()['html']

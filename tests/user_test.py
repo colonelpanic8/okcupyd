@@ -23,3 +23,8 @@ def test_message_thread_to_profile():
     assert profile.age
     assert profile.age > 18
     assert isinstance(profile.rating, int)
+
+
+@util.use_cassette('user_count')
+def test_user_search_count():
+    assert len(User().search(count=1)) == 1

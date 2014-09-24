@@ -7,10 +7,10 @@ def read(fname):
 
 setup(
     name="okcupyd",
-    version="0.1.0",
+    version="0.2.0",
     packages=find_packages(),
     install_requires=['lxml', 'requests', 'simplejson'],
-    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'six', 'vcrpy'],
+    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'six', 'vcrpy', 'wrapt'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",
     author_email="ivanmalison@gmail.com",
@@ -19,6 +19,7 @@ setup(
     keywords="python okcupid",
     url="https://github.com/IvanMalison/okcupyd",
     long_description=read('README.md'),
+    entry_points={"console_scripts": ["okcupyd=okcupyd:go"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",

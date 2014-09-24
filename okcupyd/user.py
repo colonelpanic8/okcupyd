@@ -64,11 +64,13 @@ class User(object):
 
 
     def search(self, **kwargs):
-        return self.search_manager(**kwargs).get_profiles()
+        count = kwargs.pop('count', 9)
+        return self.search_manager(**kwargs).get_profiles(count=count)
 
     def search_manager(self, **kwargs):
         kwargs.setdefault('gender', self.gender[0])
-        kwargs.setdefault('looking_for', helpers.get_looking_for(self.gender, self.orientation))
+        kwargs.setdefault('looking_for', helpers.get_looking_for(self.gender,
+                                                                 self.orientation))
         kwargs.setdefault('location', self.location)
         kwargs.setdefault('radius', 25)
         return SearchManager(**kwargs)

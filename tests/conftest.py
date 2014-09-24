@@ -1,3 +1,5 @@
+import os
+
 import mock
 import contextlib2 as contextlib
 import pytest
@@ -18,11 +20,13 @@ def pytest_addoption(parser):
     parser.addoption('--scrub', dest='scrub', action='store_true', default=False,
                      help="USE WITH CAUTION. Don't scrub PII from "
                      "http requests/responses. This is useful for recording cassetes.")
-    parser.addoption('--resave', dest='resave_cassettes',
+    parser.addoption('--resave', dest='resave',
                      action='store_true', default=False,
                      help="Resave cassettes. Use to retoractively scrub cassettes.")
     parser.addoption('--cassette-mode', dest='cassette_mode', action='store',
                      default='once', help="Accept new requests in all tests.")
+    parser.addoption('--record', dest='record', action='store_true',
+                     default=False, help="Re-record cassettes for all tests.")
 
 
 def patch(option, *patches, **kwargs):
@@ -47,7 +51,7 @@ patch_settings = patch('credentials_modules',
                        mock.patch.object(settings, 'AF_USERNAME', 'username'),
                        mock.patch.object(settings, 'AF_PASSWORD', 'password'),
                        mock.patch.object(settings, 'DELAY', 0), negate=True)
-patch_save = patch('resave_cassettes',
+patch_save = patch('resave',
                    mock.patch.object(
                        Cassette, '_save',
                        okcupyd_util.n_partialable(Cassette._save)(force=True)))
@@ -60,20 +64,27 @@ patch_vcrpy_filters = patch('scrub',
                             mock.patch.object(util, 'SHOULD_SCRUB', False),
                             negate=True)
 
+original_cassette_enter = CassetteContextDecorator.__enter__
+def new_cassette_enter(self):
+    path, _ = self._args_getter()
+    try:
+        os.remove(path)
+    except:
+        pass
+    original_cassette_enter(self)
+patch_record = patch('record', mock.patch.object(CassetteContextDecorator,
+                                                 '__enter__',
+                                                 new_cassette_enter))
+
 
 @pytest.fixture(autouse=True, scope='session')
 def set_vcr_options(request):
     util.okcupyd_vcr.record_mode = request.config.getoption('cassette_mode')
 
 
-@pytest.yield_fixture(autouse=True, scope='session')
+@pytest.fixture(autouse=True, scope='session')
 def process_command_line_args(request):
     okcupyd_util.handle_command_line_options(request.config.option)
-    if request.config.getoption('skip_vcrpy') or request.config.getoption('credentials_modules'):
-        with mock.patch.object(util, 'TESTING_USERNAME', settings.USERNAME):
-            yield
-    else:
-        yield
 
 
 @pytest.fixture

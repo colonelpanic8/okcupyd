@@ -6,6 +6,7 @@ import importlib
 import itertools
 import logging
 import shutil
+import sys
 
 from . import settings
 
@@ -166,7 +167,8 @@ def enable_logger(log_name, level=logging.DEBUG):
 
 def get_credentials():
     if not settings.USERNAME:
-        settings.USERNAME = input('username: ')
+        input_function = input if sys.version_info.major == 3 else raw_input
+        settings.USERNAME = input_function('username: ').strip()
     if not settings.PASSWORD:
         settings.PASSWORD = getpass.getpass('password: ')
 

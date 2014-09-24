@@ -15,6 +15,7 @@ WBITS = 16 + zlib.MAX_WBITS
 
 
 SHOULD_SCRUB = True
+REMOVE_OLD_CASSETTES = False
 
 
 @util.n_partialable
@@ -67,8 +68,6 @@ def scrub_login_response(response):
     if not SHOULD_SCRUB:
         return response
     response = response.copy()
-    if 'Set-Cookie' in response['headers']:
-        del response['headers']['Set-Cookie']
     try:
         decompressed = zlib.decompress(response['body']['string'], WBITS).decode('utf8')
     except:
@@ -129,4 +128,5 @@ def cassette_path(cassette_name):
 
 @util.n_partialable
 def use_cassette(cassette_name, *args, **kwargs):
-    return okcupyd_vcr.use_cassette(cassette_path(cassette_name), *args, **kwargs)
+    path = cassette_path(cassette_name)
+    return okcupyd_vcr.use_cassette(path, *args, **kwargs)
