@@ -192,6 +192,7 @@ def handle_command_line_options(args):
         enable_logger(enabled_log)
     for credentials_module in args.credentials_modules:
         update_settings_with_module(credentials_module)
+    return args
 
 
 def update_settings_with_module(module_name):
