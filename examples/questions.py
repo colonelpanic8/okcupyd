@@ -1,12 +1,9 @@
-'''
-Script that prints information for every question answered by a profile
-from quickmatch that contains the text "marijuana"(probably not a whole
-lot, but you get the idea).
-'''
 import okcupyd
+
 
 u = okcupyd.User()
 p = u.quickmatch()
+
 
 print('Questions for {0}'.format(p.username))
 print('----------')

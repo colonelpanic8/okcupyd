@@ -1,6 +1,4 @@
-"""
-Give a 5-star rating to 20 lucky 24-year-old straight/gay/bi women/men.
-"""
+"""Give a 5-star rating to 20 lucky 24-year-old straight/gay/bi women/men."""
 
 import okcupyd
 
