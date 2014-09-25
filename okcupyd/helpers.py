@@ -75,10 +75,9 @@ utf8_parser = etree.XMLParser(encoding='utf-8')
 
 @util.n_partialable
 def get_js_variable(html_response, variable_name):
-    if not isinstance(html_response, basestring if sys.version_info.major == 2 else str):
-        script_elements = xpb.script.apply_(html_response)
-        html_response = '\n'.join(script_element.text_content()
-                                  for script_element in script_elements)
+    script_elements = xpb.script.apply_(html_response)
+    html_response = '\n'.join(script_element.text_content()
+                              for script_element in script_elements)
     return search('var {0} = "(.*?)";'.format(variable_name), html_response).group(1)
 
 

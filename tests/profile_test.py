@@ -1,11 +1,10 @@
 import datetime
 
-import pytest
-
 from . import util
 from okcupyd import profile
 from okcupyd import session
 from okcupyd import User
+from okcupyd.util import cached_property
 
 
 @util.use_cassette('test_profile_essays')
@@ -44,3 +43,5 @@ def test_contacted_on_inbox_correspondent():
     profile = User().outbox[-1].correspondent_profile
     assert bool(profile.contacted)
     assert isinstance(profile.contacted, datetime.datetime)
+    for prop_name, _ in cached_property.get_cached_properties(profile):
+        getattr(profile, prop_name)

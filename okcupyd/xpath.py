@@ -62,7 +62,11 @@ class XPathBuilder(object):
     with_class = with_classes
 
     def apply_(self, tree):
-        return tree.xpath(self.xpath)
+        try:
+            return tree.xpath(self.xpath)
+        except:
+            import ipdb; ipdb.set_trace()
+            print()
 
     def one_(self, tree):
         return self.apply_(tree)[0]

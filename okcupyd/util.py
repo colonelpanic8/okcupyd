@@ -105,7 +105,7 @@ class cached_property(object):
     @classmethod
     def bust_caches(cls, obj):
         for name, _ in cls.get_cached_properties(obj):
-            if hasattr(obj, name):
+            if name in obj.__dict__:
                 delattr(obj, name)
 
     @classmethod

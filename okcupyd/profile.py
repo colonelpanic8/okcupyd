@@ -213,7 +213,7 @@ class Profile(object):
     def _profile_response(self):
         return self._session.get(
             'https://www.okcupid.com/profile/{0}'.format(self.username)
-        ).content.decode('utf8')
+        ).content
 
     @util.cached_property
     def _profile_tree(self):
@@ -233,7 +233,7 @@ class Profile(object):
 
     @util.cached_property
     def authcode(self):
-        return helpers.get_authcode(self._profile_response)
+        return helpers.get_authcode(self._profile_tree)
 
     @util.cached_property
     def picture_uris(self):
@@ -281,7 +281,7 @@ class Profile(object):
 
     @util.cached_property
     def _current_user_id(self):
-        return int(helpers.get_id(self._profile_response))
+        return int(helpers.get_id(self._profile_tree))
 
     @util.cached_property
     def essays(self):

@@ -75,7 +75,6 @@ def scrub_login_response(response):
     if not SHOULD_SCRUB:
         return response
     response = response.copy()
-    # Remove redirects.
     if 'location' in response['headers']:
         response['headers']['location'] = [scrub_uri(uri)
                                            for uri in response['headers']['location']]
