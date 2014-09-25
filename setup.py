@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name="okcupyd",
-    version="0.3.1",
+    version="0.4.0",
     packages=['okcupyd'],
     install_requires=['lxml', 'requests', 'simplejson', 'six', 'ipython'],
     tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy'],
