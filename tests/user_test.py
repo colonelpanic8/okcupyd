@@ -60,3 +60,23 @@ def test_user_essay_refresh():
 def test_visitors():
     user = User()
     assert isinstance(user.visitors[0], Profile)
+
+
+@util.use_cassette('profile_titles')
+def test_profile_titles():
+    user = User()
+    for essay_name in user.profile.essays.essay_names:
+        setattr(user.profile.essays, essay_name, 'updated')
+
+    assert user.profile.essays.short_name_to_title == {
+        'favorites': 'Favorite books, movies, shows, music, and food',
+        'friday_night': 'On a typical Friday night I am',
+        'good_at': u'I\u2019m really good at',
+        'message_me_if': 'You should message me if',
+        'my_life': u'What I\u2019m doing with my life',
+        'people_first_notice': 'The first things people usually notice about me',
+        'private_admission': u'The most private thing I\u2019m willing to admit',
+        'self_summary': 'My self-summary',
+        'six_things': 'The six things I could never do without',
+        'think_about': 'I spend a lot of time thinking about'
+    }

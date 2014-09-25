@@ -29,7 +29,7 @@ class User(object):
         self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
 
-    def get_user(self, username):
+    def get_profile(self, username):
         return Profile(self._session, username)
 
     _visitors_xpb = xpb.div.with_class('user_info').\

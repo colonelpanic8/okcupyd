@@ -43,16 +43,19 @@ class LookingFor(object):
 class Essays(object):
 
     @staticmethod
-    def build_essay_property(essay_index):
-        essay_xpb = xpb.div(id='essay_{0}'.format(essay_index)).\
-                    div.with_class('text').\
-                    div.with_class('essay')
+    def build_essay_property(essay_index, essay_name):
+        essay_xpb = xpb.div(id='essay_{0}'.format(essay_index))
+        essay_text_xpb = essay_xpb.div.with_class('text').div.with_class('essay')
         @property
         def essay(self):
             try:
-                return essay_xpb.get_text_(self._essays).strip()
+                essay_text = essay_text_xpb.get_text_(self._essays).strip()
             except IndexError:
                 return None
+            if essay_name not in self._short_name_to_title:
+                self._short_name_to_title[essay_name] = essay_xpb.a.with_class('essay_title').\
+                                                        get_text_(self._profile_tree)
+            return essay_text
 
         @essay.setter
         def set_essay_text(self, essay_text):
@@ -62,18 +65,24 @@ class Essays(object):
 
     @classmethod
     def _init_essay_properties(cls):
-        for essay_index, essay_name in enumerate(cls._essay_names):
-            setattr(cls, essay_name, cls.build_essay_property(essay_index))
+        for essay_index, essay_name in enumerate(cls.essay_names):
+            setattr(cls, essay_name, cls.build_essay_property(essay_index, essay_name))
 
     _essays_xpb = xpb.div(id='main_column')
-    _essay_names = ['self_summary', 'my_life', 'good_at', 'people_first_notice',
-                    'favorites', 'six_things', 'think_about', 'private_admission',
-                    'message_me_if']
+    essay_names = ['self_summary', 'my_life', 'good_at', 'people_first_notice',
+                    'favorites', 'six_things', 'think_about', 'friday_night',
+                    'private_admission', 'message_me_if']
 
     def __init__(self, session, profile_tree, profile_tree_getter=None):
         self._session = session
         self._profile_tree = profile_tree
         self._profile_tree_getter = profile_tree_getter
+        self._short_name_to_title = {}
+
+    @property
+    def short_name_to_title(self):
+        for i in self: pass # Make sure that all essays names have been retrieved
+        return self._short_name_to_title
 
 
     @util.cached_property
@@ -100,6 +109,10 @@ class Essays(object):
             )
             self._profile_tree = self._profile_tree_getter()
         util.cached_property.bust_caches(self)
+
+    def __iter__(self):
+        for essay_name in self.essay_names:
+            yield getattr(self, essay_name)
 
 
 Essays._init_essay_properties()
