@@ -135,21 +135,6 @@ def make_single_arity(function):
     return wrapped
 
 
-def kwargs_make_single_arity(function):
-    @functools.wraps(function)
-    def wrapped(kwargs):
-        return function(**kwargs)
-    return wrapped
-
-
-def args_kwargs_make_single_arity(function):
-    @functools.wraps(function)
-    def wrapped(val):
-        (args, kwargs) = val
-        return function(*args, **kwargs)
-    return wrapped
-
-
 def force_args_return(function):
     @functools.wraps(function)
     def wrapped(*args, **kwargs):
