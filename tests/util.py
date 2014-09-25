@@ -66,6 +66,8 @@ def gzip_string(incoming):
     compress_object = zlib.compressobj(6, zlib.DEFLATED, WBITS)
     start = compress_object.compress(incoming)
     end = compress_object.flush()
+    if not isinstance(start, str):
+        return start + end
     return ''.join([start, end])
 
 
