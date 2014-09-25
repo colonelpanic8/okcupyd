@@ -10,7 +10,8 @@ class _AttractivenessFinder(object):
         self._session = session or Session.login(settings.AF_USERNAME,
                                                  settings.AF_PASSWORD)
 
-    def find_attractiveness(self, username, accuracy=900, _lower=0, _higher=10000):
+    def find_attractiveness(self, username, accuracy=900,
+                            _lower=0, _higher=10000):
         average = (_higher + _lower)//2
         if _higher - _lower <= accuracy:
             return average
@@ -22,9 +23,11 @@ class _AttractivenessFinder(object):
                          attractiveness_max=_higher)
 
         if results:
-            return self.find_attractiveness(username, accuracy, average, _higher)
+            return self.find_attractiveness(username, accuracy,
+                                            average, _higher)
         else:
-            return self.find_attractiveness(username, accuracy, _lower, average)
+            return self.find_attractiveness(username, accuracy,
+                                            _lower, average)
 
     __call__ = find_attractiveness
 
@@ -70,7 +73,7 @@ class CachedAttractivenessFinder(AttractivenessFinderDecorator):
 
     def find_attractiveness(self, username, **kwargs):
         if username not in self._cache:
-            self._cache[username] = self._finder.find_attractiveness(username, **kwargs)
+            self._cache[username] = self._finder(username, **kwargs)
         return self._cache[username]
 
 
