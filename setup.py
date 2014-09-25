@@ -10,7 +10,7 @@ setup(
     version="0.3.1",
     packages=['okcupyd'],
     install_requires=['lxml', 'requests', 'simplejson', 'six', 'ipython'],
-    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy', 'wrapt'],
+    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",
     author_email="ivanmalison@gmail.com",

@@ -1,11 +1,12 @@
 from . import util
 from okcupyd import User
-from okcupyd.profile import Essays
+from okcupyd.profile import Profile
 
 
 @util.use_cassette('user_no_picture')
 def test_handle_no_pictures():
-    assert isinstance(User().username, str)
+    username = User().profile.username
+    assert username is not None
 
 
 @util.use_cassette('user_get_threads')
@@ -35,13 +36,13 @@ def test_user_search_count():
 def test_user_essays():
     user = User()
     first_essay = 'an essay'
-    user.essays.self_summary = first_essay
-    assert user.essays.self_summary == first_essay
+    user.profile.essays.self_summary = first_essay
+    assert user.profile.essays.self_summary == first_essay
 
     second_essay = 'next_essay'
-    user.essays.self_summary = second_essay
+    user.profile.essays.self_summary = second_essay
 
-    assert user.essays.self_summary == second_essay
+    assert user.profile.essays.self_summary == second_essay
 
 
 @util.use_cassette('test_user_essays_refresh')
@@ -49,7 +50,13 @@ def test_user_essay_refresh():
     # Test Refresh Function
     user = User()
     user2 = User(user._session)
-    user.self_summary = 'other stuff'
+    user.message_me_if = 'other stuff'
 
-    user2.essays.refresh()
-    assert user.essays.self_summary == user2.essays.self_summary
+    user2.profile.essays.refresh()
+    assert user.profile.essays.message_me_if == user2.profile.essays.message_me_if
+
+
+@util.use_cassette('visitors_test')
+def test_visitors():
+    user = User()
+    assert isinstance(user.visitors[0], Profile)

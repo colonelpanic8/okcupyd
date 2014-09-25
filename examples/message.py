@@ -1,7 +1,4 @@
-'''
-Sample script that prints the first message thread in your inbox, and
-sends a response message to the sender.
-'''
+"""Read the first message in your inbox and reply in two different ways."""
 
 import okcupyd
 

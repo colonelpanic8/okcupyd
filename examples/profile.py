@@ -1,22 +1,17 @@
-'''
-Sample script that visits a random profile from the quickmatch page,
-and prints out most of the information in the profile.
-'''
+"""Print a random profile from the quickmatch page."""
 
 import okcupyd
 
 u = okcupyd.User()
 p = u.quickmatch() # p is an instance of the Profile class
-u.visit(p)
-p.update_traits() # only necessary for if you want to fill in p.traits
 
 print('Profile of {0}'.format(p.username))
 print('{0}: {1}'.format('Gender', p.gender))
 print('{0}: {1}'.format('Age', p.age))
 print('{0}: {1}'.format('Orientation', p.orientation))
 print('{0}: {1}'.format('Location', p.location))
-print('{0}: {1}%'.format('Match', p.match))
-print('{0}: {1}%'.format('Enemy', p.enemy))
+print('{0}: {1}%'.format('Match', p.match_percentage))
+print('{0}: {1}%'.format('Enemy', p.enemy_percentage))
 print('----------')
 print('')
 

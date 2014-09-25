@@ -1,6 +1,8 @@
 from .errors import InvalidInputError
 
+
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
+
 
 seeking = {
     'girls who like guys': '34',
@@ -17,20 +19,24 @@ seeking = {
     'bi guys only': '16',
     'bi guys and girls': '48',
     'everybody': '63',
-    }
+    '': '63'
+}
+
 
 # Wtf, OKCupid?
 has_kids = {
     "has a kid": {"addition": 33686018, "power": 1},
     "has kids": {"addition": 67372036, "power": 2},
     "doesn't have kids": {"addition": 1077952576, "power": 6},
-    }
+}
+
 
 wants_kids = {
     "might want kids": {"addition": 18176, "power": 8},
     "wants kids": {"addition": 4653056, "power": 16},
     "doesn't want kids": {"addition": 1191182384, "power": 24},
-    }
+}
+
 
 language_map = {
     'English': '74',
@@ -110,7 +116,8 @@ language_map = {
     'Vietnamese': '68',
     'Welsh': '69',
     'Yiddish': '70',
-    }
+}
+
 
 binary_lists = {
     'smokes': ['11', 'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'],
@@ -143,8 +150,10 @@ binary_lists = {
                   'human (other)']
     }
 
+
 dogs = ['owns dogs', 'likes dogs', 'dislikes dogs']
 cats = ['owns cats', 'likes cats', 'dislikes cats']
+
 
 def get_height_query(height_min, height_max):
     '''Convert from inches to millimeters/10'''
@@ -155,6 +164,7 @@ def get_height_query(height_min, height_max):
     if height_max is not None:
         max_int = int(height_max) * 254
     return '10,{0},{1}'.format(str(min_int), str(max_int))
+
 
 def get_options_query(type, inputs):
     for char in sep_replacements:
@@ -175,6 +185,7 @@ def get_options_query(type, inputs):
             int_to_return += 2**power
     return '{0},{1}'.format(option_list[0], int_to_return)
 
+
 def get_pet_queries(pets):
     for char in sep_replacements:
         pets = [pet.replace(char, '') for pet in pets]
@@ -194,6 +205,7 @@ def get_pet_queries(pets):
     dog_query = '16,{0}'.format(dog_int)
     cat_query = '17,{0}'.format(cat_int)
     return dog_query, cat_query
+
 
 def get_kids_query(kids):
     kids = [kid.lower() for kid in kids]
@@ -224,6 +236,7 @@ def get_kids_query(kids):
 
 def get_language_query(language):
     return '22,{0}'.format(language_map[language.title()])
+
 
 def get_join_date_query(date):
     date_int = 0

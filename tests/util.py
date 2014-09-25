@@ -15,6 +15,7 @@ WBITS = 16 + zlib.MAX_WBITS
 
 
 SHOULD_SCRUB = True
+REPLACEMENTS = []
 REMOVE_OLD_CASSETTES = False
 
 
@@ -35,10 +36,14 @@ def remove_headers(request, headers_to_remove=()):
 def scrub_request_body(request):
     if not SHOULD_SCRUB:
         return request
-    if not urllib.parse.urlsplit(request.uri).path == '/login':
-        return request
-    request.body = scrub_query_string(request.body)
+    if urllib.parse.urlsplit(request.uri).path == '/login':
+        request.body = scrub_query_string(request.body)
+    request.uri = scrub_uri(request.uri)
     return request
+
+
+def scrub_uri(uri):
+    return uri.replace(settings.USERNAME, TESTING_USERNAME)
 
 
 def scrub_query_string(query_string):
@@ -68,6 +73,10 @@ def scrub_login_response(response):
     if not SHOULD_SCRUB:
         return response
     response = response.copy()
+    # Remove redirects.
+    if 'location' in response['headers']:
+        response['headers']['location'] = [scrub_uri(uri)
+                                           for uri in response['headers']['location']]
     try:
         decompressed = zlib.decompress(response['body']['string'], WBITS).decode('utf8')
     except:

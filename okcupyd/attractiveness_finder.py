@@ -12,14 +12,14 @@ class _AttractivenessFinder(object):
 
     def find_attractiveness(self, username, accuracy=900, _lower=0, _higher=10000):
         average = (_higher + _lower)//2
-        if _higher - _lower < accuracy:
+        if _higher - _lower <= accuracy:
             return average
 
         results = search(self._session,
                          looking_for='everybody',
                          keywords=username,
                          attractiveness_min=average,
-                         attractivenvess_max=_higher)
+                         attractiveness_max=_higher)
 
         if results:
             return self.find_attractiveness(username, accuracy, average, _higher)
@@ -37,11 +37,11 @@ class AttractivenessFinderDecorator(object):
     def __getattr__(self, attr):
         return getattr(self._finder, attr)
 
+    def __call__(self, *args, **kwargs):
+        return self.find_attractiveness(*args, **kwargs)
+
 
 class CheckForExistenceAttractivenessFinder(AttractivenessFinderDecorator):
-
-    def __init__(self, attractiveness_finder=None):
-        self._finder = attractiveness_finder or _AttractivenessFinder()
 
     def _check_for_existence(self, username):
         return bool(search(self._session,
@@ -56,13 +56,10 @@ class CheckForExistenceAttractivenessFinder(AttractivenessFinderDecorator):
 
 class RoundedAttractivenessFinder(AttractivenessFinderDecorator):
 
-    def __init__(self, attractiveness_finder=None):
-        self._finder = attractiveness_finder or _AttractivenessFinder()
-
     def find_attractiveness(self, *args, **kwargs):
         unrounded = self._finder.find_attractiveness(*args, **kwargs)
         if unrounded is not None:
-            return int(round(unrounded/1000, 0)*1000)
+            return int(round(float(unrounded)/1000, 0)*1000)
 
 
 class CachedAttractivenessFinder(AttractivenessFinderDecorator):

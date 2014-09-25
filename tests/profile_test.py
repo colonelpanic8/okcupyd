@@ -1,8 +1,11 @@
+import datetime
+
 import pytest
 
 from . import util
 from okcupyd import profile
 from okcupyd import session
+from okcupyd import User
 
 
 @util.use_cassette('test_profile_essays')
@@ -10,5 +13,34 @@ def test_profile_essays():
     user_profile = profile.Profile(session.Session.login(), 'FriedLiverAttack')
     assert user_profile.essays.self_summary
 
-    with pytest.raises(profile.CantUpdateOtherUsersEssaysError):
-        user_profile.essays.self_summary = 'test'
+
+@util.use_cassette('test_rate_profile')
+def test_rate_profile():
+    profile = User().quickmatch()
+    profile.rate(5)
+    profile.refresh()
+    assert profile.rating == 5
+
+
+@util.use_cassette('test_profile_properties')
+def test_profile_properties():
+    profile = User().quickmatch()
+    assert 0 <= profile.match_percentage <= 100
+    assert 0 <= profile.enemy_percentage <= 100
+    assert profile.responds
+    assert profile.contacted == False # We want it to be false, not falsy
+
+
+@util.use_cassette('test_profile_contacted')
+def test_contacted():
+    profile = User().quickmatch()
+    profile.message('test')
+    assert bool(profile.contacted)
+    assert isinstance(profile.contacted, datetime.datetime)
+
+
+@util.use_cassette('test_profile_on_inbox_correspondent')
+def test_contacted_on_inbox_correspondent():
+    profile = User().outbox[-1].correspondent_profile
+    assert bool(profile.contacted)
+    assert isinstance(profile.contacted, datetime.datetime)

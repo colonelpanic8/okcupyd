@@ -16,6 +16,12 @@ class XPathBuilder(object):
         return type(self)(self.nodes[:-1] + (updated_final_node,),
                           relative=self.relative, direct_child=self.direct_child)
 
+    @property
+    def text_(self):
+        return self.update_final_node(
+            self.nodes[-1](selected_attribute=XPathNode.text)
+        )
+
     def add_node(self, **kwargs):
         if 'direct_child' not in kwargs:
             kwargs['direct_child'] = self.direct_child
@@ -67,6 +73,8 @@ class XPathBuilder(object):
 
 class XPathNode(object):
 
+    text = object()
+
     @staticmethod
     def attribute_contains(attribute, contained_string):
         return "contains(concat(' ',normalize-space(@{0}),' '),' {1} ')".format(
@@ -116,6 +124,8 @@ class XPathNode(object):
 
     @property
     def selected_attribute_string(self):
+        if self.selected_attribute is self.text:
+            return '/text()'
         return '/@{0}'.format(self.selected_attribute) \
             if self.selected_attribute else ''
 

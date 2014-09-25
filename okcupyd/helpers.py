@@ -52,15 +52,12 @@ class MessageSender(object):
 
     def send_message(self, username, message, authcode=None, thread_id=None):
         authcode = authcode or self._get_authcode(username)
-        params = self.message_request_parameters(username, message, thread_id or 0, authcode)
+        params = self.message_request_parameters(username, message,
+                                                 thread_id or 0, authcode)
         return self._session.get('https://www.okcupid.com/mailbox', params=params)
 
 
 def get_additional_info(tree):
-    """
-    Make a request to OKCupid to get a user's age, gender, orientation,
-    and relationship status.
-    """
     age = int(xpb.span(id='ajax_age').get_text_(tree).strip())
     orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0].strip()
     status = tree.xpath("//*[@id = 'ajax_status']/text()")[0].strip()
@@ -87,6 +84,7 @@ def get_js_variable(html_response, variable_name):
 
 get_authcode = get_js_variable(variable_name='AUTHCODE')
 get_username = get_js_variable(variable_name='SCREENNAME')
+get_id = get_js_variable(variable_name='CURRENTUSERID')
 get_my_username = get_username
 
 
@@ -153,68 +151,6 @@ def format_last_online(last_online):
     return last_online_int
 
 
-
-def get_percentages(profile_tree):
-    """
-    Parse element tree to return a profile's match, friend, and enemy
-    percentages with the user.
-    Returns
-    ----------
-    list of int
-    """
-    percentage_list = []
-    try:
-        match_str = enemy_str = ""
-        for box in profile_tree.xpath("//div[@class = 'percentbox']"):
-            if box.xpath(".//span[@class = 'percentlabel']/text()")[0].lower() == 'match':
-                match_str = box.xpath(".//span[@class = 'percent']/text()")[0]
-            else:
-                enemy_str = box.xpath(".//span[@class = 'percent']/text()")[0]
-        for str in (match_str, enemy_str):
-            if str and str[1] == '%':
-                percentage_list.append(int(str[0]))
-            elif str:
-                percentage_list.append(int(str[:2]))
-            else:
-                percentage_list.append("")
-        return percentage_list
-    except IndexError:
-        raise ProfileNotFoundError('Could not find the profile specified')
-
-
-def update_essays(tree, essays):
-    """
-    Update essays attribute of a Profile.
-    """
-    add_newlines(tree)
-    for div in tree.xpath("//div[@class = 'essay content saved locked other ']"):
-        title = div.find('a').text.replace("’", "'")
-        desc_div = div.xpath(".//div[contains(@id, 'essay_text_')]")[0]
-        text = desc_div.text_content().replace('\n\n', '\n').strip()
-        for k, v in CHAR_REPLACE.items():
-            text = text.replace(k, v)
-        if title == "My self-summary":
-            essays['self summary'] = text
-        elif title == "What I'm doing with my life":
-            essays['life'] = text
-        elif title == "I'm really good at":
-            essays['good at'] = text
-        elif title == "The first things people usually notice about me":
-            essays['first things'] = text
-        elif title == "Favorite books, movies, shows, music, and food":
-            essays['favorites'] = text
-        elif title == "The six things I could never do without":
-            essays['six things'] = text
-        elif title == "I spend a lot of time thinking about":
-            essays['thinking'] = text
-        elif title == "On a typical Friday night I am":
-            essays['friday night'] = text
-        elif title == "The most private thing I'm willing to admit":
-            essays['private thing'] = text
-        elif title == "You should message me if":
-            essays['message me if'] = text
-
-
 def update_looking_for(profile_tree, looking_for):
     """
     Update looking_for attribute of a Profile.
@@ -256,14 +192,14 @@ def get_looking_for(gender, orientation):
     str
     """
     looking_for = ''
-    if gender == 'Male':
+    if gender.lower() in ('male', 'm',):
         if orientation == 'Straight':
             looking_for = 'girls who like guys'
         elif orientation == 'Gay':
             looking_for = 'guys who like guys'
         elif orientation == 'Bisexual':
             looking_for = 'both who like bi guys'
-    elif gender == 'Female':
+    elif gender.loiwer() in ('female', 'f'):
         if orientation == 'Straight':
             looking_for = 'guys who like girls'
         elif orientation == 'Gay':

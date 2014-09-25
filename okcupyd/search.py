@@ -260,10 +260,6 @@ class MatchCardExtractor(object):
             xpb.span.with_class('location').get_text_(self._div)
         )
 
-    @property
-    def id(self):
-        return xpb.ul.with_classes('star-rating').select_attribute_('id', self._div)[0].split('-')[-1]
-
     _match_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'match').span.with_classes('percentage')
 
     @property
@@ -279,16 +275,6 @@ class MatchCardExtractor(object):
     def enemy_percentage(self):
         try:
             return int(self._enemy_percentage_xpb.get_text_(self._div).strip('%'))
-        except ValueError:
-            return 0
-
-    @property
-    def rating(self):
-        try:
-            rating_li = xpb.li.with_class('current-rating').apply_(self._div)
-            rating_style = rating_li[0].attrib['style']
-            width_percent = int(''.join(c for c in rating_style if c.isdigit()))
-            return (width_percent // 100) * 5
         except ValueError:
             return 0
 
@@ -322,9 +308,15 @@ class SearchManager(object):
         search_parameters = self._parameter_builder.build(self._session,
                                                           count, self._low)
         log.info(simplejson.dumps({'search_parameters': search_parameters}))
-        search_html = self._session.get('https://www.okcupid.com/match',
-                                        params=search_parameters).json()['html']
-        log.info(simplejson.dumps({'search_html': search_html}))
+        response = self._session.get('https://www.okcupid.com/match',
+                                     params=search_parameters)
+        try:
+            search_html = response.json()['html']
+        except:
+            log.warning(simplejson.dumps(
+                {'failure': response.content.decode('utf8')}
+            ))
+            raise
         return search_html
 
     def get_profiles(self, count=9):
@@ -342,8 +334,6 @@ class SearchManager(object):
                                     location=match_card_extractor.location,
                                     match_percentage=match_card_extractor.match_percentage,
                                     enemy_percentage=match_card_extractor.enemy_percentage,
-                                    id=match_card_extractor.id,
-                                    rating=match_card_extractor.rating,
                                     contacted=match_card_extractor.contacted))
         return profiles
 

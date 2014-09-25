@@ -37,11 +37,14 @@ class Session(requests.Session):
         login_response = session.post('https://www.okcupid.com/login',
                                       data=credentials,
                                       headers=headers or cls.default_login_headers)
-        if login_response.json()['screenname'] is None:
+        log_in_name = login_response.json()['screenname']
+        if log_in_name is None:
             raise AuthenticationError('Could not log in as {0}'.format(username))
-        if login_response.json()['screenname'].lower() != username.lower():
-            log.warning('Expected to log in as {0} but got {1}'.format(username, login_response.json()['screenname']))
+        if log_in_name.lower() != username.lower():
+            log.warning('Expected to log in as {0} but got {1}'.format(username,
+                                                                       log_in_name))
         log.debug(login_response.content.decode('utf8'))
+        session.log_in_name = log_in_name
         return session
 
     def __init__(self, *args, **kwargs):

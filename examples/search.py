@@ -13,7 +13,6 @@ profiles = u.search(location='new york, ny', religion='buddhist',
                     smokes=['no', 'trying to quit'], count=1)
 
 for profile in profiles:
-    u.visit(profile)
     print("Downloading {0}'s pictures...".format(profile.username))
     for count, url in enumerate(profile.picture_uris, start=1):
         extension = url.split('.')[-1].split('?')[0]
