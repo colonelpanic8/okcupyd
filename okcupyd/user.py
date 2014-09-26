@@ -3,6 +3,7 @@ from lxml import html
 from . import helpers
 from . import util
 from .messaging import ThreadFetcher
+from .photo import PhotoUploader
 from .profile import Profile
 from .search import SearchManager
 from .session import Session
@@ -75,6 +76,10 @@ class User(object):
         """Return a Profile obtained by visiting the quickmatch page."""
         response = self._session.okc_get('quickmatch', params={'okc_api': 1})
         return Profile(self._session, response.json()['sn'])
+
+    def upload_photo(self, filename):
+        return PhotoUploader(filename, self._session,
+                             user_id=self.profile._current_user_id)
 
     def __repr__(self):
         return 'User("{0}")'.format(self.profile.username)

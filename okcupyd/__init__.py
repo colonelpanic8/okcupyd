@@ -14,12 +14,14 @@ def go():
     sys.exit(start_ipython(['-i', os.path.join(os.path.dirname(__file__), 'start.py')]))
 
 
-from .search import search
-from .user import User
 from .attractiveness_finder import AttractivenessFinder
+from .photo import PhotoUploader
+from .search import search
+from .session import Session
 from .statistics import Statistics
+from .user import User
 from .util import save_file
 
 
 __all__ = ('search', 'User', 'AttractivenessFinder', 'Statistics',
-           'save_file', 'go')
+           'save_file', 'go', 'PhotoUploader', 'Session')

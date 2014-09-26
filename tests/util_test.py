@@ -61,3 +61,12 @@ def test_get_cached_properties():
     util.cached_property.bust_caches(instance)
 
     assert instance.count_prop == 2
+
+
+def test_overwrite_kwarg():
+
+    @util.n_partialable
+    def test(k, a=0, b=0):
+        return k + a + b
+
+    assert test(a=4)(a=1)(1) == 2

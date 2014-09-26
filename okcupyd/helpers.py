@@ -4,9 +4,7 @@ from json import loads
 from lxml import html, etree
 from re import search
 import logging
-import sys
 
-from .errors import ProfileNotFoundError
 from .xpath import xpb
 from . import util
 
@@ -84,6 +82,7 @@ def get_js_variable(html_response, variable_name):
 get_authcode = get_js_variable(variable_name='AUTHCODE')
 get_username = get_js_variable(variable_name='SCREENNAME')
 get_id = get_js_variable(variable_name='CURRENTUSERID')
+get_current_user_id = get_id
 get_my_username = get_username
 
 

@@ -1,5 +1,6 @@
 from . import util
 from okcupyd import User
+from okcupyd import helpers
 from okcupyd.profile import Profile
 
 
@@ -68,7 +69,7 @@ def test_profile_titles():
     for essay_name in user.profile.essays.essay_names:
         setattr(user.profile.essays, essay_name, 'updated')
 
-    assert user.profile.essays.short_name_to_title == {
+    expected_names_dict = {
         'favorites': 'Favorite books, movies, shows, music, and food',
         'friday_night': 'On a typical Friday night I am',
         'good_at': u'I\u2019m really good at',
@@ -80,3 +81,7 @@ def test_profile_titles():
         'six_things': 'The six things I could never do without',
         'think_about': 'I spend a lot of time thinking about'
     }
+
+    expected_names_dict = {key: helpers.replace_chars(value) for key, value in expected_names_dict.items()}
+
+    assert user.profile.essays.short_name_to_title == expected_names_dict

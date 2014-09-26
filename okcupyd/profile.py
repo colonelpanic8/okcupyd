@@ -53,8 +53,9 @@ class Essays(object):
             except IndexError:
                 return None
             if essay_name not in self._short_name_to_title:
-                self._short_name_to_title[essay_name] = essay_xpb.a.with_class('essay_title').\
-                                                        get_text_(self._profile_tree)
+                self._short_name_to_title[essay_name] = helpers.replace_chars(
+                    essay_xpb.a.with_class('essay_title').get_text_(self._profile_tree)
+                )
             return essay_text
 
         @essay.setter
