@@ -43,7 +43,7 @@ def scrub_request_body(request):
 
 
 def scrub_uri(uri):
-    return uri.replace(settings.USERNAME, TESTING_USERNAME)
+    return uri.lower().replace(settings.USERNAME.lower(), TESTING_USERNAME)
 
 
 def scrub_query_string(query_string):

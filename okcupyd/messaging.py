@@ -32,8 +32,8 @@ class ThreadHTMLFetcher(object):
         }
 
     def fetch(self, start_at):
-        return self._session.decoded_okc_get('messages',
-                                             params=self._query_params(start_at)).strip()
+        return self._session.okc_get('messages',
+                                     params=self._query_params(start_at)).content.strip()
 
 
 class ThreadProcessor(object):
