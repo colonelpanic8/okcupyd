@@ -67,6 +67,7 @@ def test_visitors():
     assert isinstance(user.visitors[0], Profile)
 
 
+
 @pytest.mark.skipif(bool(os.environ.get('CI')), reason="Unicode issues...")
 @util.use_cassette(cassette_name='profile_titles')
 def test_profile_titles():
