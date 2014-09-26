@@ -19,7 +19,7 @@ setup(
     keywords="python okcupid",
     url="https://github.com/IvanMalison/okcupyd",
     long_description=read('README.md'),
-    entry_points={"console_scripts": ["okcupyd=okcupyd:go"]},
+    entry_points={"console_scripts": ["okcupyd=okcupyd:parse_args_and_run"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
