@@ -40,7 +40,7 @@ class PhotoUploader(object):
         return self._response_dict['width']
 
     def upload(self):
-        with open(self._filename) as file_object:
+        with open(self._filename, 'rb') as file_object:
             files = {'file': (self._filename, file_object,
                               'image/jpeg', {'Expires': '0'})}
             response = self._session.post(self._uri, files=files)

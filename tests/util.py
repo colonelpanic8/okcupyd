@@ -129,6 +129,7 @@ okcupyd_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
                       before_record_response=scrub_login_response,)
 okcupyd_vcr.register_matcher('body_as_query_string', body_as_query_string)
 okcupyd_vcr.register_matcher('match_search_query', match_search_query)
+match_on_no_body = list(filter(lambda x: 'body' not in x, okcupyd_vcr.match_on))
 
 
 
