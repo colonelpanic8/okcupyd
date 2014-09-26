@@ -53,9 +53,9 @@ and run source credentials.sh to do this.
 All examples in this section assume that the variable u has been initialized as follows:
 
 ```python
-import pyokc
+import okcupyd
 
-u = pyokc.User()
+u = okcupyd.User()
 ```
 
 <h4>Searching profiles</h4>
