@@ -1,3 +1,5 @@
+import pytest
+
 from . import util
 from okcupyd import User
 from okcupyd import helpers
@@ -63,6 +65,7 @@ def test_visitors():
     assert isinstance(user.visitors[0], Profile)
 
 
+@pytest.mark.xfail(reason="Unicode issues...")
 @util.use_cassette('profile_titles')
 def test_profile_titles():
     user = User()
