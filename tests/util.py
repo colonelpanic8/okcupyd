@@ -138,6 +138,12 @@ def cassette_path(cassette_name):
                         'vcr_cassettes', '{0}.yaml'.format(cassette_name))
 
 @util.n_partialable
-def use_cassette(cassette_name, *args, **kwargs):
+def use_cassette(function=None, cassette_name=None, *args, **kwargs):
+    if cassette_name is None:
+        assert function, 'Must supply function if no cassette name given'
+        cassette_name = function.__name__
     path = cassette_path(cassette_name)
-    return okcupyd_vcr.use_cassette(path, *args, **kwargs)
+    context_decorator = okcupyd_vcr.use_cassette(path, *args, **kwargs)
+    if function:
+        return context_decorator(function)
+    return context_decorator

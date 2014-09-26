@@ -89,5 +89,5 @@ def process_command_line_args(request):
 
 @pytest.fixture
 def session():
-    with util.use_cassette('session_success'):
+    with util.use_cassette(cassette_name='session_success'):
         return Session.login()

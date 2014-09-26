@@ -51,10 +51,10 @@ def test_attractiveness_finder(mock_search, attractiveness_finder):
 
 @pytest.yield_fixture
 def cached_attractiveness_finder():
-    with util.use_cassette('attractiveness_finder'):
+    with util.use_cassette(cassette_name='attractiveness_finder'):
         yield AttractivenessFinder()
 
 
-@util.use_cassette('attractiveness_finder_live')
+@util.use_cassette(cassette_name='attractiveness_finder_live')
 def test_attractiveness_finder_live(cached_attractiveness_finder):
     assert cached_attractiveness_finder('_iWarhol') == 3000

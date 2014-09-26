@@ -7,13 +7,13 @@ from okcupyd import User
 from okcupyd.util import cached_property
 
 
-@util.use_cassette('test_profile_essays')
+@util.use_cassette(cassette_name='test_profile_essays')
 def test_profile_essays():
     user_profile = profile.Profile(session.Session.login(), 'FriedLiverAttack')
     assert user_profile.essays.self_summary
 
 
-@util.use_cassette('test_rate_profile')
+@util.use_cassette(cassette_name='test_rate_profile')
 def test_rate_profile():
     profile = User().quickmatch()
     profile.rate(5)
@@ -21,7 +21,7 @@ def test_rate_profile():
     assert profile.rating == 5
 
 
-@util.use_cassette('test_profile_properties')
+@util.use_cassette(cassette_name='test_profile_properties')
 def test_profile_properties():
     profile = User().quickmatch()
     assert 0 <= profile.match_percentage <= 100
@@ -30,7 +30,7 @@ def test_profile_properties():
     assert profile.contacted == False # We want it to be false, not falsy
 
 
-@util.use_cassette('test_profile_contacted')
+@util.use_cassette(cassette_name='test_profile_contacted')
 def test_contacted():
     profile = User().quickmatch()
     profile.message('test')
@@ -38,7 +38,7 @@ def test_contacted():
     assert isinstance(profile.contacted, datetime.datetime)
 
 
-@util.use_cassette('test_profile_on_inbox_correspondent')
+@util.use_cassette(cassette_name='test_profile_on_inbox_correspondent')
 def test_contacted_on_inbox_correspondent():
     profile = User().outbox[-1].correspondent_profile
     assert bool(profile.contacted)

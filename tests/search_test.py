@@ -8,18 +8,18 @@ from . import util
 
 
 @pytest.fixture
-@util.use_cassette('search_startup')
+@util.use_cassette(cassette_name='search_startup')
 def search_manager():
     return SearchManager(looking_for='everybody')
 
-@util.use_cassette('search_age_filter')
+@util.use_cassette(cassette_name='search_age_filter')
 def test_age_filter(search_manager):
     age = 22
     search_manager.set_options(age_min=age, age_max=age)
     profile, = search_manager.get_profiles(count=1)
     assert profile.age == age
 
-@util.use_cassette('search_count')
+@util.use_cassette(cassette_name='search_count')
 def test_count_variable(search_manager, request):
     search_manager.set_options(looking_for='everybody')
     profiles = search_manager.get_profiles(count=14)
@@ -35,14 +35,14 @@ def test_count_variable(search_manager, request):
         profile.rating
         profile.contacted
 
-@util.use_cassette('search_location_filter')
+@util.use_cassette(cassette_name='search_location_filter')
 def test_location_filter(search_manager):
     location = 'Portland, OR'
     search_manager.set_options(location=location, radius=25)
     profile, = search_manager.get_profiles(count=1)
     assert profile.location == 'Portland, OR'
 
-@util.use_cassette('search_function')
+@util.use_cassette(cassette_name='search_function')
 def test_search_function(session):
     profile, = search(session, count=1)
     assert isinstance(profile, Profile)
