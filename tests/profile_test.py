@@ -21,7 +21,14 @@ def test_rate_profile():
     assert profile.rating == 5
 
 
-@util.use_cassette(cassette_name='test_profile_properties')
+@util.use_cassette
+def test_rate_profile_1_stars():
+    profile = User().quickmatch()
+    profile.rate(1)
+    assert profile.rating == 1
+
+
+@util.use_cassette
 def test_profile_properties():
     profile = User().quickmatch()
     assert 0 <= profile.match_percentage <= 100

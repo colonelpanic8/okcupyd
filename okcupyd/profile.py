@@ -266,7 +266,7 @@ class Profile(object):
             self._profile_tree
         )
         width_percentage = int(''.join(c for c in rating_style if c.isdigit()))
-        return (width_percentage // 100) * 5
+        return width_percentage/20
 
     _contacted_xpb = xpb.div(id='actions').div.with_classes('tooltip_text',
                                                                'hidden')

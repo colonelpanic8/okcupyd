@@ -75,9 +75,10 @@ def scrub_login_response(response):
     if not SHOULD_SCRUB:
         return response
     response = response.copy()
-    if 'location' in response['headers']:
-        response['headers']['location'] = [scrub_uri(uri)
-                                           for uri in response['headers']['location']]
+    for item in ('location', 'Location'):
+        if item in response['headers']:
+            response['headers'][item] = [scrub_uri(uri)
+                                         for uri in response['headers'][item]]
     try:
         decompressed = zlib.decompress(response['body']['string'], WBITS).decode('utf8')
     except:
