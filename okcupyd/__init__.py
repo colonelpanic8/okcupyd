@@ -32,7 +32,3 @@ from .util import save_file
 
 __all__ = ('search', 'User', 'AttractivenessFinder', 'Statistics',
            'save_file', 'parse_args_and_run', 'PhotoUploader', 'Session')
-
-
-if __name__ == '__main__':
-    parse_args_and_run()
