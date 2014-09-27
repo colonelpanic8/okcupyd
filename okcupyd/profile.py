@@ -373,7 +373,7 @@ class Profile(object):
         }
         self._session.post('http://www.okcupid.com/vote_handler',
                            data=parameters)
-        self.refresh()
+        self.refresh(reload=False)
 
     def __repr__(self):
         return 'Profile("{0}")'.format(self.username)
