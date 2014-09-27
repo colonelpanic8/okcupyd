@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from . import util
@@ -65,7 +67,7 @@ def test_visitors():
     assert isinstance(user.visitors[0], Profile)
 
 
-@pytest.mark.xfail(reason="Unicode issues...")
+@pytest.mark.skipif(os.environ.get('CI'), reason="Unicode issues...")
 @util.use_cassette(cassette_name='profile_titles')
 def test_profile_titles():
     user = User()
