@@ -38,7 +38,7 @@ class ThreadHTMLFetcher(object):
 
 class ThreadProcessor(object):
 
-    xpath_builder = XPathBuilder(relative=False).li.with_classes('thread','message')
+    xpath_builder = XPathBuilder(relative=False).li.with_classes('thread', 'message')
 
     def __init__(self, session, id_to_existing=None):
         self._session = session

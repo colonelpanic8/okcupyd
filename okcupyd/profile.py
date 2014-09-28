@@ -1,11 +1,16 @@
 import datetime
 import itertools
+import logging
 
 from lxml import html
+import simplejson
 
 from . import helpers
 from . import util
 from .xpath import xpb
+
+
+log = logging.getLogger(__name__)
 
 
 class LookingFor(object):
@@ -371,7 +376,16 @@ class Profile(object):
             'vote_type': 'personality',
             'score': rating,
         }
-        self._session.okc_post('vote_handler', data=parameters)
+        response = self._session.okc_post('vote_handler', data=parameters)
+        response_json = response.json()
+        if response.json().get('status', False):
+            log.info(simplejson.dumps({'rate_response': response_json,
+                                       'sent_parameters': parameters}))
+        else:
+            log.warning(simplejson.dumps(
+                {'message': 'Got empty response from server for rating request',
+                 'sent_parameters': parameters}
+            ))
         self.refresh(reload=False)
 
     def __repr__(self):
