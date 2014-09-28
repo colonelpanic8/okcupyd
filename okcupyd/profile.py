@@ -266,7 +266,7 @@ class Profile(object):
             self._profile_tree
         )
         width_percentage = int(''.join(c for c in rating_style if c.isdigit()))
-        return width_percentage//20
+        return width_percentage // 20
 
     _contacted_xpb = xpb.div(id='actions').div.with_classes('tooltip_text',
                                                                'hidden')
@@ -371,8 +371,7 @@ class Profile(object):
             'vote_type': 'personality',
             'score': rating,
         }
-        self._session.post('http://www.okcupid.com/vote_handler',
-                           data=parameters)
+        self._session.okc_post('vote_handler', data=parameters)
         self.refresh(reload=False)
 
     def __repr__(self):

@@ -25,6 +25,7 @@ def test_rate_profile():
 def test_rate_profile_1_stars():
     profile = User().quickmatch()
     profile.rate(1)
+    assert User().get_profile(profile.username).rating == profile.rating
     assert profile.rating == 1
 
 
