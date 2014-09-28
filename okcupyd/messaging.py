@@ -49,9 +49,9 @@ class ThreadProcessor(object):
             yield self._process_thread_element(thread_element)
 
     def _process_thread_element(self, thread_element):
-        thread_id = thread_element.attrib['data-threadid']
-        if self.id_to_existing is not None and thread_id in self.id_to_existing:
-            return self.id_to_existing[thread_id]
+        id = thread_element.attrib['data-threadid']
+        if self.id_to_existing is not None and id in self.id_to_existing:
+            return self.id_to_existing[id]
 
         correspondent_id = thread_element.attrib['data-personid']
 
@@ -64,22 +64,22 @@ class ThreadProcessor(object):
         date_updated_text = timestamp_span[0][0].text_content()
         date_updated = helpers.parse_date_updated(date_updated_text)
 
-        return MessageThread(thread_id, correspondent, correspondent_id, read,
+        return MessageThread(id, correspondent, correspondent_id, read,
                              date_updated, session=self._session)
 
 
 class MessageRetriever(object):
 
-    def __init__(self, session, thread_id, read_messages=False):
+    def __init__(self, session, id, read_messages=False):
         self._session = session
         self._read_messages = read_messages
-        self.thread_id = thread_id
+        self.id = id
 
     @property
     def params(self):
         return {
             'readmsg': str(self._read_messages).lower(),
-            'threadid': self.thread_id,
+            'threadid': self.id,
             'folder': 1
         }
 
@@ -128,30 +128,37 @@ Message = namedtuple('Message', ('id', 'sender', 'recipient', 'content'))
 
 class MessageThread(object):
 
-    @classmethod
-    def restore(cls, thread_id, correspondent, correspondent_id, read, date,
-                session=None, messages=None):
-
-        instance = cls(thread_id, correspondent, correspondent_id, read, date,
-                       session)
-        if messages is not None:
-            instance.__dict__['messages'] = messages
-        return instance
-
-    def __init__(self, thread_id, correspondent, correspondent_id, read,
+    def __init__(self, id, correspondent, correspondent_id, read,
                  date, session=None):
         self._session = session
-        self._message_retriever = MessageRetriever(session, thread_id)
+        self._message_retriever = MessageRetriever(session, id)
+        self.id = id
         self.correspondent = correspondent
         self.correspondent_id = correspondent_id
-        self.thread_id = thread_id
         self.read = read
         self.date = date
-        self.reply = self.correspondent_profile.message(thread_id=self.thread_id)
+        self.reply = self.correspondent_profile.message(thread_id=self.id)
+
+    @property
+    def initiator(self):
+        if not self.message:
+            return
+        return self.user_profile \
+            if self.user_profile.username == self.messages[0].sender \
+               else self.correspondent_profile
+
+
+    @property
+    def respondent(self):
+        if not self.message:
+            return
+        return self.correspondent_profile \
+            if self.user_profile.username == self.messages[0].sender \
+               else self.correspondent_profile
 
     @property
     def redact_messages(self):
-        return self.restore(self.thread_id, self.correspondent, self.read, self.date,
+        return self.restore(self.id, self.correspondent, self.read, self.date,
                             session=self._session,
                             messages=[self.redact_message(message)
                                       for message in self.messages])
@@ -162,10 +169,10 @@ class MessageThread(object):
                        'x'*len(message.content))
 
     def __hash__(self):
-        return hash(self.thread_id)
+        return hash(self.id)
 
     def __eq__(self, other):
-        return self.thread_id == other.thread_id
+        return self.id == other.id
 
     @util.cached_property
     def messages(self):
@@ -173,7 +180,11 @@ class MessageThread(object):
 
     @util.cached_property
     def correspondent_profile(self):
-        return Profile(self._session, self.correspondent)
+        return self._session.get_profile(self.correspondent)
+
+    @util.cached_property
+    def user_profile(self):
+        return self._session.get_current_user_profile()
 
     def get_messages(self):
         return list(self._message_retriever.get_messages())
@@ -188,11 +199,6 @@ class MessageThread(object):
         return len(self.messages)
 
     @property
-    def initiator(self):
-        if self.messages:
-            return self.messages[0].sender
-
-    @property
     def has_messages(self):
         return bool(self.messages)
 
@@ -203,7 +209,7 @@ class MessageThread(object):
     @property
     def as_dict(self):
         return {
-            'thread_id': self.thread_id,
+            'id': self.id,
             'correspondent': self.correspondent,
             'correspondent_id': self.correspondent_id,
             'read': self.read,
@@ -231,7 +237,7 @@ class MessageThread(object):
             'mailaction': 3,
             'buddyname': self.correspondent,
             'r1': self.correspondent,
-            'threadid': self.thread_id,
+            'threadid': self.id,
             'receiverid': self.correspondent_id,
             'folderid': 1,
             'body_to_forward': self.messages[-1].content

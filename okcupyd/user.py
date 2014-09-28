@@ -31,7 +31,7 @@ class User(object):
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
 
     def get_profile(self, username):
-        return Profile(self._session, username)
+        return self._session.get_profile(username)
 
     _visitors_xpb = xpb.div.with_class('user_info').\
                    div.with_class('profile_info').div.with_class('username').\

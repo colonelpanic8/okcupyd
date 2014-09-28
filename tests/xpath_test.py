@@ -1,4 +1,3 @@
-import pytest
 from lxml import etree
 
 from okcupyd import xpath
@@ -9,7 +8,7 @@ def test_selected_attribute():
     assert node.xpath == '//element/@value'
 
     tree = etree.XML("<top><container><element value='1'>"
-                 "</element><element value='2'></element></container></top>")
+                     "</element><element value='2'></element></container></top>")
     builder = xpath.xpb.container.element.select_attribute_('value')
 
     assert builder.xpath == './/container//element/@value'
@@ -26,3 +25,8 @@ def test_text_for_many():
 
     result = xpath.xpb.container.element.text_.apply_(tree)
     assert set(result) == set(['one', 'two'])
+
+
+def test_attribute_contains():
+    tree = etree.XML("<top><elem a='complete'></elem></top>")
+    assert xpath.xpb.elem.attribute_contains('a', 'complet').apply_(tree) != []

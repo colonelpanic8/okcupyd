@@ -9,7 +9,7 @@ setup(
     name="okcupyd",
     version="0.4.4",
     packages=['okcupyd'],
-    install_requires=['lxml', 'requests', 'simplejson', 'six', 'ipython'],
+    install_requires=['lxml', 'requests >= 2.4.1', 'simplejson', 'ipython >= 2.2.0'],
     tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",

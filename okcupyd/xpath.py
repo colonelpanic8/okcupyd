@@ -41,12 +41,12 @@ class XPathBuilder(object):
         updated_final_node = self.nodes[-1](predicates=predicates,
                                             attributes=attributes,
                                             direct_child=direct_child)
-        return type(self)(self.nodes[:-1] + (updated_final_node,),
-                          relative=self.relative, direct_child=self.direct_child)
+        return self.update_final_node(updated_final_node)
 
     def attribute_contains(self, attribute, contains_string):
         updated_final_node = self.nodes[-1].add_contains_predicates(
-            ((attribute, contains_string),))
+            ((attribute, contains_string),)
+        )
         return self.update_final_node(updated_final_node)
 
     def with_classes(self, *classes):
@@ -62,11 +62,8 @@ class XPathBuilder(object):
     with_class = with_classes
 
     def apply_(self, tree):
-        try:
-            return tree.xpath(self.xpath)
-        except:
-            import ipdb; ipdb.set_trace()
-            print()
+        return tree.xpath(self.xpath)
+
 
     def one_(self, tree):
         return self.apply_(tree)[0]
@@ -80,10 +77,14 @@ class XPathNode(object):
     text = object()
 
     @staticmethod
-    def attribute_contains(attribute, contained_string):
+    def contains_class(class_attribute, contained_class):
         return "contains(concat(' ',normalize-space(@{0}),' '),' {1} ')".format(
-            attribute, contained_string
+            class_attribute, contained_class
         )
+
+    @staticmethod
+    def contains_attribute(attribute, contained_string):
+        return "contains(@{0}, '{1}')".format(attribute, contained_string)
 
     @staticmethod
     def attribute_equal(attribute, value):
@@ -141,13 +142,16 @@ class XPathNode(object):
         return type(self)(element, attributes, new_predicates,
                           direct_child, use_or, selected_attribute)
 
-    def add_contains_predicates(self, kv_pairs):
-        predicates = [self.attribute_contains(attribute, contains_string)
-                      for attribute, contains_string in kv_pairs]
+    def with_classes(self, classes):
+        predicates = tuple(self.contains_class('class', contained_class)
+                           for contained_class in classes)
+
         return self(predicates=predicates)
 
-    def with_classes(self, classes):
-        return self.add_contains_predicates(('class', class_string)
-                                     for class_string in classes)
+    def add_contains_predicates(self, kv_pairs):
+        predicates = tuple(self.contains_attribute(attribute, contains_string)
+                           for attribute, contains_string in kv_pairs)
+        return self(predicates=predicates)
+
 
 xpb = XPathBuilder()

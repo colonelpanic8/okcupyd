@@ -6,6 +6,7 @@ import requests
 from .errors import AuthenticationError
 from . import settings
 from . import util
+from . import profile
 
 
 log = logging.getLogger(__name__)
@@ -73,3 +74,9 @@ class Session(requests.Session):
 
     def okc_post(self, path, *args, **kwargs):
         return self.post('{0}{1}'.format(util.BASE_URI, path), *args, **kwargs)
+
+    def get_profile(self, username):
+        return profile.Profile(self, username)
+
+    def get_current_user_profile(self):
+        return self.get_profile(self.log_in_name)
