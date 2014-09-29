@@ -25,7 +25,7 @@ class User(object):
         self.profile = Profile(self._session, self._session.log_in_name)
         self.authcode = self.profile.authcode
 
-        self._message_sender = helpers.MessageSender(self._session)
+        self._message_sender = helpers.Messager(self._session)
         self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
         self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
@@ -57,7 +57,7 @@ class User(object):
                 thread.reply(message_text)
                 return
 
-        return self._message_sender.send_message(username, message_text)
+        return self._message_sender.send(username, message_text)
 
     def search(self, **kwargs):
         count = kwargs.pop('count', 9)

@@ -367,9 +367,9 @@ class Profile(object):
 
     @util.n_partialable
     def message(self, message, thread_id=None):
-        return_value =  helpers.MessageSender(
+        return_value =  helpers.Messager(
             self._session
-        ).send_message(self.username, message,
+        ).send(self.username, message,
                        self.authcode, thread_id)
         self.refresh(reload=False)
         return return_value

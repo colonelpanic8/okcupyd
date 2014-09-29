@@ -5,6 +5,8 @@ from lxml import html, etree
 from re import search
 import logging
 
+import simplejson
+
 from .xpath import xpb
 from . import util
 
@@ -26,7 +28,7 @@ CHAR_REPLACE = {
 log = logging.getLogger(__name__)
 
 
-class MessageSender(object):
+class Messager(object):
 
     def __init__(self, session):
         self._session = session
@@ -49,11 +51,14 @@ class MessageSender(object):
             'from_profile': 1
         }
 
-    def send_message(self, username, message, authcode=None, thread_id=None):
+    def send(self, username, message, authcode=None, thread_id=None):
         authcode = authcode or self._get_authcode(username)
         params = self.message_request_parameters(username, message,
                                                  thread_id or 0, authcode)
-        return self._session.get('https://www.okcupid.com/mailbox', params=params)
+        response = self._session.get('https://www.okcupid.com/mailbox', params=params)
+        response_dict = response.json()
+        log.info(simplejson.dumps({'message_send_response': response_dict}))
+        return response_dict
 
 
 def get_additional_info(tree):
