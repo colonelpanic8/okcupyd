@@ -222,7 +222,7 @@ class Fetchable(object):
             self.items = list(self._fetcher.fetch(
                 id_to_existing=self.items if use_existing else ()
             ))
-        return self.threads
+        return self.items
 
     def __iter__(self):
         return iter(self.items)

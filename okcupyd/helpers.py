@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import namedtuple
 from datetime import datetime, date
 from json import loads
 from lxml import html, etree
@@ -26,6 +27,9 @@ CHAR_REPLACE = {
 
 
 log = logging.getLogger(__name__)
+
+
+MessageInfo = namedtuple('MessageInfo', ('thread_id', 'message_id'))
 
 
 class Messager(object):
@@ -58,7 +62,7 @@ class Messager(object):
         response = self._session.get('https://www.okcupid.com/mailbox', params=params)
         response_dict = response.json()
         log.info(simplejson.dumps({'message_send_response': response_dict}))
-        return response_dict
+        return MessageInfo(response_dict['threadid'], response_dict['msgid'])
 
 
 def get_additional_info(tree):
