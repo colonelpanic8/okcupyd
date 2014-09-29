@@ -6,11 +6,11 @@ from okcupyd.profile import Profile
 from . import util
 
 
-
 @pytest.fixture
 @util.use_cassette(cassette_name='search_startup')
 def search_manager():
     return SearchManager(looking_for='everybody')
+
 
 @util.use_cassette(cassette_name='search_age_filter')
 def test_age_filter(search_manager):
@@ -18,6 +18,7 @@ def test_age_filter(search_manager):
     search_manager.set_options(age_min=age, age_max=age)
     profile, = search_manager.get_profiles(count=1)
     assert profile.age == age
+
 
 @util.use_cassette(cassette_name='search_count')
 def test_count_variable(search_manager, request):
@@ -35,6 +36,7 @@ def test_count_variable(search_manager, request):
         profile.rating
         profile.contacted
 
+
 @util.use_cassette(cassette_name='search_location_filter')
 def test_location_filter(search_manager):
     location = 'Portland, OR'
@@ -42,9 +44,10 @@ def test_location_filter(search_manager):
     profile, = search_manager.get_profiles(count=1)
     assert profile.location == 'Portland, OR'
 
+
 @util.use_cassette(cassette_name='search_function')
-def test_search_function(session):
-    profile, = search(session, count=1)
+def test_search_function():
+    profile, = search(count=1)
     assert isinstance(profile, Profile)
 
     profile.username

@@ -181,6 +181,8 @@ def add_command_line_options(add_argument, use_short_options=True):
                  action="append", default=[],
                  help="Use the specified credentials module to update "
                  "the values in okcupyd.settings.")
+    add_argument('--echo', dest='echo', action='store_true', default=False,
+                 help="Echo SQL.")
 
 
 def handle_command_line_options(args):
@@ -188,6 +190,10 @@ def handle_command_line_options(args):
         enable_logger(enabled_log)
     for credentials_module in args.credentials_modules:
         update_settings_with_module(credentials_module)
+    if args.echo:
+        from okcupyd import db
+        db.echo = True
+        db.Session.kw['echo'] = True
     return args
 
 
