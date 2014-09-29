@@ -59,7 +59,9 @@ class Essays(object):
                 return None
             if essay_name not in self._short_name_to_title:
                 self._short_name_to_title[essay_name] = helpers.replace_chars(
-                    essay_xpb.a.with_class('essay_title').get_text_(self._profile_tree)
+                    essay_xpb.a.with_class('essay_title').get_text_(
+                        self._profile_tree
+                    )
                 )
             return essay_text
 
@@ -72,7 +74,8 @@ class Essays(object):
     @classmethod
     def _init_essay_properties(cls):
         for essay_index, essay_name in enumerate(cls.essay_names):
-            setattr(cls, essay_name, cls.build_essay_property(essay_index, essay_name))
+            setattr(cls, essay_name,
+                    cls.build_essay_property(essay_index, essay_name))
 
     _essays_xpb = xpb.div(id='main_column')
     essay_names = ['self_summary', 'my_life', 'good_at', 'people_first_notice',
@@ -142,18 +145,22 @@ class QuestionFetcher(object):
 
     @classmethod
     def build(cls, session, username):
-        return cls(QuestionHTMLFetcher(session, username), QuestionProcessor(session))
+        return cls(QuestionHTMLFetcher(session, username),
+                   QuestionProcessor(session))
 
     _page_data_xpb = xpb.div.with_class('pages_data')
-    _current_page_xpb = _page_data_xpb.input(id='questions_pages_page').select_attribute_('value')
-    _total_page_xpb = _page_data_xpb.input(id='questions_pages_total').select_attribute_('value')
+    _current_page_xpb = _page_data_xpb.input(id='questions_pages_page').\
+                        select_attribute_('value')
+    _total_page_xpb = _page_data_xpb.input(id='questions_pages_total').\
+                      select_attribute_('value')
 
     def __init__(self, html_fetcher, processor):
         self._html_fetcher = html_fetcher
         self._processor = processor
 
     def _pages_left(self, tree):
-        return int(self._current_page_xpb.one_(tree)) < int(self._total_page_xpb.one_(tree))
+        return (int(self._current_page_xpb.one_(tree)) <
+                int(self._total_page_xpb.one_(tree)))
 
     def fetch(self, start_at=0, get_at_least=None, id_to_existing=None):
         current_offset = start_at + 1
@@ -207,7 +214,8 @@ class QuestionProcessor(object):
             answer = xpb.span.attribute_contains('id', 'answer_target').\
                      get_text_(question_element).strip()
 
-            explanation = xpb.div.span.with_class('note').get_text_(question_element).strip()
+            explanation = xpb.div.span.with_class('note').\
+                          xget_text_(question_element).strip()
         return Question(id_, text, answer, explanation)
 
     def process(self, tree):
@@ -376,16 +384,24 @@ class Profile(object):
             'vote_type': 'personality',
             'score': rating,
         }
-        response = self._session.okc_post('vote_handler', data=parameters)
+        headers = {
+            'accept': 'text/javascript, text/html, application/xml, '
+            'text/xml, */*',
+            'accept-encoding': 'gzip,deflate',
+            'accept-language': 'en-US,en;q=0.8',
+            'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'origin': 'https://www.okcupid.com',
+            'x-prototype-version': 1.7,
+            'x-requested-with': 'XMLHttpRequest',
+        }
+        response = self._session.okc_post('vote_handler', data=parameters,
+                                          headers=headers)
         response_json = response.json()
-        if response.json().get('status', False):
-            log.info(simplejson.dumps({'rate_response': response_json,
-                                       'sent_parameters': parameters}))
-        else:
-            log.warning(simplejson.dumps(
-                {'message': 'Got empty response from server for rating request',
-                 'sent_parameters': parameters}
-            ))
+        log_function = log.info if response_json.get('status', False) \
+                       else log.error
+        log_function(simplejson.dumps({'rate_response': response_json,
+                                       'sent_parameters': parameters,
+                                       'headers': dict(self._session.headers)}))
         self.refresh(reload=False)
 
     def __repr__(self):

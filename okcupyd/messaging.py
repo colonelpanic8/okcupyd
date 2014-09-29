@@ -5,7 +5,6 @@ from lxml import html
 
 from . import helpers
 from . import util
-from .profile import Profile
 from .xpath import XPathBuilder, xpb
 
 
@@ -32,8 +31,9 @@ class ThreadHTMLFetcher(object):
         }
 
     def fetch(self, start_at):
-        return self._session.okc_get('messages',
-                                     params=self._query_params(start_at)).content.strip()
+        response = self._session.okc_get('messages',
+                                         params=self._query_params(start_at))
+        return response.content.strip()
 
 
 class ThreadProcessor(object):

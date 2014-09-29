@@ -46,6 +46,7 @@ class Session(requests.Session):
                                                                        log_in_name))
         log.debug(login_response.content.decode('utf8'))
         session.log_in_name = log_in_name
+        session.headers.update(cls.default_login_headers)
         return session
 
     def __init__(self, *args, **kwargs):

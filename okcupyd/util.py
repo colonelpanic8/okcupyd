@@ -8,6 +8,8 @@ import logging
 import shutil
 import sys
 
+from coloredlogs import ColoredStreamHandler
+
 from . import settings
 
 
@@ -153,8 +155,7 @@ def tee(*functions):
 
 def enable_logger(log_name, level=logging.DEBUG):
     log = logging.getLogger(log_name)
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter('[%(name)s  %(asctime)s] %(message)s'))
+    handler = ColoredStreamHandler()
     handler.setLevel(level)
     log.setLevel(level)
     log.addHandler(handler)
