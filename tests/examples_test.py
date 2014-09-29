@@ -6,8 +6,6 @@ import pytest
 
 from . import util
 
-pytestmark = pytest.mark.skipif(True, reason='examples_tests are broken.')
-
 
 path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'examples')
 
