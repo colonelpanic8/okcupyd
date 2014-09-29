@@ -2,7 +2,6 @@ import importlib
 import os
 
 import mock
-import pytest
 
 from . import util
 
