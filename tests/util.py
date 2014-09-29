@@ -1,4 +1,5 @@
 import copy
+import logging
 import os
 import zlib
 
@@ -8,6 +9,8 @@ import vcr
 
 from okcupyd import settings
 from okcupyd import util
+
+log = logging.getLogger(__name__)
 
 TESTING_USERNAME = 'username'
 TESTING_PASSWORD = 'password'
@@ -43,7 +46,10 @@ def scrub_request_body(request):
 
 
 def scrub_uri(uri):
-    return uri.lower().replace(settings.USERNAME.lower(), TESTING_USERNAME)
+    replaced = util.replace_all_case_insensitive(uri, TESTING_USERNAME,
+                                                 settings.USERNAME)
+    return util.replace_all_case_insensitive(replaced, TESTING_PASSWORD,
+                                             settings.PASSWORD)
 
 
 def scrub_query_string(query_string):
@@ -114,6 +120,14 @@ def match_search_query(left, right):
                      if 'filter' not in param_name])
     right_rest = set([(param_name, value) for param_name, value in right.query
                       if 'filter' not in param_name])
+
+    log.info(simplejson.dumps(
+        {
+            'filter_differences': list(left_filter.symmetric_difference(right_filter)),
+            'rest_differences': list(left_rest.symmetric_difference(right_rest)),
+        }
+    ))
+
     return left_filter == right_filter and left_rest == right_rest
 
 

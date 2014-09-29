@@ -57,6 +57,15 @@ def test_search_function(session):
     profile.contacted
 
 
+@util.use_cassette
+def test_search_manager_iter():
+    search_manager = SearchManager(looking_for='everybody',
+                                   religion='buddhist', age_min=25, age_max=25,
+                                   location='new york, ny', keywords='bicycle')
+    for profile in search_manager:
+        assert isinstance(profile, Profile)
+
+
 @mock.patch('okcupyd.helpers.get_locid', return_value=2)
 def test_construction_of_all_search_parameters(mock_get_locid):
     spb = SearchParameterBuilder()

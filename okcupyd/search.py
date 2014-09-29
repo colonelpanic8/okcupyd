@@ -175,11 +175,11 @@ for key in ['smokes', 'drinks', 'drugs', 'education', 'job',
             'ethnicity']:
     build_option_filter(key)
 
-
-for key, function in [('pets', util.makelist_decorator(magicnumbers.get_pet_queries)),
-                      ('offspring', util.makelist_decorator(magicnumbers.get_kids_query)),
-                      ('join_date', magicnumbers.get_join_date_query),
-                      ('languages', magicnumbers.get_language_query)]:
+pairs = [('pets', util.makelist_decorator(magicnumbers.get_pet_queries)),
+         ('offspring', util.makelist_decorator(magicnumbers.get_kids_query)),
+         ('join_date', magicnumbers.get_join_date_query),
+         ('languages', magicnumbers.get_language_query)]
+for key, function in pairs:
 
     register_filter_builder(keys=(key,))(function)
 
@@ -210,7 +210,8 @@ class SearchParameterBuilder(object):
         incoming_keys = tuple(self._options.keys())
         builders = [builder for builder, decider in builder_to_decider.items()
                     if decider(builder, incoming_keys, builder_to_keys[builder])]
-        return [builder(*[self._options.get(key) for key in builder_to_keys[builder]])
+        return [builder(*[self._options.get(key)
+                          for key in builder_to_keys[builder]])
                 for builder in builders]
 
     def set_options(self, **kwargs):
@@ -220,7 +221,7 @@ class SearchParameterBuilder(object):
     def build(self, session, count=9, low=None):
         search_parameters = {
             'timekey': 1,
-            'matchOrderBy': self.order_by.upper(),
+            'matchOrderBy': self.order_by,
             'custom_search': '0',
             'fromWhoOnline': '0',
             'mygender': self.gender,
@@ -228,7 +229,8 @@ class SearchParameterBuilder(object):
             'sort_type': '0',
             'sa': '1',
             'count': str(count),
-            'locid': str(helpers.get_locid(session, self.location)) if self.location else 0,
+            'locid': (str(helpers.get_locid(session, self.location))
+                      if self.location else 0),
             'ajax_load': 1,
             'discard_prefs': 1,
             'match_card_class': 'just_appended'
@@ -260,7 +262,8 @@ class MatchCardExtractor(object):
             xpb.span.with_class('location').get_text_(self._div)
         )
 
-    _match_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'match').span.with_classes('percentage')
+    _match_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'match').\
+                            span.with_classes('percentage')
 
     @property
     def match_percentage(self):
@@ -269,7 +272,8 @@ class MatchCardExtractor(object):
         except:
             return 0
 
-    _enemy_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'enemy').span.with_classes('percentage')
+    _enemy_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'enemy').\
+                            span.with_classes('percentage')
 
     @property
     def enemy_percentage(self):
@@ -321,7 +325,6 @@ class SearchManager(object):
 
     def get_profiles(self, count=9):
         search_html = self.get_search_html(count)
-        self._low += count
         if not search_html.strip(): return []
         tree = html.fromstring(search_html)
         match_card_elems = xpb.div.with_classes('match_card').apply_(tree)
@@ -329,14 +332,16 @@ class SearchManager(object):
         profiles = []
         for div in match_card_elems:
             match_card_extractor = MatchCardExtractor(div)
-            profiles.append(Profile(self._session, match_card_extractor.username,
-                                    age=match_card_extractor.age,
-                                    location=match_card_extractor.location,
-                                    match_percentage=match_card_extractor.match_percentage,
-                                    enemy_percentage=match_card_extractor.enemy_percentage,
-                                    contacted=match_card_extractor.contacted))
+            profiles.append(Profile(self._session, match_card_extractor.username))
+        self._low += len(profiles)
         return profiles
 
+    def __iter__(self):
+        profiles = self.get_profiles()
+        while profiles:
+            for profile in profiles:
+                yield profile
+            profiles = self.get_profiles()
 
 
 def search(session=None, count=9, **kwargs):

@@ -251,3 +251,23 @@ class StepObjectFetcher(object):
             if not text_response: break
             generators.append(self._processor.process(text_response))
         return itertools.chain(*generators)
+
+
+def find_all(a_str, sub):
+    start = 0
+    while True:
+        start = a_str.find(sub, start)
+        if start == -1: return
+        yield start
+        start += len(sub) # use start += 1 to find overlapping matches
+
+
+def replace_all_case_insensitive(a_str, sub, replacement):
+    segments = []
+    last_stop = 0
+    for start in find_all(a_str.lower(), sub.lower()):
+        segments.append(a_str[last_stop:start])
+        segments.append(replacement)
+        last_stop = start + len(sub)
+    segments.append(a_str[last_stop:])
+    return ''.join(segments)
