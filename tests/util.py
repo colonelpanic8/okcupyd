@@ -46,10 +46,11 @@ def scrub_request_body(request):
 
 
 def scrub_uri(uri):
-    replaced = util.replace_all_case_insensitive(uri, TESTING_USERNAME,
-                                                 settings.USERNAME)
-    return util.replace_all_case_insensitive(replaced, TESTING_PASSWORD,
-                                             settings.PASSWORD)
+    replaced = util.replace_all_case_insensitive(uri, settings.USERNAME,
+                                                 TESTING_USERNAME)
+    return util.replace_all_case_insensitive(replaced, settings.PASSWORD,
+                                             TESTING_PASSWORD)
+
 
 
 def scrub_query_string(query_string):
