@@ -141,7 +141,7 @@ class MessageThread(object):
 
     @property
     def initiator(self):
-        if not self.message:
+        if not self.messages:
             return
         return self.user_profile \
             if self.user_profile.username == self.messages[0].sender \
@@ -150,7 +150,7 @@ class MessageThread(object):
 
     @property
     def respondent(self):
-        if not self.message:
+        if not self.messages:
             return
         return self.correspondent_profile \
             if self.user_profile.username == self.messages[0].sender \
