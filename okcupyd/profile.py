@@ -236,6 +236,10 @@ class Profile(object):
         if reload:
             return self._profile_tree
 
+    @property
+    def is_logged_in_user(self):
+        return self._session.log_in_name.lower() == self.username.lower()
+
     @util.cached_property
     def _profile_response(self):
         return self._session.get(
@@ -275,6 +279,7 @@ class Profile(object):
 
     @util.cached_property
     def rating(self):
+        if self.is_logged_in_user: return 0
         rating_style = self._rating_xpb.select_attribute_('style').one_(
             self._profile_tree
         )
@@ -303,6 +308,7 @@ class Profile(object):
 
     @util.cached_property
     def id(self):
+        if self.is_logged_in_user: return self._current_user_id
         return int(self._rating_xpb.select_attribute_('id').
                    one_(self._profile_tree).split('-')[-2])
 

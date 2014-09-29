@@ -67,7 +67,6 @@ def test_visitors():
     assert isinstance(user.visitors[0], Profile)
 
 
-
 @pytest.mark.skipif(bool(os.environ.get('CI')), reason="Unicode issues...")
 @util.use_cassette(cassette_name='profile_titles')
 def test_profile_titles():
@@ -91,3 +90,10 @@ def test_profile_titles():
     expected_names_dict = {key: helpers.replace_chars(value) for key, value in expected_names_dict.items()}
 
     assert user.profile.essays.short_name_to_title == expected_names_dict
+
+
+@util.use_cassette
+def test_user_profile_attributes():
+    user_profile = User().profile
+    assert user_profile.id > 0
+    assert user_profile.rating == 0
