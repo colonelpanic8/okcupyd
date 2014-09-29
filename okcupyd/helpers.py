@@ -62,7 +62,7 @@ class Messager(object):
         response = self._session.get('https://www.okcupid.com/mailbox', params=params)
         response_dict = response.json()
         log.info(simplejson.dumps({'message_send_response': response_dict}))
-        return MessageInfo(response_dict['threadid'], response_dict['msgid'])
+        return MessageInfo(response_dict.get('threadid'), response_dict['msgid'])
 
 
 def get_additional_info(tree):
