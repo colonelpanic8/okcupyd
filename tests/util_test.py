@@ -107,8 +107,8 @@ def test_fetchable_get_item():
     fetcher = mock.Mock(fetch=fetch)
     fetchable = util.Fetchable(fetcher)
 
-    assert fetchable[:2] == range(2)
-    assert fetchable[:3] == range(3)
+    assert fetchable[:2] == [0, 1]
+    assert fetchable[:3] == [0, 1, 2]
     assert fetchable[3] == 3
     assert call_counter.call_count == 0
 

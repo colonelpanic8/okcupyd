@@ -46,12 +46,12 @@ def test_parse_date_updated_handles_times(patched_datetime):
 
 
 def test_parse_date_handles_month_abbreviation_day_pairs():
-    assert helpers.parse_date_updated('Jan 12') == datetime.datetime(year=2014,
-                                                                            month=1,
-                                                                            day=12)
-    assert helpers.parse_date_updated('Jan 31') == datetime.datetime(year=2014,
-                                                                            month=1,
-                                                                            day=31)
-    assert helpers.parse_date_updated('Feb 28') == datetime.datetime(year=2014,
-                                                                            month=2,
-                                                                            day=28)
+    assert helpers.parse_date_updated('Jan 12') == datetime.datetime(
+        year=2014, month=1, day=12
+    )
+    assert helpers.parse_date_updated('Jan 31') == datetime.datetime(
+        year=2014, month=1,day=31
+    )
+    assert helpers.parse_date_updated('Feb 28') == datetime.datetime(
+        year=2014, month=2, day=28
+    )
