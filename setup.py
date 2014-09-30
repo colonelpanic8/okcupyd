@@ -1,14 +1,15 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 setup(
     name="okcupyd",
     version="0.6.1",
-    packages=['okcupyd', 'okcupyd_testing'],
+    packages=find_packages(exclude=('tests', '*.db')),
     install_requires=['lxml', 'requests >= 2.4.1', 'simplejson',
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
                       'wrapt', 'coloredlogs'],
