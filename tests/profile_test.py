@@ -1,5 +1,7 @@
 import datetime
 
+import pytest
+
 from . import util
 from okcupyd import profile
 from okcupyd import session
@@ -36,6 +38,13 @@ def test_profile_properties():
     assert 0 <= profile.enemy_percentage <= 100
     assert profile.responds
     assert profile.contacted == False # We want it to be false, not falsy
+
+
+@pytest.xfail
+@util.use_cassette
+def test_profile_attractiveness():
+    profile = User().quickmatch()
+    assert 1 < profile.attractiveness < 10001
 
 
 @util.use_cassette(cassette_name='test_profile_contacted')

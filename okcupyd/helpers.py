@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
-from datetime import datetime, date
+from datetime import datetime, timedelta
 from json import loads
-from lxml import html, etree
+from lxml import html
 from re import search
 import logging
 
@@ -78,9 +78,6 @@ def get_additional_info(tree):
     return age, gender, orientation, status, location
 
 
-utf8_parser = etree.XMLParser(encoding='utf-8')
-
-
 @util.n_partialable
 def get_js_variable(html_response, variable_name):
     script_elements = xpb.script.apply_(html_response)
@@ -96,21 +93,79 @@ get_current_user_id = get_id
 get_my_username = get_username
 
 
+weekday_to_ordinal = {
+    'monday': 0,
+    'tuesday': 1,
+    'wednesday': 2,
+    'thursday': 3,
+    'friday': 4,
+    'saturday': 5,
+    'sunday': 6
+}
+
+
 def parse_date_updated(date_updated_text):
-    if '/' in date_updated_text:
+    recognized = False
+    for function in (parse_slashed_date, parse_abbreviated_date,
+                     parse_time, parse_day_of_the_week):
+        parsed_time = function(date_updated_text)
+        if parsed_time is not None:
+            recognized = True
+            break
+    else:
+        parsed_time = datetime.today()
+    log_function = log.info if recognized else log.error
+    log_function(simplejson.dumps({"incoming_date": date_updated_text,
+                                   "outgoing_date": parsed_time.strftime("%Y.%m.%d %H:%M"),
+                                   "recognized": recognized}))
+    return parsed_time
+
+
+def parse_slashed_date(date_updated_text):
+    try:
         return datetime.strptime(date_updated_text, '%m/%d/%y')
+    except:
+        pass
 
-    if date_updated_text[-2] == ' ':
-        month, day = date_updated_text.split()
-        date_updated_text = '{0} 0{1}'.format(month, day)
+def parse_abbreviated_date(date_updated_text):
+    try:
+        parsed_time = datetime.strptime(date_updated_text, '%b %d')
+    except:
+        pass
+    else:
+        return parsed_time.replace(year=datetime.now().year)
 
-    for format_string in ('%b %d', '%I:%M%p', '%a'):
-        try:
-            return datetime.strptime(date_updated_text,
-                                     format_string).replace(year=datetime.now().year)
-        except:
-            pass
+def parse_time(date_updated_text):
+    try:
+        time = datetime.strptime(date_updated_text, '%I:%M%p')
+    except:
+        pass
+    else:
+        today = datetime.today()
+        parsed_time = time.replace(year=today.year, day=today.day,
+                                   month=today.month)
+        if parsed_time > datetime.now():
+            parsed_time = parsed_time.replace(day=parsed_time.day - 1)
+        return parsed_time
 
+
+def parse_day_of_the_week(date_updated_text):
+    try:
+        datetime.strptime(date_updated_text, '%A')
+    except:
+        pass
+    else:
+        return date_from_weekday(date_updated_text)
+
+
+def date_from_weekday(weekday):
+    today = datetime.now()
+    incoming_weekday_ordinal = weekday_to_ordinal[weekday.lower()]
+    today_ordinal = today.weekday()
+    difference = (today_ordinal - incoming_weekday_ordinal
+                  if today_ordinal > incoming_weekday_ordinal else
+                  7 - incoming_weekday_ordinal + today_ordinal)
+    return today - timedelta(days=difference)
 
 
 def get_locid(session, location):

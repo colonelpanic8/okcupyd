@@ -37,7 +37,7 @@ def pytest_addoption(parser):
                      default=False, help="Re-record cassettes for all tests.")
     parser.addoption('--break-exc', dest='break_on_exception', action='store_true',
                      default=False, help="Enter ipdb if an exception is "
-                     "encounteredin a test.")
+                     "encountered in a test.")
 
 
 def patch(option, *patches, **kwargs):
@@ -76,7 +76,7 @@ patch_vcrpy_filters = patch('scrub',
                             negate=True)
 
 patch_break_on_exception = patch('break_on_exception',
-                                 mock.patch('tests.conftest.BREAK_ON_EXCEPTION',
+                                 mock.patch('okcupyd_testing.conftest.BREAK_ON_EXCEPTION',
                                             True))
 
 original_cassette_enter = CassetteContextDecorator.__enter__
@@ -234,16 +234,19 @@ def mock_message_thread_builder(mock_message_builder, mock_profile_builder):
 
 
 def pytest_exception_interact():
-    models = []
-    for key in dir(model):
-        prospect = getattr(model, key)
-        if isinstance(prospect, type) and issubclass(prospect, db.Base):
-            models.append(prospect)
-    model_class_to_instances = {}
-    for model_class in models:
-        model_class_to_instances[model_class] = {
-            instance.okc_id: instance for instance in model_class.query()
-        }
-    log.info(model_class_to_instances)
     if BREAK_ON_EXCEPTION:
         import ipdb; ipdb.set_trace()
+    try:
+        models = []
+        for key in dir(model):
+            prospect = getattr(model, key)
+            if isinstance(prospect, type) and issubclass(prospect, db.Base):
+                models.append(prospect)
+        model_class_to_instances = {}
+        for model_class in models:
+            model_class_to_instances[model_class] = {
+                instance.okc_id: instance for instance in model_class.query()
+            }
+        log.info(model_class_to_instances)
+    except:
+        pass
