@@ -93,7 +93,6 @@ class Essays(object):
         for i in self: pass # Make sure that all essays names have been retrieved
         return self._short_name_to_title
 
-
     @util.cached_property
     def _essays(self):
         return self._essays_xpb.one_(self._profile_tree)

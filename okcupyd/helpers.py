@@ -98,16 +98,19 @@ get_my_username = get_username
 
 def parse_date_updated(date_updated_text):
     if '/' in date_updated_text:
-        return datetime.strptime(date_updated_text, '%m/%d/%y').date()
+        return datetime.strptime(date_updated_text, '%m/%d/%y')
 
     if date_updated_text[-2] == ' ':
         month, day = date_updated_text.split()
         date_updated_text = '{0} 0{1}'.format(month, day)
 
-    try:
-        return datetime.strptime(date_updated_text, '%b %d').replace(year=datetime.now().year).date()
-    except:
-        return date.today()
+    for format_string in ('%b %d', '%I:%M%p', '%a'):
+        try:
+            return datetime.strptime(date_updated_text,
+                                     format_string).replace(year=datetime.now().year)
+        except:
+            pass
+
 
 
 def get_locid(session, location):
