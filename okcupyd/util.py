@@ -216,25 +216,69 @@ def save_file(filename, data):
 
 class Fetchable(object):
 
-    def __init__(self, fetcher):
+    def __init__(self, fetcher, **kwargs):
         self._fetcher = fetcher
+        self.refresh(**kwargs)
 
-    @cached_property
+    @property
     def items(self):
-        return list(self._fetcher.fetch())
+        return list(self)
 
     def refresh(self, use_existing=False, stop_at=None):
-        if 'items' in self.__dict__:
-            self.items = list(self._fetcher.fetch(
-                id_to_existing=self.items if use_existing else ()
-            ))
-        return self.items
+        # No real good reason to hold on to this. DONT TOUCH.
+        self._original_iterable = self._fetcher.fetch()
+        self._clonable, = itertools.tee(self._original_iterable, 1)
+
+    __call__ = refresh
 
     def __iter__(self):
-        return iter(self.items)
+        # This is hard to think about, but you can't ever use an iterator
+        # if you plan on cloning it. Furthermore, you can only clone it once
+        # (directly). For this reason, we throw away the iterator once it has
+        # been cloned.
+        new_iterable, self._clonable = itertools.tee(self._clonable, 2)
+        return new_iterable
 
     def __getitem__(self, item):
-        return self.items[item]
+        iterator = iter(self)
+
+        if not isinstance(item, slice):
+            assert isinstance(item, int)
+            if item < 0:
+                return list(iterator)[item]
+            try:
+                for i in range(item):
+                    next(iterator)
+                return next(iterator)
+            except StopIteration:
+                raise IndexError("The Fetchable does not have a value at the "
+                                 "index that was provided.")
+
+        # We have a slice
+        if item.start is None and item.stop is None:
+            return list(iterator)[item]
+        if ((item.start and item.start < 0) or
+            (not item.stop or item.stop < 0)):
+            # If we have any negative numbers we have to expand the whole
+            # thing anyway. This is also the case if there is no bound
+            # on the slice, hence the `not item.stop` trigger.
+            return self[:][item]
+        accumulator = []
+        # No need to do this for stop since we are sure it is not None.
+        start = item.start or 0
+        for _ in range(start):
+            try:
+                next(iterator)
+            except StopIteration: # This is strange but its what list do.
+                pass
+        for i in range(item.stop - start):
+            try:
+                value = next(iterator)
+            except StopIteration:
+                break
+            if item.step == None or i % item.step == 0:
+                accumulator.append(value)
+        return accumulator
 
 
 class StepObjectFetcher(object):

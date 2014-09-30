@@ -1,4 +1,8 @@
+import itertools
 import operator
+
+import mock
+import pytest
 
 from okcupyd import util
 
@@ -70,3 +74,70 @@ def test_overwrite_kwarg():
         return k + a + b
 
     assert test(a=4)(a=1)(1) == 2
+
+
+def test_fetchable_teeing():
+    fetcher = mock.Mock(fetch=lambda: itertools.count(5))
+    fetchable = util.Fetchable(fetcher)
+    first = iter(fetchable)
+    second = iter(fetchable)
+
+    assert next(first) == 5
+    assert next(second) == 5
+
+    third = iter(fetchable)
+
+    assert next(third) == 5
+    assert next(third) == 6
+    assert next(third) == 7
+
+    assert next(first) == 6
+    assert next(second) == 6
+
+    for i in range(4):
+        assert next(iter(fetchable)) == 5
+
+def test_fetchable_get_item():
+    call_counter = mock.Mock()
+    def fetch():
+        for i in range(3):
+            for i in range(5):
+                yield i
+            call_counter()
+    fetcher = mock.Mock(fetch=fetch)
+    fetchable = util.Fetchable(fetcher)
+
+    assert fetchable[:2] == range(2)
+    assert fetchable[:3] == range(3)
+    assert fetchable[3] == 3
+    assert call_counter.call_count == 0
+
+    assert fetchable[9] == 4
+    assert call_counter.call_count == 1
+
+    assert fetchable[2:3] == [2]
+
+    assert fetchable[:] == fetchable[:]
+    assert len(fetchable[:]) == 15
+
+    # Go too far on purpose
+    assert fetchable[:100000] == fetchable[:]
+
+    # Go too far on purpose
+    assert fetchable[100000:] == []
+    assert fetchable[100000:10000000] == []
+
+    with pytest.raises(IndexError):
+        fetchable[12312312]
+
+
+def test_negative_indexing():
+    def fetch():
+        yield 0
+        yield 0
+        yield 1
+    fetcher = mock.Mock(fetch=fetch)
+    fetchable = util.Fetchable(fetcher)
+    assert fetchable[-1] == 1
+    assert fetchable[-2:] == [0, 1]
+    assert fetchable[14:] == []
