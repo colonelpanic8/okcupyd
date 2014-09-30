@@ -38,3 +38,18 @@ def test_nest_txn():
             nested.add(model.MessageThread(okc_id=1, initiator_id=1, respondent_id=1))
             assert nested is not session
             session.add(model.MessageThread(okc_id=3, initiator_id=1, respondent_id=1))
+
+
+def test_upsert():
+    new_user_1 = model.User(handle='fun', okc_id='1',
+                            age=40, location='Washington, D.C.')
+    new_user_2 = model.User(handle='other', okc_id='1',
+                            age=40, location='Washington, D.C.')
+    v1 = model.User.upsert_okc(new_user_1)
+    v2 = model.User.upsert_okc(new_user_2)
+
+    loaded_from_v1 = model.User.find(v1.id)
+    assert loaded_from_v1.handle == v2.handle
+    assert v2.handle == new_user_2.handle
+    assert v2.handle == 'other'
+    assert len(model.User.query()) == 1

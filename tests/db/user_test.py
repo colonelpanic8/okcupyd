@@ -1,5 +1,6 @@
 from okcupyd.db import user
 
+
 def test_have_messaged_before(T):
     message_thread_model = T.factory.message_thread()
     assert user.have_messaged_by_username(

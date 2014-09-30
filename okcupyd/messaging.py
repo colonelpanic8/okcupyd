@@ -115,6 +115,7 @@ class MessageRetriever(object):
             message = xpb.div.with_class('message_body').apply_(message_element)
             if message_id == 'compose':
                 continue
+            message_id = int(message_id)
             content = None
             if message:
                 message = message[0]

@@ -1,3 +1,4 @@
+import logging
 import itertools
 import os
 
@@ -12,6 +13,10 @@ from . import util
 from okcupyd import db, settings
 from okcupyd import util as okcupyd_util
 from okcupyd.db import model, adapters
+
+
+log = logging.getLogger(__name__)
+BREAK_ON_EXCEPTION = False
 
 
 def pytest_addoption(parser):
@@ -30,6 +35,9 @@ def pytest_addoption(parser):
                      default='once', help="Accept new requests in all tests.")
     parser.addoption('--record', dest='record', action='store_true',
                      default=False, help="Re-record cassettes for all tests.")
+    parser.addoption('--break-exc', dest='break_on_exception', action='store_true',
+                     default=False, help="Enter ipdb if an exception is "
+                     "encounteredin a test.")
 
 
 def patch(option, *patches, **kwargs):
@@ -66,6 +74,10 @@ patch_use_cassette_enabled = patch('skip_vcrpy',
 patch_vcrpy_filters = patch('scrub',
                             mock.patch.object(util, 'SHOULD_SCRUB', False),
                             negate=True)
+
+patch_break_on_exception = patch('break_on_exception',
+                                 mock.patch('tests.conftest.BREAK_ON_EXCEPTION',
+                                            True))
 
 original_cassette_enter = CassetteContextDecorator.__enter__
 def new_cassette_enter(self):
@@ -220,3 +232,20 @@ def mock_message_thread_builder(mock_message_builder, mock_profile_builder):
         message_thread.respondent = mock_profile_builder(respondent)
         return message_thread
     return _build_mock_message_thread
+
+
+def pytest_exception_interact():
+    models = []
+    for key in dir(model):
+        prospect = getattr(model, key) 
+        if isinstance(prospect, type) and issubclass(prospect, db.Base):
+            models.append(prospect)
+    model_class_to_instances = {}
+    print(__name__)
+    for model_class in models:
+        model_class_to_instances[model_class] = {
+            instance.okc_id: instance for instance in model_class.query()
+        }
+    log.info(model_class_to_instances)
+    if BREAK_ON_EXCEPTION:
+        import ipdb; ipdb.set_trace()

@@ -40,6 +40,7 @@ class ThreadAdapter(object):
                                                      id_key='okc_id')
 
     def _add_messages(self, thread_model):
+        # This should probably use upsert.
         existing_message_ids = set([m.okc_id for m in thread_model.messages])
         new_messages = [message for message in self.thread.messages
                         if message.id not in existing_message_ids]

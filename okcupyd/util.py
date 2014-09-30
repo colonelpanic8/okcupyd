@@ -223,7 +223,7 @@ class Fetchable(object):
     def items(self):
         return list(self._fetcher.fetch())
 
-    def refresh(self, use_existing=True, stop_at=None):
+    def refresh(self, use_existing=False, stop_at=None):
         if 'items' in self.__dict__:
             self.items = list(self._fetcher.fetch(
                 id_to_existing=self.items if use_existing else ()

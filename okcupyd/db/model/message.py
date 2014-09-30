@@ -5,18 +5,16 @@ from sqlalchemy import String
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
-from okcupyd.db import Base
+from okcupyd.db import OKCBase
 
 
-class Message(Base):
+class Message(OKCBase):
 
     __tablename__ = "message"
 
     __table_args__ = (
         UniqueConstraint('message_thread_id', 'thread_index'),
     )
-
-    okc_id = Column(Integer, unique=True)
 
     message_thread_id = Column(Integer, ForeignKey("message_thread.id"),
                                nullable=False)

@@ -1,6 +1,8 @@
 import mock
 import pytest
 
+from .. import util
+from okcupyd import User
 from okcupyd.db import mailbox_sync, model, txn
 
 
@@ -94,3 +96,21 @@ def test_mailbox_sync_creates_message_rows(T, inbox_sync, mock_user):
                 message_thread,
                 id_to_mock_thread[message_thread.okc_id]
             )
+
+@util.use_cassette
+def test_mailbox_sync_integration():
+    user = User()
+    user.quickmatch().message('test... sorry.')
+
+    mailbox_sync.MailboxSyncer(user.outbox).sync()
+
+    user_model = model.User.find(user.profile.id, id_key='okc_id')
+    messages = model.Message.query(
+        model.Message.sender_id == user_model.id
+    )
+
+    mailbox_sync.MailboxSyncer(user.outbox).sync()
+
+    assert len(messages) == len(model.Message.query(
+        model.Message.sender_id == user_model.id
+    ))

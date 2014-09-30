@@ -1,17 +1,18 @@
+import logging
 import os
 
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import Integer
+from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import ColumnProperty
-from sqlalchemy.orm import class_mapper
-from sqlalchemy.orm import Query
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import ColumnProperty, Query, class_mapper, sessionmaker
 from sqlalchemy.sql import func
 from wrapt import decorator
+
+from . import types
+
+
+log = logging.getLogger(__name__)
 
 
 class Query(Query):
@@ -89,15 +90,20 @@ class Base(object):
         ids_to_look_for = [getattr(model, id_key) for model in models]
         found_models = cls.find_all_no_txn(session, ids_to_look_for, id_key=id_key)
         id_to_model = {getattr(model, id_key): model for model in found_models}
+        try:
+            key_type = type(next(iter(id_to_model.keys())))
+        except:
+            key_type = int
         for model in models:
-            model_id = getattr(model, id_key)
-            if getattr(model, id_key) in id_to_model:
+            model_id = key_type(getattr(model, id_key))
+            if model_id in id_to_model:
                 # Get the primary key in a better way here
                 model.id = id_to_model[model_id].id
                 session.merge(model)
             else:
                 id_to_model[model_id] = model
                 session.add(model)
+        log.info(id_to_model)
         return id_to_model
 
     @classmethod
@@ -148,6 +154,13 @@ class Base(object):
 
 
 Base = declarative_base(engine, cls=Base)
+
+
+class OKCBase(Base):
+
+    __abstract__ = True
+
+    okc_id = Column(types.StringBackedInteger, nullable=False, unique=True)
 
 
 __all__ = (Base, Session)

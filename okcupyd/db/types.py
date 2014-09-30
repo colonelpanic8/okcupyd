@@ -15,3 +15,14 @@ class JSONType(TypeDecorator):
         if value is not None:
             value = simplejson.loads(value)
         return value
+
+
+class StringBackedInteger(TypeDecorator):
+
+    impl = VARCHAR
+
+    def process_bind_param(self, value, dialect):
+        return str(value)
+
+    def process_result_value(self, value, dialect):
+        return int(value)
