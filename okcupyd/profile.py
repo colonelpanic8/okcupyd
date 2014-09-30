@@ -1,5 +1,4 @@
 import datetime
-import itertools
 import logging
 
 from lxml import html
@@ -410,4 +409,3 @@ class Profile(object):
 
     def __repr__(self):
         return 'Profile("{0}")'.format(self.username)
-

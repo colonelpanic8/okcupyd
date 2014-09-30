@@ -232,6 +232,7 @@ class Fetchable(object):
         else:
             self._accumulated = None
         self._clonable, = itertools.tee(self._original_iterable, 1)
+        return self
 
     @staticmethod
     def _make_nice_repr_iterator(original_iterable, accumulator):
