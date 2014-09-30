@@ -4,7 +4,7 @@ from sqlalchemy import Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.orderinglist import ordering_list
 
-from okcupyd.db import OKCBase
+from . import OKCBase
 
 
 class MessageThread(OKCBase):
