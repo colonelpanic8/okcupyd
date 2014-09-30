@@ -53,19 +53,7 @@ class ThreadProcessor(object):
         if self.id_to_existing is not None and id in self.id_to_existing:
             return self.id_to_existing[id]
 
-        correspondent_id = thread_element.attrib['data-personid']
-
-        correspondent = xpb.div.with_class('inner').a.with_class('photo').\
-                        img.select_attribute_('alt', thread_element)[0].split()[-1]
-
-        read = not 'unreadMessage' in thread_element.attrib['class']
-
-        timestamp_span = xpb.span.with_class('timestamp').apply_(thread_element)
-        date_updated_text = timestamp_span[0][0].text_content()
-        date_updated = helpers.parse_date_updated(date_updated_text)
-
-        return MessageThread(id, correspondent, correspondent_id, read,
-                             date_updated, session=self._session)
+        return MessageThread(self._session, thread_element)
 
 
 class MessageRetriever(object):
@@ -129,16 +117,39 @@ Message = namedtuple('Message', ('id', 'sender', 'recipient', 'content'))
 
 class MessageThread(object):
 
-    def __init__(self, id, correspondent, correspondent_id, read,
-                 date, session=None):
+    def __init__(self, session, thread_element):
         self._session = session
-        self._message_retriever = MessageRetriever(session, id)
-        self.id = id
-        self.correspondent = correspondent
-        self.correspondent_id = correspondent_id
-        self.read = read
-        self.date = date
+        self._thread_element = thread_element
         self.reply = self.correspondent_profile.message(thread_id=self.id)
+
+    @util.cached_property
+    def _message_retriever(self):
+        return MessageRetriever(self._session, self.id)
+
+    @util.cached_property
+    def id(self):
+        return self._thread_element.attrib['data-threadid']
+
+    @util.cached_property
+    def correspondent_id(self):
+        return self._thread_element['data-personid']
+
+    _correspondent_xpb = xpb.div.with_class('inner').a.with_class('photo').\
+                             img.select_attribute_('alt')
+
+    @util.cached_property
+    def correspondent(self):
+        return self._correspondent_xpb.apply_(self._thread_element)[0].split()[-1]
+
+    @util.cached_property
+    def read(self):
+        return not 'unreadMessage' in self._thread_element.attrib['class']
+
+    @util.cached_property
+    def date(self):
+        timestamp_span = xpb.span.with_class('timestamp').apply_(self._thread_element)
+        date_updated_text = timestamp_span[0][0].text_content()
+        return helpers.parse_date_updated(date_updated_text)
 
     @property
     def initiator(self):
@@ -147,7 +158,6 @@ class MessageThread(object):
         return self.user_profile \
             if self.user_profile.username == self.messages[0].sender \
                else self.correspondent_profile
-
 
     @property
     def respondent(self):
