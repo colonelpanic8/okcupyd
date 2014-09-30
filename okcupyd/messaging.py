@@ -31,6 +31,7 @@ class ThreadHTMLFetcher(object):
         }
 
     def fetch(self, start_at):
+        log.info("Making an http request.")
         response = self._session.okc_get('messages',
                                          params=self._query_params(start_at))
         return response.content.strip()

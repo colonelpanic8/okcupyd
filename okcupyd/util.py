@@ -220,14 +220,24 @@ class Fetchable(object):
         self._fetcher = fetcher
         self.refresh(**kwargs)
 
-    @property
-    def items(self):
-        return list(self)
-
-    def refresh(self, use_existing=False, stop_at=None):
+    def refresh(self, nice_repr=True, **kwargs):
         # No real good reason to hold on to this. DONT TOUCH.
         self._original_iterable = self._fetcher.fetch()
+        self.exhausted = False
+        if nice_repr:
+            self._accumulated = []
+            self._original_iterable = self._make_nice_repr_iterator(
+                self._original_iterable, self._accumulated
+            )
+        else:
+            self._accumulated = None
         self._clonable, = itertools.tee(self._original_iterable, 1)
+
+    @staticmethod
+    def _make_nice_repr_iterator(original_iterable, accumulator):
+        for item in original_iterable:
+            accumulator.append(item)
+            yield item
 
     __call__ = refresh
 
@@ -251,18 +261,22 @@ class Fetchable(object):
                     next(iterator)
                 return next(iterator)
             except StopIteration:
+                self.exhausted = True
                 raise IndexError("The Fetchable does not have a value at the "
                                  "index that was provided.")
 
         # We have a slice
         if item.start is None and item.stop is None:
+            # No point in being lazy if they want it all.
+            self.exhausted = True
             return list(iterator)[item]
         if ((item.start and item.start < 0) or
             (not item.stop or item.stop < 0)):
             # If we have any negative numbers we have to expand the whole
             # thing anyway. This is also the case if there is no bound
             # on the slice, hence the `not item.stop` trigger.
-            return self[:][item]
+            self.exausted = True
+            return list(iterator)[item]
         accumulator = []
         # No need to do this for stop since we are sure it is not None.
         start = item.start or 0
@@ -270,15 +284,36 @@ class Fetchable(object):
             try:
                 next(iterator)
             except StopIteration: # This is strange but its what list do.
-                pass
+                self.exhausted = True
+                break
         for i in range(item.stop - start):
             try:
                 value = next(iterator)
             except StopIteration:
+                self.exhausted = True
                 break
-            if item.step == None or i % item.step == 0:
-                accumulator.append(value)
+            else:
+                if item.step == None or i % item.step == 0:
+                    accumulator.append(value)
         return accumulator
+
+    def __repr__(self):
+        if self._accumulated == None:
+            list_repr = ''
+        else:
+            list_repr = repr(self._accumulated)
+            if not self.exhausted:
+                if len(self._accumulated) == 0:
+                    list_repr = '[...]'
+                else:
+                    list_repr = '{0}, ...]'.format(list_repr[:-1])
+        return 'Fetchable{0}({1})'.format(list_repr, repr(self._fetcher))
+
+    # TODO: Remove this.
+    @property
+    def items(self):
+        return list(self)
+
 
 
 class StepObjectFetcher(object):
@@ -295,12 +330,11 @@ class StepObjectFetcher(object):
         start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
                              if get_at_least
                              else itertools.count(start_at + 1, self.step))
-        generators = []
         for start_at in start_at_iterator:
             text_response = self._fetcher.fetch(start_at)
             if not text_response: break
-            generators.append(self._processor.process(text_response))
-        return itertools.chain(*generators)
+            for i in self._processor.process(text_response):
+                yield i
 
 
 def find_all(a_str, sub):

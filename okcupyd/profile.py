@@ -163,14 +163,13 @@ class QuestionFetcher(object):
 
     def fetch(self, start_at=0, get_at_least=None, id_to_existing=None):
         current_offset = start_at + 1
-        generators = []
         while True:
             tree = html.fromstring(self._html_fetcher.fetch(current_offset))
-            generators.append(self._processor.process(tree))
+            for i in self._processor.process(tree):
+                yield i
             if not self._pages_left(tree):
                 break
             current_offset = current_offset + self.step
-        return itertools.chain(*generators)
 
 
 class QuestionHTMLFetcher(object):
