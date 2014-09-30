@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="okcupyd",
-    version="0.6.1",
+    version="0.6.2",
     packages=find_packages(exclude=('tests', '*.db')),
     install_requires=['lxml', 'requests >= 2.4.1', 'simplejson',
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
