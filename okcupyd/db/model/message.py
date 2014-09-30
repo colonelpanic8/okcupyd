@@ -5,7 +5,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 
-from . import OKCBase
+from okcupyd.db import OKCBase
 
 
 class Message(OKCBase):

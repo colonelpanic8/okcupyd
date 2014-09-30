@@ -1,7 +1,7 @@
 from sqlalchemy import Column
 from sqlalchemy import String
 
-from . import OKCBase
+from okcupyd.db import OKCBase
 
 
 class User(OKCBase):
