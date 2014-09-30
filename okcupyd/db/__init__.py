@@ -1,7 +1,7 @@
 import logging
 import os
 
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Integer
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -161,6 +161,3 @@ class OKCBase(Base):
     __abstract__ = True
 
     okc_id = Column(types.StringBackedInteger, nullable=False, unique=True)
-
-
-__all__ = (Base, Session)
