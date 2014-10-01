@@ -12,16 +12,15 @@ log = logging.getLogger(__name__)
 
 
 def ThreadFetcher(session, mailbox_number):
-    return util.StepObjectFetcher(ThreadHTMLFetcher(session, mailbox_number),
-                                  ThreadProcessor(session))
+    return util.FetchMarshall(ThreadHTMLFetcher(session, mailbox_number),
+                              ThreadProcessor(session))
 
 
 class ThreadHTMLFetcher(object):
 
-    def __init__(self, session, mailbox_number, step=30):
+    def __init__(self, session, mailbox_number):
         self._session = session
         self._mailbox_number = mailbox_number
-        self.step = step
 
     def _query_params(self, start_at):
         return {
@@ -35,25 +34,32 @@ class ThreadHTMLFetcher(object):
                                          params=self._query_params(start_at))
         return response.content.strip()
 
+    def __repr__(self):
+        return '{0}(mailbox_number={1})'.format(type(self).__name__,
+                                                self._mailbox_number)
+
 
 class ThreadProcessor(object):
 
     xpath_builder = XPathBuilder(relative=False).li.with_classes('thread', 'message')
 
-    def __init__(self, session, id_to_existing=None):
+    def __init__(self, session):
         self._session = session
-        self.id_to_existing = id_to_existing or {}
 
-    def process(self, text_response):
-        for thread_element in self.xpath_builder.apply_(html.fromstring(text_response)):
+    def process(self, text_response, stop):
+        if not text_response.strip():
+            yield stop
+            raise StopIteration()
+        for thread_element in self.xpath_builder.apply_(
+            html.fromstring(text_response)
+        ):
             yield self._process_thread_element(thread_element)
 
     def _process_thread_element(self, thread_element):
-        id = thread_element.attrib['data-threadid']
-        if self.id_to_existing is not None and id in self.id_to_existing:
-            return self.id_to_existing[id]
-
         return MessageThread(self._session, thread_element)
+
+    def __repr__(self):
+        return '{0}()'.format(type(self).__name__)
 
 
 class MessageFetcher(object):
@@ -122,6 +128,15 @@ class Message(object):
             message = message[0]
             content = message.text_content().replace(' \n \n', '\n').strip()
         return content
+
+    def __repr__(self):
+        return '<{0}: {1} sent {2} "{3}{4}">'.format(
+            type(self).__name__,
+            self.sender.username,
+            self.recipient.username,
+            self.content[:10],
+            '...' if len(self.content) > 10 else ''
+        )
 
 
 class MessageThread(object):
@@ -244,3 +259,10 @@ class MessageThread(object):
 
     def __eq__(self, other):
         return self.id == other.id
+
+    def __repr__(self):
+        return '<{0}({1}, {2})>'.format(
+            type(self).__name__,
+            self.user_profile.username,
+            self.correspondent_profile.username
+        )

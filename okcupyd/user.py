@@ -5,6 +5,7 @@ from . import util
 from .messaging import ThreadFetcher
 from .photo import PhotoUploader
 from .profile import Profile
+from .question import Questions
 from .search import SearchManager
 from .session import Session
 from .xpath import xpb
@@ -29,6 +30,7 @@ class User(object):
         self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
         self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
+        self.questions = Questions(self._session)
 
     def get_profile(self, username):
         return self._session.get_profile(username)

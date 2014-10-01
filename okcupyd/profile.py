@@ -6,6 +6,7 @@ import simplejson
 
 from . import helpers
 from . import util
+from .question import QuestionFetcher
 from .xpath import xpb
 
 
@@ -78,8 +79,8 @@ class Essays(object):
 
     _essays_xpb = xpb.div(id='main_column')
     essay_names = ['self_summary', 'my_life', 'good_at', 'people_first_notice',
-                    'favorites', 'six_things', 'think_about', 'friday_night',
-                    'private_admission', 'message_me_if']
+                   'favorites', 'six_things', 'think_about', 'friday_night',
+                   'private_admission', 'message_me_if']
 
     def __init__(self, session, profile_tree, profile_tree_getter=None):
         self._session = session
@@ -125,107 +126,13 @@ class Essays(object):
 Essays._init_essay_properties()
 
 
-class Question(object):
-
-    def __init__(self, id_, text, user_answer, explanation):
-        self.id = id_
-        self.text = text
-        self.user_answer = user_answer
-        self.explanation = explanation
-
-    def __repr__(self):
-        return '<Question: {0}>'.format(self.text)
-
-
-class QuestionFetcher(object):
-
-    step = 10
-
-    @classmethod
-    def build(cls, session, username):
-        return cls(QuestionHTMLFetcher(session, username),
-                   QuestionProcessor(session))
-
-    _page_data_xpb = xpb.div.with_class('pages_data')
-    _current_page_xpb = _page_data_xpb.input(id='questions_pages_page').\
-                        select_attribute_('value')
-    _total_page_xpb = _page_data_xpb.input(id='questions_pages_total').\
-                      select_attribute_('value')
-
-    def __init__(self, html_fetcher, processor):
-        self._html_fetcher = html_fetcher
-        self._processor = processor
-
-    def _pages_left(self, tree):
-        return (int(self._current_page_xpb.one_(tree)) <
-                int(self._total_page_xpb.one_(tree)))
-
-    def fetch(self, start_at=0, get_at_least=None, id_to_existing=None):
-        current_offset = start_at + 1
-        while True:
-            tree = html.fromstring(self._html_fetcher.fetch(current_offset))
-            for i in self._processor.process(tree):
-                yield i
-            if not self._pages_left(tree):
-                break
-            current_offset = current_offset + self.step
-
-
-class QuestionHTMLFetcher(object):
-
-    def __init__(self, session, username, step=10, **additional_parameters):
-        self._session = session
-        self._username = username
-        self.step = step
-        self._additional_parameters = additional_parameters
-
-    @property
-    def _uri(self):
-        return 'profile/{0}/questions'.format(self._username)
-
-    def _query_params(self, start_at):
-        parameters = {'low': start_at, 'leanmode': 1}
-        parameters.update(self._additional_parameters)
-        return parameters
-
-    def fetch(self, start_at):
-        response = self._session.okc_get(self._uri,
-                                         params=self._query_params(start_at))
-        return response.content.decode('utf8')
-
-
-class QuestionProcessor(object):
-
-    _question_xpb = xpb.div.with_class('question')
-
-    def __init__(self, session, id_to_existing=None):
-        self._session = session
-        self.id_to_existing = id_to_existing or {}
-
-    def _process_question_element(self, question_element):
-        id_ = question_element.attrib['data-qid']
-        text = xpb.div.with_class('qtext').p.get_text_(question_element).strip()
-        answer = None
-        explanation = None
-        if 'not_answered' not in question_element.attrib['class']:
-            answer = xpb.span.attribute_contains('id', 'answer_target').\
-                     get_text_(question_element).strip()
-
-            explanation = xpb.div.span.with_class('note').\
-                          xget_text_(question_element).strip()
-        return Question(id_, text, answer, explanation)
-
-    def process(self, tree):
-        for question_element in self._question_xpb.apply_(tree):
-                yield self._process_question_element(question_element)
-
-
 class Profile(object):
 
     def __init__(self, session, username, **kwargs):
         self._session = session
         self.username = username
-        self._question_fetcher = QuestionFetcher.build(session, username)
+        self._question_fetcher = QuestionFetcher(session, username,
+                                                 is_user=self.is_logged_in_user)
         self.questions = util.Fetchable(self._question_fetcher)
 
     def refresh(self, reload=True):

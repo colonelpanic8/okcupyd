@@ -341,25 +341,38 @@ class Fetchable(object):
             return True
 
 
-class StepObjectFetcher(object):
+class FetchMarshall(object):
 
-    def __init__(self, fetcher, processor, step=None):
-        self._processor = processor
+    STOP = object()
+
+    def __init__(self, fetcher, processor, terminator=None, start_at=1):
         self._fetcher = fetcher
-        self.step = step or self._fetcher.step
+        self._start_at = start_at
+        self._processor = processor
+        self._terminator = terminator or self.simple_decider
 
-    # TODO(@IvanMalison): Clean up arguments. What should the interface be?
-    def fetch(self, start_at=0, get_at_least=None, id_to_existing=None,
-              stop_at=None):
-        self._processor.id_to_existing = id_to_existing
-        start_at_iterator = (range(start_at + 1, get_at_least + 1, self.step)
-                             if get_at_least
-                             else itertools.count(start_at + 1, self.step))
-        for start_at in start_at_iterator:
-            text_response = self._fetcher.fetch(start_at)
+    @staticmethod
+    def simple_decider(pos, last, text_response):
+        return pos > last
+
+    def fetch(self, start_at=None):
+        pos = start_at or self._start_at
+        while True:
+            last = pos
+            text_response = self._fetcher.fetch(start_at=pos)
             if not text_response: break
-            for i in self._processor.process(text_response):
-                yield i
+            for item in self._processor.process(text_response):
+                if item is StopIteration:
+                    raise StopIteration()
+                yield item
+                pos += 1
+            if not self._terminator(pos, last, text_response):
+                break
+
+    def __repr__(self):
+        return '{0}({1}, {2})'.format(type(self).__name__,
+                                      repr(self._fetcher),
+                                      repr(self._processor))
 
 
 def find_all(a_str, sub):
