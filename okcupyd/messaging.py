@@ -1,7 +1,7 @@
 import logging
 
 from lxml import html
-import simplejson
+from requests import exceptions
 
 from . import helpers
 from . import util
@@ -83,6 +83,8 @@ class MessageFetcher(object):
 
     def fetch(self):
         for message_element in self.message_elements:
+            if message_element.attrib['id'] == 'compose':
+                continue
             yield Message(message_element, self._message_thread)
 
     @util.cached_property
@@ -161,6 +163,15 @@ class MessageThread(object):
         return helpers.parse_date_updated(date_updated_text)
 
     @property
+    def with_deleted_user(self):
+        try:
+            self.correspondent_profile.id
+        except exceptions.HTTPError:
+            return True
+        else:
+            return False
+
+    @property
     def initiator(self):
         try:
             return self.messages[0].sender
@@ -185,16 +196,6 @@ class MessageThread(object):
     def redact_message(message):
         return Message(message.id, message.sender, message.recipient,
                        'x'*len(message.content))
-
-    def __hash__(self):
-        return hash(self.id)
-
-    def __eq__(self, other):
-        return self.id == other.id
-
-    @util.cached_property
-    def messages(self):
-        return self.get_messages()
 
     @util.cached_property
     def correspondent_profile(self):
@@ -221,26 +222,6 @@ class MessageThread(object):
     def got_response(self):
         return any(message.sender != self.initiator for message in self.messages)
 
-    @property
-    def as_dict(self):
-        return {
-            'id': self.id,
-            'correspondent': self.correspondent,
-            'correspondent_id': self.correspondent_id,
-            'read': self.read,
-            'date': self.date.strftime('%Y-%m-%d'),
-            'messages': list(map(self.message_as_dict, self.messages))
-        }
-
-    @staticmethod
-    def message_as_dict(message):
-        return {
-            'id': message.id,
-            'sender': message.sender,
-            'recipient': message.recipient,
-            'content': message.content
-        }
-
     def delete(self):
         return self._session.post('https://www.okcupid.com/mailbox',
                                   params=self.delete_params)
@@ -257,3 +238,9 @@ class MessageThread(object):
             'folderid': 1,
             'body_to_forward': self.messages[-1].content
         }
+
+    def __hash__(self):
+        return hash(self.id)
+
+    def __eq__(self, other):
+        return self.id == other.id

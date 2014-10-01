@@ -147,11 +147,9 @@ def T(mock_profile_builder, mock_message_thread_builder, mock_message_builder):
     def ensure_message_model_resembles_okcupyd_message(message_model,
                                                        okcupyd_message):
         assert message_model.okc_id == okcupyd_message.id
-        assert message_model.sender.handle == okcupyd_message.sender
-        assert message_model.recipient.handle == okcupyd_message.recipient
+        assert message_model.sender.handle == okcupyd_message.sender.username
+        assert message_model.recipient.handle == okcupyd_message.recipient.username
         assert message_model.text == okcupyd_message.content
-
-
 
     def ensure_user_model_resembles_okcupyd_profile(user_model,
                                                     okcupyd_profile):
@@ -215,7 +213,8 @@ def mock_message_builder():
         if id == None: id = next(counter)
         assert isinstance(sender, str)
         assert isinstance(recipient, str)
-        return mock.MagicMock(id=id, sender=sender, recipient=recipient,
+        return mock.MagicMock(id=id, sender=mock.Mock(username=sender),
+                              recipient=mock.Mock(username=recipient),
                               content=content)
     return _build_mock_message
 

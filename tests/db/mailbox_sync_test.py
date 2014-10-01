@@ -111,7 +111,7 @@ def test_mailbox_sync_creates_message_rows(T, mailbox_sync, mock_user):
                 id_to_mock_thread[message_thread.okc_id]
             )
 
-@pytest.mark.skipif(True, reason='Test needs work')
+
 @util.use_cassette
 def test_mailbox_sync_integration(T):
     user = User()

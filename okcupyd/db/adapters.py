@@ -50,7 +50,7 @@ class ThreadAdapter(object):
                         if message.id not in existing_message_ids]
         for new_message in new_messages:
             from_initiator = thread_model.initiator.handle.lower() == \
-                             new_message.sender.lower()
+                             new_message.sender.username.lower()
             sender, recipient = (thread_model.initiator,
                                  thread_model.respondent) \
                                 if from_initiator else \

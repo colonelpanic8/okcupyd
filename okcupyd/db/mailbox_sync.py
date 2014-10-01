@@ -45,7 +45,8 @@ class MailboxSyncer(object):
                 break
             if not thread.messages:
                 continue
-            adapters.ThreadAdapter(thread).get_thread()
+            if not thread.with_deleted_user:
+                adapters.ThreadAdapter(thread).get_thread()
         try:
             return mailbox[0].datetime
         except IndexError:
