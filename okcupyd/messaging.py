@@ -46,9 +46,9 @@ class ThreadProcessor(object):
     def __init__(self, session):
         self._session = session
 
-    def process(self, text_response, stop):
+    def process(self, text_response):
         if not text_response.strip():
-            yield stop
+            yield StopIteration
             raise StopIteration()
         for thread_element in self.xpath_builder.apply_(
             html.fromstring(text_response)
