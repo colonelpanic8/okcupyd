@@ -32,16 +32,7 @@ Session = sessionmaker(
 
 
 class txn(object):
-    """Contextmanager or decorator for issuing a WITH_TXN command to MySQL. If an
-    exception is raised a ROLLBACK will be issued, otherwise a COMMIT will occur
-    when the context is exited.
-    """
-
     def __init__(self, session_class=None):
-        """
-        :param session: Convience for testing this method. Use with caution.
-        :type session: `sqlalchemy.orm.session.Session`
-        """
         self.session_class = session_class or Session
 
     def __call__(self, func):
@@ -166,7 +157,7 @@ class OKCBase(Base):
 
 
 def reset_engine(engine):
-    Session.kw['bind'] = engine
+    Session.configure(bind=engine)
     Base.metadata.bind = engine
     return engine
 
