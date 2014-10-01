@@ -14,16 +14,6 @@ def test_handle_no_pictures():
     assert username is not None
 
 
-@util.use_cassette(cassette_name='user_get_threads')
-def test_get_inbox():
-    user = User()
-    assert len(user.inbox) == 1
-
-    for message_thread in user.inbox:
-        for message in message_thread.messages:
-            assert hasattr(message, 'sender')
-
-
 @util.use_cassette(cassette_name='access_profile_from_message_thread')
 def test_message_thread_to_profile():
     profile = User().inbox[0].correspondent_profile

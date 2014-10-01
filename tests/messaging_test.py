@@ -3,18 +3,6 @@ from okcupyd import User
 
 
 @util.use_cassette
-def test_unicode_in_messages_threads():
-    new_user_instance = User()
-    assert len(new_user_instance.inbox) >= 30
-    assert len(new_user_instance.outbox) >= 30
-
-
-@util.use_cassette
-def test_inbox_refresh():
-    User().inbox.refresh()
-
-
-@util.use_cassette
 def test_message_thread_detect_deletion():
     message_thread = User().inbox[0]
     assert message_thread.with_deleted_user

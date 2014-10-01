@@ -3,7 +3,7 @@
 import okcupyd
 
 u = okcupyd.User()
-thread = u.inbox[0]
+thread = u.outbox[0]
 print(thread.messages)
 u.message(thread.correspondent, 'Thank you for that highly informative message!')
 thread.reply('This is another way to send a message')

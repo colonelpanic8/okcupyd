@@ -47,7 +47,7 @@ class QuestionHTMLFetcher(object):
 
     @classmethod
     def from_username(cls, session, username, **kwargs):
-        return cls(session, 'profile/{0}/questions'.format(username), **kwargs)
+        return cls(session, u'profile/{0}/questions'.format(username), **kwargs)
 
     def __init__(self, session, uri, **additional_parameters):
         self._session = session
@@ -196,7 +196,13 @@ class Questions(object):
             ))
             setattr(self, importance, fetchable)
         self._session = session
-        self._user_id = user_id or session.get_current_user_profile().id
+        if user_id:
+            self._user_id = user_id
+
+
+    @util.cached_property
+    def _user_id(self):
+        return self._session.get_current_user_profile().id
 
     def respond_from_user_question(self, user_question, importance):
         user_response_ids = [option.id
