@@ -299,18 +299,8 @@ class Profile(object):
             'vote_type': 'personality',
             'score': rating,
         }
-        headers = {
-            'accept': 'text/javascript, text/html, application/xml, '
-            'text/xml, */*',
-            'accept-encoding': 'gzip,deflate',
-            'accept-language': 'en-US,en;q=0.8',
-            'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'origin': 'https://www.okcupid.com',
-            'x-prototype-version': 1.7,
-            'x-requested-with': 'XMLHttpRequest',
-        }
-        response = self._session.okc_post('vote_handler', data=parameters,
-                                          headers=headers)
+        response = self._session.okc_post('vote_handler', secure=False,
+                                          data=parameters)
         response_json = response.json()
         log_function = log.info if response_json.get('status', False) \
                        else log.error

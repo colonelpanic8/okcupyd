@@ -13,7 +13,18 @@ from coloredlogs import ColoredStreamHandler
 from . import settings
 
 
-BASE_URI = 'https://www.okcupid.com/'
+DOMAIN = 'www.okcupid.com'
+headers = {
+    'accept': 'text/javascript, text/html, application/xml, '
+    'text/xml, */*',
+    'accept-encoding': 'gzip,deflate',
+    'accept-language': 'en-US,en;q=0.8',
+    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    'origin': 'https://www.okcupid.com',
+    'x-prototype-version': 1.7,
+    'x-requested-with': 'XMLHttpRequest',
+}
+
 
 
 class n_partialable(object):

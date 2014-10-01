@@ -21,7 +21,7 @@ class Session(requests.Session):
     }
 
     @classmethod
-    def login(cls, username=None, password=None, headers=None):
+    def login(cls, username=None, password=None):
         # settings.USERNAME and settings.PASSWORD should not be made
         # the defaults to their respective arguments because doing so
         # would prevent this function from picking up any changes made
@@ -34,9 +34,9 @@ class Session(requests.Session):
             'password': password,
             'okc_api': 1
         }
-        login_response = session.post('https://www.okcupid.com/login',
+        login_response = session.okc_post('login',
                                       data=credentials,
-                                      headers=headers or cls.default_login_headers)
+                                      headers=cls.default_login_headers)
         log_in_name = login_response.json()['screenname']
         if log_in_name is None:
             raise AuthenticationError('Could not log in as {0}'.format(username))
@@ -48,24 +48,15 @@ class Session(requests.Session):
         session.headers.update(cls.default_login_headers)
         return session
 
-    def __init__(self, *args, **kwargs):
-        super(Session, self).__init__(*args, **kwargs)
+    def okc_get(self, path, secure=True, **kwargs):
+        return self.get(self.build_path(path, secure), **kwargs)
 
-    def post(self, *args, **kwargs):
-        response = super(Session, self).post(*args, **kwargs)
-        response.raise_for_status()
-        return response
+    def okc_post(self, path, secure=True, **kwargs):
+        return self.post(self.build_path(path, secure), **kwargs)
 
-    def get(self, *args, **kwargs):
-        response = super(Session, self).get(*args, **kwargs)
-        response.raise_for_status()
-        return response
-
-    def okc_get(self, path, *args, **kwargs):
-        return self.get('{0}{1}'.format(util.BASE_URI, path), *args, **kwargs)
-
-    def okc_post(self, path, *args, **kwargs):
-        return self.post('{0}{1}'.format(util.BASE_URI, path), *args, **kwargs)
+    def build_path(self, path, secure=True):
+        return '{0}://{1}/{2}'.format('https' if secure else 'http',
+                                     util.DOMAIN, path)
 
     def get_profile(self, username):
         return profile.Profile(self, username)

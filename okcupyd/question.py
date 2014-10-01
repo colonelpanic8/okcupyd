@@ -111,6 +111,7 @@ class Question(BaseQuestion):
 class UserQuestion(BaseQuestion):
 
     _answer_option_xpb = xpb.ul.with_class('self_answers').li
+    _explanation_xpb = xpb.div.with_class('your_explanation').p.with_class('value')
 
     @util.cached_property
     def answer_options(self):
@@ -120,6 +121,13 @@ class UserQuestion(BaseQuestion):
                 self._question_element
             )
         ]
+
+    @util.cached_property
+    def explanation(self):
+        try:
+            return self._explanation_xpb.get_text_(self._question_element)
+        except:
+            pass
 
 
 class AnswerOption(object):
@@ -186,7 +194,7 @@ class Questions(object):
         'not_important': 5
     }
 
-    _uri = 'questions/ask'
+    path = 'questions/ask'
 
     def __init__(self, session, importances=importances, user_id=None):
         for importance in importances:
@@ -198,7 +206,6 @@ class Questions(object):
         self._session = session
         if user_id:
             self._user_id = user_id
-
 
     @util.cached_property
     def _user_id(self):
@@ -214,7 +221,7 @@ class Questions(object):
         if len(match_response_ids) == len(user_question.answer_options):
             match_response_ids = 'irrelevant'
         return self.respond(user_question.id, user_response_ids, match_response_ids,
-                     importance)
+                            importance, note=user_question.explanation or '')
 
     def respond(self, question_id, user_response_ids, match_response_ids,
                 importance, note='', is_public=1, is_new=1):
@@ -226,16 +233,15 @@ class Questions(object):
             'show_all': 0,
             'targetid': self._user_id,
             'qid': question_id,
-            'is_new': is_new,
             'answers': user_response_ids,
             'matchanswers': match_response_ids,
+            'is_new': is_new,
             'is_public': is_public,
             'note': note,
             'importance': importance,
             'delete_note': 0
         }
-        log.debug(form_data)
         return self._session.okc_post(
-            self._uri, data=form_data, headers=self.headers, allow_redirects=False,
-            params=form_data
+            # I'm not sure why, but these requests must NOT be https.
+            self.path, data=form_data, headers=self.headers, secure=False
         )
