@@ -49,8 +49,20 @@ class Session(requests.Session):
         session.headers.update(cls.default_login_headers)
         return session
 
+    def get(self, *args, **kwargs):
+        response = super(Session, self).get(*args, **kwargs)
+        response.raise_for_status()
+        return response
+
+    def post(self, *args, **kwargs):
+        response = super(Session, self).post(*args, **kwargs)
+        response.raise_for_status()
+        return response
+
     def okc_get(self, path, secure=None, **kwargs):
-        return self.get(self.build_path(path, secure), **kwargs)
+        response = self.get(self.build_path(path, secure), **kwargs)
+        response.raise_for_status()
+        return response
 
     def okc_post(self, path, secure=None, **kwargs):
         return self.post(self.build_path(path, secure), **kwargs)
