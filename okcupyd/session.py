@@ -35,8 +35,9 @@ class Session(requests.Session):
             'okc_api': 1
         }
         login_response = session.okc_post('login',
-                                      data=credentials,
-                                      headers=cls.default_login_headers)
+                                          data=credentials,
+                                          headers=cls.default_login_headers,
+                                          secure=True)
         log_in_name = login_response.json()['screenname']
         if log_in_name is None:
             raise AuthenticationError('Could not log in as {0}'.format(username))
@@ -48,13 +49,15 @@ class Session(requests.Session):
         session.headers.update(cls.default_login_headers)
         return session
 
-    def okc_get(self, path, secure=True, **kwargs):
+    def okc_get(self, path, secure=None, **kwargs):
         return self.get(self.build_path(path, secure), **kwargs)
 
-    def okc_post(self, path, secure=True, **kwargs):
+    def okc_post(self, path, secure=None, **kwargs):
         return self.post(self.build_path(path, secure), **kwargs)
 
-    def build_path(self, path, secure=True):
+    def build_path(self, path, secure=None):
+        if secure is None:
+            secure = 'secure_login' in self.cookies and int(self.cookies['secure_login']) != 0
         return '{0}://{1}/{2}'.format('https' if secure else 'http',
                                      util.DOMAIN, path)
 

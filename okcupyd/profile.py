@@ -299,7 +299,7 @@ class Profile(object):
             'vote_type': 'personality',
             'score': rating,
         }
-        response = self._session.okc_post('vote_handler', secure=False,
+        response = self._session.okc_post('vote_handler',
                                           data=parameters)
         response_json = response.json()
         log_function = log.info if response_json.get('status', False) \

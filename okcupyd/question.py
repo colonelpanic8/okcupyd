@@ -242,6 +242,5 @@ class Questions(object):
             'delete_note': 0
         }
         return self._session.okc_post(
-            # I'm not sure why, but these requests must NOT be https.
-            self.path, data=form_data, headers=self.headers, secure=False
+            self.path, data=form_data, headers=self.headers
         )
