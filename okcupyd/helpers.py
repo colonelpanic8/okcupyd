@@ -65,19 +65,6 @@ class Messager(object):
         return MessageInfo(response_dict.get('threadid'), response_dict['msgid'])
 
 
-def get_additional_info(tree):
-    age = int(xpb.span(id='ajax_age').get_text_(tree).strip())
-    orientation = tree.xpath("//*[@id = 'ajax_orientation']/text()")[0].strip()
-    status = tree.xpath("//*[@id = 'ajax_status']/text()")[0].strip()
-    gender_result = tree.xpath("//*[@id = 'ajax_gender']/text()")[0].strip()
-    location = tree.xpath("//*[@id = 'ajax_location']/text()")[0].strip()
-    if gender_result == "M":
-        gender = 'Male'
-    elif gender_result == "F":
-        gender = 'Female'
-    return age, gender, orientation, status, location
-
-
 @util.n_partialable
 def get_js_variable(html_response, variable_name):
     script_elements = xpb.script.apply_(html_response)
@@ -145,7 +132,7 @@ def parse_time(date_updated_text):
         parsed_time = time.replace(year=today.year, day=today.day,
                                    month=today.month)
         if parsed_time > datetime.now():
-            parsed_time = parsed_time.replace(day=parsed_time.day - 1)
+            parsed_time = parsed_time - timedelta(days=1)
         return parsed_time
 
 

@@ -55,3 +55,8 @@ def test_parse_date_handles_month_abbreviation_day_pairs():
     assert helpers.parse_date_updated('Feb 28') == datetime.datetime(
         year=2014, month=2, day=28
     )
+
+
+def test_parse_time_on_last_day_of_month(patched_datetime):
+    patched_datetime.now_ = patched_datetime(year=2014, month=10, day=1)
+    assert helpers.parse_date_updated('11:00pm').month == 9
