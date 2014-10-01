@@ -26,7 +26,8 @@ class n_partialable(object):
         function_info = inspect.getargspec(function)
         function_args = function_info.args
         if is_class:
-            # This is to handle the fact that self will get passed in automatically.
+            # This is to handle the fact that self will get passed in
+            # automatically.
             function_args = function_args[1:]
         def evaluation_checker(*args, **kwargs):
             kwarg_keys = set(kwargs.keys())
@@ -183,7 +184,8 @@ def add_command_line_options(add_argument, use_short_options=True):
         logger_args += ('-l',)
         credentials_args += ('-c',)
     add_argument(*logger_args, dest='enabled_loggers',
-                 action="append", default=[], help="Enable the specified logger.")
+                 action="append", default=[],
+                 help="Enable the specified logger.")
     add_argument(*credentials_args, dest='credentials_modules',
                  action="append", default=[],
                  help="Use the specified credentials module to update "
@@ -318,7 +320,8 @@ class Fetchable(object):
                     list_repr = '[...]'
                 else:
                     list_repr = '{0}, ...]'.format(list_repr[:-1])
-        return '{0}({1}){2}'.format(type(self).__name__, repr(self._fetcher), list_repr)
+        return '{0}({1}){2}'.format(type(self).__name__,
+                                    repr(self._fetcher), list_repr)
 
     def __len__(self):
         return len(self[:])

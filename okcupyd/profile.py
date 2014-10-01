@@ -377,6 +377,11 @@ class Profile(object):
         self.refresh(reload=False)
         return return_value
 
+    @util.cached_property
+    def attractiveness(self):
+        from .attractiveness_finder import AttractivenessFinder
+        return AttractivenessFinder(self._session)(self.username)
+
     def rate(self, rating):
         parameters = {
             'voterid': self._current_user_id,

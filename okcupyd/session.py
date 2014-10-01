@@ -42,8 +42,8 @@ class Session(requests.Session):
         if log_in_name is None:
             raise AuthenticationError('Could not log in as {0}'.format(username))
         if log_in_name.lower() != username.lower():
-            log.warning('Expected to log in as {0} but got {1}'.format(username,
-                                                                       log_in_name))
+            log.warning('Expected to log in as {0} but '
+                        'got {1}'.format(username, log_in_name))
         log.debug(login_response.content.decode('utf8'))
         session.log_in_name = log_in_name
         session.headers.update(cls.default_login_headers)
@@ -51,21 +51,13 @@ class Session(requests.Session):
 
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
-        self.timestamp = -settings.DELAY
-
-    def _throttle(self):
-        while time.clock() - self.timestamp < settings.DELAY:
-            time.sleep(.5)
-        self.timestamp = time.clock()
 
     def post(self, *args, **kwargs):
-        self._throttle()
         response = super(Session, self).post(*args, **kwargs)
         response.raise_for_status()
         return response
 
     def get(self, *args, **kwargs):
-        self._throttle()
         response = super(Session, self).get(*args, **kwargs)
         response.raise_for_status()
         return response

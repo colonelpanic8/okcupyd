@@ -1,7 +1,5 @@
 import datetime
 
-import pytest
-
 from . import util
 from okcupyd import profile
 from okcupyd import session
@@ -40,7 +38,6 @@ def test_profile_properties():
     assert profile.contacted == False # We want it to be false, not falsy
 
 
-@pytest.mark.xfail
 @util.use_cassette
 def test_profile_attractiveness():
     # TODO: get rid of circular import so you can do this.
