@@ -17,7 +17,7 @@ def test_handle_no_pictures():
 @util.use_cassette(cassette_name='user_get_threads')
 def test_get_inbox():
     user = User()
-    assert len(user.inbox.items) == 1
+    assert len(user.inbox) == 1
 
     for message_thread in user.inbox:
         for message in message_thread.messages:

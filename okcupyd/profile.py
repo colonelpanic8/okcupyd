@@ -407,5 +407,8 @@ class Profile(object):
                                        'headers': dict(self._session.headers)}))
         self.refresh(reload=False)
 
+    def __eq__(self, other):
+        self.username.lower() == other.username.lower()
+
     def __repr__(self):
         return 'Profile("{0}")'.format(self.username)

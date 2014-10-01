@@ -168,6 +168,11 @@ def date_from_weekday(weekday):
     return today - timedelta(days=difference)
 
 
+def datetime_to_string(a_datetime):
+    if a_datetime:
+        return a_datetime.strftime('%H:%M:%S')
+
+
 def get_locid(session, location):
     """
     Make a request to locquery resource to translate a string location

@@ -51,8 +51,8 @@ class User(object):
         # Try to reply to an existing thread.
         if not isinstance(username, str):
             username = username.username
-        for thread in sorted(set(self.inbox.items + self.outbox.items),
-                             key=lambda t: t.date, reverse=True):
+        for thread in sorted(set(self.inbox + self.outbox),
+                             key=lambda t: t.datetime, reverse=True):
             if thread.correspondent.lower() == username.lower():
                 thread.reply(message_text)
                 return

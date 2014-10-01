@@ -1,7 +1,7 @@
-from collections import namedtuple
 import logging
 
 from lxml import html
+import simplejson
 
 from . import helpers
 from . import util
@@ -31,7 +31,6 @@ class ThreadHTMLFetcher(object):
         }
 
     def fetch(self, start_at):
-        log.info("Making an http request.")
         response = self._session.okc_get('messages',
                                          params=self._query_params(start_at))
         return response.content.strip()
@@ -57,63 +56,70 @@ class ThreadProcessor(object):
         return MessageThread(self._session, thread_element)
 
 
-class MessageRetriever(object):
+class MessageFetcher(object):
 
-    def __init__(self, session, id, read_messages=False):
+    def __init__(self, session, message_thread, read_messages=False):
         self._session = session
         self._read_messages = read_messages
-        self.id = id
+        self._message_thread = message_thread
 
     @property
     def params(self):
         return {
             'readmsg': str(self._read_messages).lower(),
-            'threadid': self.id,
+            'threadid': self._message_thread.id,
             'folder': 1
         }
 
-    def thread_tree(self):
+    @util.cached_property
+    def messages_tree(self):
         messages_response = self._session.get('https://www.okcupid.com/messages',
                                               params=self.params)
         return html.fromstring(messages_response.content.decode('utf8'))
 
-    user_xpath = xpb.div.with_class('profile_info').div.\
-                 with_class('username').span.with_class('name').xpath
+    def refresh(self):
+        util.cached_property.bust_caches(self)
+        return self.messages_tree
 
-    def get_usernames(self, tree):
-        try:
-            them = tree.xpath(self.user_xpath)[0].text
-        except IndexError:
-            title_element = xpb.title.apply_(tree)[0]
-            them = title_element.text.split()[-1]
+    def fetch(self):
+        for message_element in self.message_elements:
+            yield Message(message_element, self._message_thread)
 
-        return helpers.get_my_username(tree), them
-
-    def get_message_elements(self, thread_tree):
-        return xpb.li.with_classes('to_me', 'from_me')._or.apply_(thread_tree)
-
-    def get_messages(self):
-        tree = self.thread_tree()
-        me, them = self.get_usernames(tree)
-        for message_element in self.get_message_elements(tree):
-            if 'from_me' in message_element.attrib['class']:
-                sender, recipient = me, them
-            else:
-                sender, recipient = them, me
-            message_id = message_element.attrib['id'].split('_')[-1]
-            message = xpb.div.with_class('message_body').apply_(message_element)
-            if message_id == 'compose':
-                continue
-            message_id = int(message_id)
-            content = None
-            if message:
-                message = message[0]
-                content = message.text_content().replace(' \n \n', '\n').strip()
-
-            yield Message(message_id, sender, recipient, content)
+    @util.cached_property
+    def message_elements(self):
+        return xpb.li.with_classes('to_me', 'from_me')._or.apply_(self.messages_tree)
 
 
-Message = namedtuple('Message', ('id', 'sender', 'recipient', 'content'))
+class Message(object):
+
+    def __init__(self, message_element, message_thread):
+        self._message_element = message_element
+        self._message_thread = message_thread
+
+    @property
+    def id(self):
+        return int(self._message_element.attrib['id'].split('_')[-1])
+
+    @util.cached_property
+    def sender(self):
+        return (self._message_thread.user_profile
+                if 'from_me' in self._message_element.attrib['class']
+                else self._message_thread.correspondent_profile)
+
+    @util.cached_property
+    def recipient(self):
+        return (self._message_thread.correspondent_profile
+                if 'from_me' in self._message_element.attrib['class']
+                else self._message_thread.user_profile)
+
+    @util.cached_property
+    def content(self):
+        message = xpb.div.with_class('message_body').apply_(self._message_element)
+        content = None
+        if message:
+            message = message[0]
+            content = message.text_content().replace(' \n \n', '\n').strip()
+        return content
 
 
 class MessageThread(object):
@@ -122,10 +128,8 @@ class MessageThread(object):
         self._session = session
         self._thread_element = thread_element
         self.reply = self.correspondent_profile.message(thread_id=self.id)
-
-    @util.cached_property
-    def _message_retriever(self):
-        return MessageRetriever(self._session, self.id)
+        self._message_fetcher = MessageFetcher(self._session, self)
+        self.messages = util.Fetchable(self._message_fetcher)
 
     @util.cached_property
     def id(self):
@@ -148,25 +152,27 @@ class MessageThread(object):
 
     @util.cached_property
     def date(self):
+        return self.datetime.date()
+
+    @util.cached_property
+    def datetime(self):
         timestamp_span = xpb.span.with_class('timestamp').apply_(self._thread_element)
         date_updated_text = timestamp_span[0][0].text_content()
         return helpers.parse_date_updated(date_updated_text)
 
     @property
     def initiator(self):
-        if not self.messages:
-            return
-        return self.user_profile \
-            if self.user_profile.username == self.messages[0].sender \
-               else self.correspondent_profile
+        try:
+            return self.messages[0].sender
+        except IndexError:
+            pass
 
     @property
     def respondent(self):
-        if not self.messages:
-            return
-        return self.correspondent_profile \
-            if self.user_profile.username == self.messages[0].sender \
-               else self.correspondent_profile
+        try:
+            return self.messages[0].recipient
+        except IndexError:
+            pass
 
     @property
     def redact_messages(self):
@@ -197,9 +203,6 @@ class MessageThread(object):
     @util.cached_property
     def user_profile(self):
         return self._session.get_current_user_profile()
-
-    def get_messages(self):
-        return list(self._message_retriever.get_messages())
 
     @property
     def refreshed_messages(self):

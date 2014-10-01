@@ -4,6 +4,7 @@ import os
 import zlib
 
 from six.moves import urllib
+from wrapt import decorator
 import simplejson
 import vcr
 
@@ -17,15 +18,21 @@ TESTING_PASSWORD = 'password'
 WBITS = 16 + zlib.MAX_WBITS
 
 
-SHOULD_SCRUB = True
+SHOULD_SCRUB = False
 REPLACEMENTS = []
 REMOVE_OLD_CASSETTES = False
 
 
+@decorator
+def check_should_scrub(function, instance, args, kwargs):
+    if SHOULD_SCRUB:
+        return function(*args)
+    else:
+        return args[0] # The request or response
+
+
 @util.n_partialable
 def remove_headers(request, headers_to_remove=()):
-    if not SHOULD_SCRUB:
-        return request
     headers = copy.copy(request.headers)
     headers_to_remove = [h.lower() for h in headers_to_remove]
     keys = [k for k in headers if k.lower() in headers_to_remove]
@@ -37,8 +44,6 @@ def remove_headers(request, headers_to_remove=()):
 
 
 def scrub_request_body(request):
-    if not SHOULD_SCRUB:
-        return request
     if urllib.parse.urlsplit(request.uri).path == '/login':
         request.body = scrub_query_string(request.body)
     request.uri = scrub_uri(request.uri)
@@ -50,7 +55,6 @@ def scrub_uri(uri):
                                                  TESTING_USERNAME)
     return util.replace_all_case_insensitive(replaced, settings.PASSWORD,
                                              TESTING_PASSWORD)
-
 
 
 def scrub_query_string(query_string):
@@ -78,38 +82,56 @@ def gzip_string(incoming):
     return ''.join([start, end])
 
 
-def scrub_login_response(response):
-    if not SHOULD_SCRUB:
-        return response
-    response = response.copy()
+def scrub_response_headers(response):
     for item in ('location', 'Location'):
         if item in response['headers']:
             response['headers'][item] = [scrub_uri(uri)
                                          for uri in response['headers'][item]]
-    try:
-        decompressed = zlib.decompress(response['body']['string'], WBITS).decode('utf8')
-    except:
-        return response
+    return response
 
+
+def replace_json_fields(body):
     try:
-        response_dict = simplejson.loads(decompressed)
+        response_dict = simplejson.loads(body)
     except:
-        response['body']['string'] = gzip_string(decompressed.replace(settings.USERNAME, TESTING_USERNAME))
-        return response
+        return body
 
     if 'screenname' not in response_dict:
-        return response
+        return body
     if response_dict['screenname'] is not None:
         response_dict['screenname'] = TESTING_USERNAME
     response_dict['userid'] = 1
     response_dict['thumbnail'] = ''
-    response['body']['string'] = gzip_string(simplejson.dumps(response_dict))
+    return simplejson.dumps(response_dict)
+
+
+def scrub_response(response):
+    if not SHOULD_SCRUB:
+        return response
+    response = response.copy()
+    response = scrub_response_headers(response)
+
+    body = response['body']['string']
+    try:
+        body = zlib.decompress(response['body']['string'], WBITS).decode('utf8')
+    except:
+        should_recompress = False
+    else:
+        should_recompress = True
+
+    body = replace_json_fields(body)
+    body = util.replace_all_case_insensitive(body, settings.USERNAME,
+                                             TESTING_USERNAME)
+
+    if should_recompress:
+        body = gzip_string(body)
+    response['body']['string'] = body
     return response
 
 
-before_record = util.compose(scrub_request_body,
-                             remove_headers(headers_to_remove=('Set-Cookie',
-                                                               'Cookie')))
+before_record = check_should_scrub(util.compose(
+    scrub_request_body, remove_headers(headers_to_remove=('Set-Cookie', 'Cookie'))
+))
 
 
 def match_search_query(left, right):
@@ -141,8 +163,8 @@ def body_as_query_string(left, right):
 
 okcupyd_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
                                 'body_as_query_string'),
-                      before_record=before_record,
-                      before_record_response=scrub_login_response,)
+                      before_record=(before_record,),
+                      before_record_response=scrub_response)
 okcupyd_vcr.register_matcher('body_as_query_string', body_as_query_string)
 okcupyd_vcr.register_matcher('match_search_query', match_search_query)
 match_on_no_body = list(filter(lambda x: 'body' not in x, okcupyd_vcr.match_on))

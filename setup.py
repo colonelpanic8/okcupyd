@@ -13,7 +13,7 @@ setup(
     install_requires=['lxml', 'requests >= 2.4.1', 'simplejson',
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
                       'wrapt', 'coloredlogs'],
-    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy'],
+    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy', 'six'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",
     author_email="ivanmalison@gmail.com",

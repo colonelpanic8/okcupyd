@@ -62,11 +62,13 @@ class txn(object):
             self.session.rollback()
 
             if isinstance(exc_val, Exception):
-                raise exc_val
+                raise
+                #raise exc_val
             else:
                 raise exc_type(exc_val)
         else:
             self.session.commit()
+            self.session.close()
 
 
 @decorator
@@ -79,6 +81,9 @@ class Base(object):
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
+
+    def upsert_model(self, id_key='id'):
+        return self.upsert([self], id_key=id_key)
 
     @classmethod
     def columns(cls):

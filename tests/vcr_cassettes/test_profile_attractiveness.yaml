@@ -1,0 +1,35 @@
+interactions:
+- request:
+    body: username=username&password=password&okc_api=1
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['45']
+      Content-Type: [application/x-www-form-urlencoded]
+      user-agent: ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36
+          (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36']
+    method: POST
+    uri: https://www.okcupid.com:443/login
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6pWKk4uSk3Ny0vMTVVSsFLIK83J0VFQKi5JLCktji8uKUISLC1OLcpMAQkoGRqb
+        G5uYmhubWVgamRgamFgCaSW4PpASoGAtFwAAAP//AwDsVDFxXgAAAA==
+    headers:
+      cache-control: [private]
+      cf-ray: [1723c3921b320294-SJC]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [application/json; charset=utf-8]
+      date: ['Tue, 30 Sep 2014 22:12:47 GMT']
+      p3p: ['CP="NOI CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="http://www.okcupid.com/w3c/p3p.xml"']
+      server: [cloudflare-nginx]
+      set-cookie: ['__cfduid=dd5991b071cd13464a3c1d86c9d6980491412115167056; expires=Mon,
+          23-Dec-2019 23:50:00 GMT; path=/; domain=.okcupid.com; HttpOnly', 'guest=12023181564734199781;
+          Expires=Wed, 30 Sep 2015 22:12:47 GMT; Path=/; Domain=okcupid.com; HttpOnly']
+      transfer-encoding: [chunked]
+      x-okws-version: [OKWS/3.1.29.0]
+      x-xss-protection: [1; mode=block]
+    status: {code: 200, message: OK}
+version: 1

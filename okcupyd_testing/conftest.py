@@ -1,3 +1,4 @@
+import datetime
 import logging
 import itertools
 import os
@@ -26,7 +27,7 @@ def pytest_addoption(parser):
                      "USE WITH CAUTION. This will interact with the okcupid "
                      "website and send messages with any provided user credentials.")
     parser.addoption('--scrub', dest='scrub', action='store_true', default=False,
-                     help="USE WITH CAUTION. Don't scrub PII from "
+                     help="Scrub PII from "
                      "http requests/responses. This is useful for recording cassetes.")
     parser.addoption('--resave', dest='resave',
                      action='store_true', default=False,
@@ -72,8 +73,7 @@ patch_use_cassette_enabled = patch('skip_vcrpy',
                                    mock.patch.object(CassetteContextDecorator,
                                                      '__exit__'))
 patch_vcrpy_filters = patch('scrub',
-                            mock.patch.object(util, 'SHOULD_SCRUB', False),
-                            negate=True)
+                            mock.patch.object(util, 'SHOULD_SCRUB', True))
 
 patch_break_on_exception = patch('break_on_exception',
                                  mock.patch('okcupyd_testing.conftest.BREAK_ON_EXCEPTION',
@@ -176,8 +176,16 @@ def T(mock_profile_builder, mock_message_thread_builder, mock_message_builder):
         profile = testing.build_mock.profile(username)
         return adapters.UserAdapter(profile).get()
 
+    def build_okcupyd_user(user):
+        user_model = model.User.from_profile(user.profile)
+        user_model.upsert_model(id_key='okc_id')
+        okcupyd_user = model.OKCupydUser(user_id=user_model.id)
+        okcupyd_user.upsert_model(id_key='user_id')
+        return okcupyd_user
+
     testing.factory.message_thread = build_message_thread
     testing.factory.user = build_user
+    testing.factory.okcupyd_user = build_okcupyd_user
     return testing
 
 
@@ -226,6 +234,7 @@ def mock_message_thread_builder(mock_message_builder, mock_profile_builder):
                                          recipient=initiator
                                          if i % 2 else respondent)
                     for i in range(message_count)]
+        kwargs.setdefault('datetime', datetime.datetime(year=2014, day=2, month=4))
         message_thread = mock.MagicMock(id=id, messages=messages, **kwargs)
         message_thread.initiator = mock_profile_builder(initiator)
         message_thread.respondent = mock_profile_builder(respondent)

@@ -33,7 +33,10 @@ class n_partialable(object):
             if function_info.keywords == None:
                 acceptable_kwargs = function_args[len(args):]
                 # Make sure that we didn't get an argument we can't handle.
-                assert kwarg_keys.issubset(acceptable_kwargs)
+                try:
+                    assert kwarg_keys.issubset(acceptable_kwargs)
+                except:
+                    import ipdb; ipdb.set_trace()
             needed_args = function_args[len(args):]
             if function_info.defaults:
                 needed_args = needed_args[:-len(function_info.defaults)]
@@ -103,6 +106,10 @@ class cached_property(object):
         value = self.func(obj)
         setattr(obj, self.func.__name__, value)
         return value
+
+    def bust_self(self, obj):
+        if self.func.__name__ in obj.__dict__:
+            delattr(obj, self.func.__name__)
 
     @classmethod
     def bust_caches(cls, obj):
@@ -193,7 +200,7 @@ def handle_command_line_options(args):
     if args.echo:
         from okcupyd import db
         db.echo = True
-        db.Session.kw['echo'] = True
+        db.Session.kw['bind'].echo = True
     return args
 
 
@@ -218,11 +225,14 @@ class Fetchable(object):
 
     def __init__(self, fetcher, **kwargs):
         self._fetcher = fetcher
-        self.refresh(**kwargs)
+        self._kwargs = kwargs
+        self.refresh()
 
     def refresh(self, nice_repr=True, **kwargs):
+        for key, value in self._kwargs.items():
+            kwargs.setdefault(key, value)
         # No real good reason to hold on to this. DONT TOUCH.
-        self._original_iterable = self._fetcher.fetch()
+        self._original_iterable = self._fetcher.fetch(**kwargs)
         self.exhausted = False
         if nice_repr:
             self._accumulated = []
@@ -308,13 +318,16 @@ class Fetchable(object):
                     list_repr = '[...]'
                 else:
                     list_repr = '{0}, ...]'.format(list_repr[:-1])
-        return 'Fetchable{0}({1})'.format(list_repr, repr(self._fetcher))
+        return '{0}({1}){2}'.format(type(self).__name__, repr(self._fetcher), list_repr)
 
-    # TODO: Remove this.
-    @property
-    def items(self):
-        return list(self)
+    def __len__(self):
+        return len(self[:])
 
+    def __add__(self, other):
+        return self[:] + other[:]
+
+    def __eq__(self, other):
+        return self[:] == other[:]
 
 
 class StepObjectFetcher(object):
