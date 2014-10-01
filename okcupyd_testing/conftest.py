@@ -62,7 +62,7 @@ patch_settings = patch('credentials_modules',
                        mock.patch.object(settings, 'PASSWORD', 'password'),
                        mock.patch.object(settings, 'AF_USERNAME', 'username'),
                        mock.patch.object(settings, 'AF_PASSWORD', 'password'),
-                       mock.patch.object(settings, 'DELAY', 0), negate=True)
+                       negate=True)
 patch_save = patch('resave',
                    mock.patch.object(
                        Cassette, '_save',
