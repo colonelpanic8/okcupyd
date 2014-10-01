@@ -60,8 +60,10 @@ class User(object):
         return self._message_sender.send(username, message_text)
 
     def search(self, **kwargs):
-        count = kwargs.pop('count', 9)
-        return self.search_manager(**kwargs).get_profiles(count=count)
+        if 'count' in kwargs:
+            count = kwargs.pop('count')
+            return self.search_manager(**kwargs).get_profiles(count=count)
+        return util.Fetchable(self.search_manager(**kwargs))
 
     def search_manager(self, **kwargs):
         kwargs.setdefault('gender', self.profile.gender[0])

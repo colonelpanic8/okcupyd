@@ -343,6 +343,8 @@ class SearchManager(object):
                 yield profile
             profiles = self.get_profiles()
 
+    fetch = __iter__
+
 
 def search(session=None, count=9, **kwargs):
     return SearchManager(session, **kwargs).get_profiles(count)
