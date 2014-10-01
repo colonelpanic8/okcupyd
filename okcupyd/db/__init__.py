@@ -20,16 +20,13 @@ class Query(Query):
 
 
 echo = False
-database_uri = 'sqlite:///{0}'.format(
-    os.path.join(os.path.dirname(__file__), 'okcupyd.db')
-)
 
 
-engine = create_engine(database_uri, convert_unicode=True, echo=True)
+engine = create_engine('sqlite://', convert_unicode=True, echo=True)
 Session = sessionmaker(
     autoflush=False,
     expire_on_commit=False,
-    bind=create_engine(database_uri, convert_unicode=True, echo=echo),
+    bind=engine,
     query_cls=Query
 )
 
@@ -166,3 +163,19 @@ class OKCBase(Base):
     __abstract__ = True
 
     okc_id = Column(types.StringBackedInteger, nullable=False, unique=True)
+
+
+def reset_engine(engine):
+    Session.kw['bind'] = engine
+    Base.metadata.bind = engine
+    return engine
+
+
+def set_sqlite_db_file(file_path):
+    return reset_engine(create_engine('sqlite:///{0}'.format(file_path),
+                               convert_unicode=True,
+                               echo=True))
+
+
+database_uri = os.path.join(os.path.dirname(__file__), 'okcupyd.db')
+set_sqlite_db_file(database_uri)
