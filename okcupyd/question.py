@@ -1,7 +1,12 @@
+import logging
+
 from lxml import html
 
 from . import util
 from .xpath import xpb
+
+
+log = logging.getLogger(__name__)
 
 
 class QuestionProcessor(object):
@@ -163,7 +168,25 @@ importances = ('not_important', 'little_important', 'somewhat_important',
 
 class Questions(object):
 
-    _uri = 'ask'
+    headers = {
+        'accept': 'application/json, text/javascript, */*; q=0.01',
+        'accept-encoding': 'gzip,deflate',
+        'accept-language': 'en-US,en;q=0.8',
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'origin': 'https://www.okcupid.com',
+        'referer': 'https://www.okcupid.com/questions',
+        'x-requested-with': 'XMLHttpRequest',
+    }
+
+    importance_name_to_number = {
+        'mandatory': 0,
+        'very_important': 1,
+        'somewhat_important': 3,
+        'little_important': 4,
+        'not_important': 5
+    }
+
+    _uri = 'questions/ask'
 
     def __init__(self, session, importances=importances, user_id=None):
         for importance in importances:
@@ -182,7 +205,9 @@ class Questions(object):
         match_response_ids = [option.id
                               for option in user_question.answer_options
                               if option.is_match]
-        self.respond(user_question.id, user_response_ids, match_response_ids,
+        if len(match_response_ids) == len(user_question.answer_options):
+            match_response_ids = 'irrelevant'
+        return self.respond(user_question.id, user_response_ids, match_response_ids,
                      importance)
 
     def respond(self, question_id, user_response_ids, match_response_ids,
@@ -190,6 +215,7 @@ class Questions(object):
         form_data = {
             'ajax': 1,
             'submit': 1,
+            'answer_question': 1,
             'skip': 0,
             'show_all': 0,
             'targetid': self._user_id,
@@ -199,5 +225,11 @@ class Questions(object):
             'matchanswers': match_response_ids,
             'is_public': is_public,
             'note': note,
+            'importance': importance,
+            'delete_note': 0
         }
-        self._session.okc_post('ask', data=form_data)
+        log.debug(form_data)
+        return self._session.okc_post(
+            self._uri, data=form_data, headers=self.headers, allow_redirects=False,
+            params=form_data
+        )
