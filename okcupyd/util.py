@@ -329,6 +329,14 @@ class Fetchable(object):
     def __eq__(self, other):
         return self[:] == other[:]
 
+    def __nonzero__(self):
+        try:
+            self[0]
+        except IndexError:
+            return False
+        else:
+            return True
+
 
 class StepObjectFetcher(object):
 

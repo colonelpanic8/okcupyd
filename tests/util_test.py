@@ -141,3 +141,15 @@ def test_negative_indexing():
     assert fetchable[-1] == 1
     assert fetchable[-2:] == [0, 1]
     assert fetchable[14:] == []
+
+
+def test_bool_on_fetchable():
+    fetcher = mock.Mock(fetch=lambda: (i for i in range(0)))
+    fetchable = util.Fetchable(fetcher)
+    assert not fetchable
+
+    fetcher = mock.Mock(fetch=lambda: (i for i in range(1)))
+    fetchable = util.Fetchable(fetcher)
+
+    assert fetchable
+
