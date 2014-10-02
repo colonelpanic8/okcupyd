@@ -231,11 +231,13 @@ class Questions(object):
     path = 'questions/ask'
 
     def __init__(self, session, importances=importances, user_id=None):
+        self.importance_name_to_fetchable = {}
         for importance in importances:
             fetchable = util.Fetchable(util.FetchMarshall(
                 QuestionHTMLFetcher(session, 'questions', **{importance: 1}),
                 QuestionProcessor(UserQuestion)
             ))
+            self.importance_name_to_fetchable[importance] = fetchable
             setattr(self, importance, fetchable)
         self._session = session
         if user_id:

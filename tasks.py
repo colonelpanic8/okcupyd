@@ -21,3 +21,8 @@ def copy_questions(source_credentials, dest_credentials):
 @task
 def enable_logger(logger_name):
     util.enable_logger(logger_name)
+
+
+@task
+def credentials(module_name):
+    util.update_settings_with_module(module_name)
