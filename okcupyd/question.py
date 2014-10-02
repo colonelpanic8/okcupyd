@@ -84,28 +84,62 @@ class BaseQuestion(object):
     def text(self):
         return self._text_xpb.get_text_(self._question_element).strip()
 
-    _answer_xpb = xpb.span.attribute_contains('id', 'answer_target')
-
     def __repr__(self):
         return '<Question: {0}>'.format(self.text)
 
 
-
 class Question(BaseQuestion):
 
+    def return_none_if_broken(function):
+        def wrapped(self):
+            if self.answered:
+                return function(self)
+        return wrapped
+
+    _answers_xpb = xpb.div.with_class('answers').\
+                   p.with_class('answer')
+
+    def __init__(self, question_element):
+        super(Question, self).__init__(question_element)
+        try:
+            self._their_answer_span, self._my_answer_span = \
+            self._answers_xpb.span.with_class('text').apply_(self._question_element)
+            self._their_note_span, self._my_note_span = \
+            self._answers_xpb.span.with_class('note').apply_(self._question_element)
+        except:
+            pass
+
     @util.cached_property
-    def answer(self):
-        if self.answered:
-            return self._answer_xpb.get_text_(self._question_element).strip()
+    @return_none_if_broken
+    def their_answer(self):
+        return self._their_answer_span.text_content().strip()
+
+    @util.cached_property
+    @return_none_if_broken
+    def my_answer(self):
+        return self._my_answer_span.text_content().strip()
+
+    @util.cached_property
+    @return_none_if_broken
+    def their_answer_matches(self):
+        return 'not_accepted' not in self._their_answer_span.attrib['class']
+
+    @util.cached_property
+    @return_none_if_broken
+    def my_answer_matches(self):
+        return 'not_accepted' not in self._my_answer_span.attrib['class']
+
+    @util.cached_property
+    @return_none_if_broken
+    def their_note(self):
+        return self._their_note_span.text_content().strip()
+
+    @util.cached_property
+    @return_none_if_broken
+    def my_note(self):
+        return self._my_note_span.text_content().strip()
 
     _explanation_xpb = xpb.div.span.with_class('note')
-
-    @util.cached_property
-    def explanation(self):
-        if self.answered:
-            return self._explanation_xpb.get_text_(
-                self._question_element
-            ).strip()
 
 
 class UserQuestion(BaseQuestion):
