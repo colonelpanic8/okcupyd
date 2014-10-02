@@ -163,6 +163,10 @@ class UserQuestion(BaseQuestion):
         except:
             pass
 
+    @util.cached_property
+    def answer_text_to_option(self):
+        return {option.text: option for option in self.answer_options}
+
 
 class AnswerOption(object):
 
@@ -178,8 +182,8 @@ class AnswerOption(object):
         return 'match' in self._element.attrib['class']
 
     @util.cached_property
-    def answer_text(self):
-        return self._element.text_content()
+    def text(self):
+        return self._element.text_content().strip()
 
     @util.cached_property
     def id(self):
@@ -259,6 +263,13 @@ class Questions(object):
         return self.respond(user_question.id, user_response_ids, match_response_ids,
                             importance, note=user_question.explanation or '')
 
+    def respond_from_question(self, question, question_id_to_user_question,
+                              importance, switch_acceptable_answer=False):
+        user_question = question_id_to_user_question.get(question.id, None)
+        if not user_question: return
+        option_index = user_question.answer_text_to_option[question.their_answer].id
+        self.respond(question.id, [option_index], [option_index], importance)
+
     def respond(self, question_id, user_response_ids, match_response_ids,
                 importance, note='', is_public=1, is_new=1):
         form_data = {
@@ -279,4 +290,9 @@ class Questions(object):
         }
         return self._session.okc_post(
             self.path, data=form_data, headers=self.headers
+        )
+
+    def clear(self):
+        return self._session.okc_post(
+            'questions', data={'clear_all': 1}, headers=self.headers
         )

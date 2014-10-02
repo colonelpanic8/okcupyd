@@ -125,15 +125,29 @@ class Essays(object):
 
 Essays._init_essay_properties()
 
+_profile_details_xpb = xpb.div.with_classes('profile_details')
+def detail(name, setter=False):
+    dd_xpb = _profile_details_xpb.dd(id='ajax_{0}'.format(name))
+    @property
+    def detail_property(self):
+        dd_xpb.get_text_(self._profile_tree)
+    if setter:
+        return detail_property.setter
+    return detail_property
+
+class Details(object):
+
+    def __init__(self, session, profile_tree):
+        self._session = session
+        self._profile_tree = profile_tree
+
 
 class Profile(object):
 
     def __init__(self, session, username, **kwargs):
         self._session = session
         self.username = username
-        self._question_fetcher = QuestionFetcher(session, username,
-                                                 is_user=self.is_logged_in_user)
-        self.questions = util.Fetchable(self._question_fetcher)
+        self.questions = self.question_fetchable()
 
     def refresh(self, reload=True):
         util.cached_property.bust_caches(self)
@@ -146,9 +160,7 @@ class Profile(object):
 
     @util.cached_property
     def _profile_response(self):
-        return self._session.get(
-            'https://www.okcupid.com/profile/{0}'.format(self.username)
-        ).content
+        return self._session.okc_get(u'profile/{0}'.format(self.username)).content
 
     @util.cached_property
     def _profile_tree(self):
@@ -308,6 +320,12 @@ class Profile(object):
                                        'sent_parameters': parameters,
                                        'headers': dict(self._session.headers)}))
         self.refresh(reload=False)
+
+    def question_fetchable(self, **kwargs):
+        return util.Fetchable(QuestionFetcher(
+            self._session, self.username,
+            is_user=self.is_logged_in_user, **kwargs
+        ))
 
     def __eq__(self, other):
         self.username.lower() == other.username.lower()

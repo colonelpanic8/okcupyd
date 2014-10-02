@@ -70,7 +70,7 @@ class Session(requests.Session):
     def build_path(self, path, secure=None):
         if secure is None:
             secure = 'secure_login' in self.cookies and int(self.cookies['secure_login']) != 0
-        return '{0}://{1}/{2}'.format('https' if secure else 'http',
+        return u'{0}://{1}/{2}'.format('https' if secure else 'http',
                                      util.DOMAIN, path)
 
     def get_profile(self, username):
