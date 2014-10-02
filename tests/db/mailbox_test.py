@@ -6,7 +6,7 @@ import pytest
 from .. import util
 from okcupyd import User
 from okcupyd.db import model, txn
-from okcupyd.db.mailbox_sync import MailboxSyncer
+from okcupyd.db.mailbox import Sync
 from okcupyd.util import Fetchable
 
 
@@ -22,7 +22,7 @@ def mock_user(T):
 
 @pytest.fixture
 def mailbox_sync(mock_user):
-    return MailboxSyncer(mock_user)
+    return Sync(mock_user)
 
 
 def set_mailbox(mailbox, value):
@@ -52,7 +52,7 @@ def test_mailbox_sync_creates_message_rows(T, mailbox_sync, mock_user):
 
     id_to_mock_thread = {t.id: t for t in mock_user.inbox}
 
-    mailbox_sync.sync()
+    mailbox_sync.all()
 
     with txn() as session:
         message_threads = session.query(model.MessageThread).all()
@@ -64,7 +64,7 @@ def test_mailbox_sync_creates_message_rows(T, mailbox_sync, mock_user):
             )
 
     # Sync again and make sure that nothing has been updated.
-    mailbox_sync.sync()
+    mailbox_sync.all()
     with txn() as session:
         message_threads = session.query(model.MessageThread).all()
         assert len(message_threads) == len(id_to_mock_thread)
@@ -84,7 +84,7 @@ def test_mailbox_sync_creates_message_rows(T, mailbox_sync, mock_user):
     ))
 
     # Sync and make sure that only the new messages appear.
-    mailbox_sync.sync()
+    mailbox_sync.all()
     with txn() as session:
         message_threads = session.query(model.MessageThread).all()
         assert len(message_threads) == len(id_to_mock_thread)
@@ -101,7 +101,7 @@ def test_mailbox_sync_creates_message_rows(T, mailbox_sync, mock_user):
     ] + mock_user.inbox.items)
 
     id_to_mock_thread = {t.id: t for t in mock_user.inbox.items}
-    mailbox_sync.sync()
+    mailbox_sync.all()
 
     with txn() as session:
         message_threads = session.query(model.MessageThread).all()
@@ -118,14 +118,14 @@ def test_mailbox_sync_integration(T):
     T.factory.okcupyd_user(user)
     user.quickmatch().message('test... sorry.')
 
-    MailboxSyncer(user).sync()
+    Sync(user).all()
 
     user_model = model.User.find(user.profile.id, id_key='okc_id')
     messages = model.Message.query(
         model.Message.sender_id == user_model.id
     )
 
-    MailboxSyncer(user).sync()
+    Sync(user).all()
 
     assert len(messages) == len(model.Message.query(
         model.Message.sender_id == user_model.id

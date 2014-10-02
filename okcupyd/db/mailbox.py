@@ -10,12 +10,12 @@ from okcupyd.db import model, txn
 log = logging.getLogger(__name__)
 
 
-class MailboxSyncer(object):
+class Sync(object):
 
     def __init__(self, user):
         self._user = user
 
-    def sync(self):
+    def all(self):
         with txn() as session:
             okcupyd_user = session.query(model.OKCupydUser).join(model.User).filter(
                 model.User.okc_id == self._user.profile.id

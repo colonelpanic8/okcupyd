@@ -164,8 +164,8 @@ def reset_engine(engine):
 
 def set_sqlite_db_file(file_path):
     return reset_engine(create_engine('sqlite:///{0}'.format(file_path),
-                               convert_unicode=True,
-                               echo=True))
+                                      convert_unicode=True,
+                                      echo=echo))
 
 
 database_uri = os.path.join(os.path.dirname(__file__), 'okcupyd.db')
