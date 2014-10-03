@@ -13,19 +13,30 @@ from .xpath import xpb
 log = logging.getLogger(__name__)
 
 
-@util.n_partialable
 class PhotoUploader(object):
 
     _uri = 'ajaxuploader'
 
     def __init__(self, session=None, user_id=None, authcode=None):
         self._session = session or Session.login()
-        if not (user_id and authcode):
-            photo_tree = html.fromstring(self._session.okc_get(
-                'profile/{0}/photos#upload'.format(self._session.log_in_name)
-            ).content)
-        self._authcode = authcode or helpers.get_authcode(photo_tree)
-        self._user_id = user_id or helpers.get_current_user_id(photo_tree)
+        if user_id:
+            self._user_id = user_id
+        if authcode:
+            self._authcode = authcode
+
+    @util.cached_property
+    def _photo_tree(self):
+        return html.fromstring(self._session.okc_get(
+            u'profile/{0}/photos#upload'.format(self._session.log_in_name)
+        ).content)
+
+    @util.cached_property
+    def _authcode(self):
+        return helpers.get_authcode(self._photo_tree)
+
+    @util.cached_property
+    def _user_id(self):
+        return helpers.get_current_user_id(self._photo_tree)
 
     @property
     def pic_id(self):

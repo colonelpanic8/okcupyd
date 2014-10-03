@@ -7,9 +7,9 @@ import okcupyd
 
 @mock.patch.object(sys, 'argv', ['okcupyd'])
 @mock.patch.object(sys, 'exit')
-@mock.patch.object(sys, 'exit')
-@mock.patch.object(okcupyd, 'start_ipython')
+@mock.patch.object(okcupyd.IPython, 'embed')
+@mock.patch.object(okcupyd, 'User')
 def test_interactive(*args):
-    okcupyd.parse_args_and_run()
+    okcupyd.interactive()
     with mock.patch.object(sys, 'argv', ['okcupyd', '-v']):
-        okcupyd.parse_args_and_run()
+        okcupyd.interactive()
