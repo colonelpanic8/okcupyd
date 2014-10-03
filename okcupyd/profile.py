@@ -183,12 +183,14 @@ class Profile(object):
         return helpers.get_authcode(self._profile_tree)
 
     @util.cached_property
-    def picture_uris(self):
+    def photo_infos(self):
         pics_request = self._session.okc_get(
-            'profile/{0}/photos?cf=profile'.format(self.username)
+            u'profile/{0}/photos#0'.format(self.username)
         )
         pics_tree = html.fromstring(pics_request.content.decode('utf8'))
-        return xpb.div(id='album_0').img.select_attribute_('src', pics_tree)
+        from . import photo
+        return map(photo.Info.from_cdn_uri,
+                   xpb.div(id='album_0').img.select_attribute_('src', pics_tree))
 
     _rating_xpb = xpb.div(id='rating').ul(id='personality-rating').li.\
                   with_class('current-rating')

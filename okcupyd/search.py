@@ -242,6 +242,9 @@ class SearchParameterBuilder(object):
             search_parameters['filter{0}'.format(filter_number)] = filter_string
         return search_parameters
 
+    def __repr__(self):
+        return "{0}({1})".format(type(self).__name__, self._options)
+
 
 class MatchCardExtractor(object):
 
@@ -344,6 +347,9 @@ class SearchManager(object):
             profiles = self.get_profiles()
 
     fetch = __iter__
+
+    def __unicode__(self):
+        return u"{0}({1})".format(type(self).__name__, self._parameter_builder)
 
 
 def search(session=None, count=9, **kwargs):

@@ -31,10 +31,6 @@ class ThreadAdapter(object):
         self.thread = thread
 
     def _get_thread(self, session):
-        log.warning('i: {0}, r: {1}'.format(
-            self.thread.initiator.username,
-            self.thread.respondent.username
-        ))
         initiator = UserAdapter(self.thread.initiator).get_no_txn(session)
         respondent = UserAdapter(self.thread.respondent).get_no_txn(session)
         message_thread = model.MessageThread(okc_id=self.thread.id,

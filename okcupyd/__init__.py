@@ -1,26 +1,8 @@
-import argparse
-import os
-import pkg_resources
 import sys
 
-from IPython import start_ipython
+from invoke import cli as invoke
 
-from . import util
-
-def parse_args_and_run():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', action='store_true',
-                        help='Display the version number of okcupyd')
-    util.add_command_line_options(parser.add_argument)
-    args = parser.parse_args()
-    if args.version:
-        print(pkg_resources.get_distribution('okcupyd').version)
-        sys.exit()
-    util.handle_command_line_options(args)
-    util.get_credentials()
-    sys.exit(start_ipython(['-i', os.path.join(os.path.dirname(__file__), 'start.py')]))
-
-
+from . import tasks
 from .attractiveness_finder import AttractivenessFinder
 from .photo import PhotoUploader
 from .search import search
@@ -30,5 +12,19 @@ from .user import User
 from .util import save_file
 
 
+def run_invoke():
+    try:
+        args, collection, parser_contexts = invoke.parse(sys.argv, collection=tasks.ns)
+    except invoke.Exit as e:
+        # 'return' here is mostly a concession to testing. Meh :(
+        # TODO: probably restructure things better so we don't need this?
+        return sys.exit(e.code)
+    executor = invoke.Executor(tasks.ns, invoke.Context(**invoke.derive_opts(args)))
+
+    _tasks = invoke.tasks_from_contexts(parser_contexts, tasks.ns)
+    dedupe = not args['no-dedupe'].value
+    executor.execute(*_tasks, dedupe=dedupe)
+
+
 __all__ = ('search', 'User', 'AttractivenessFinder', 'Statistics',
-           'save_file', 'parse_args_and_run', 'PhotoUploader', 'Session')
+           'save_file', 'run_invoke', 'PhotoUploader', 'Session')

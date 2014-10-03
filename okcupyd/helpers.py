@@ -94,7 +94,7 @@ weekday_to_ordinal = {
 def parse_date_updated(date_updated_text):
     recognized = False
     for function in (parse_slashed_date, parse_abbreviated_date,
-                     parse_time, parse_day_of_the_week):
+                     parse_time, parse_day_of_the_week, parse_contextual_date):
         parsed_time = function(date_updated_text)
         if parsed_time is not None:
             recognized = True
@@ -106,6 +106,13 @@ def parse_date_updated(date_updated_text):
                                    "outgoing_date": parsed_time.strftime("%Y.%m.%d %H:%M"),
                                    "recognized": recognized}))
     return parsed_time
+
+
+def parse_contextual_date(date_updated_text):
+    if 'yesterday' in date_updated_text.lower():
+        return datetime.now() - timedelta(days=1)
+    if 'now' in date_updated_text.lower():
+        return datetime.now()
 
 
 def parse_slashed_date(date_updated_text):

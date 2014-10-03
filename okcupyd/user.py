@@ -2,6 +2,7 @@ from lxml import html
 
 from . import helpers
 from . import util
+from .attractiveness_finder import AttractivenessFinder
 from .messaging import ThreadFetcher
 from .photo import PhotoUploader
 from .profile import Profile
@@ -23,14 +24,14 @@ class User(object):
             "The session provided to the user constructor must be logged in."
         )
 
-        self.profile = Profile(self._session, self._session.log_in_name)
-        self.authcode = self.profile.authcode
-
-        self._message_sender = helpers.Messager(self._session)
+        self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
         self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
         self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
-        self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
+        self.photo = PhotoUploader(self._session)
+        self.profile = Profile(self._session, self._session.log_in_name)
         self.questions = Questions(self._session)
+        self._message_sender = helpers.Messager(self._session)
+        self.attractiveness_finder = AttractivenessFinder(self._session)
 
     def get_profile(self, username):
         return self._session.get_profile(username)
@@ -41,6 +42,10 @@ class User(object):
 
     _visitors_xpb = xpb.div.with_class('username').\
                    a.with_class('name')
+
+    @property
+    def username(self):
+        return self.profile.username
 
     @util.cached_property
     def visitors(self):
@@ -80,10 +85,6 @@ class User(object):
         """Return a Profile obtained by visiting the quickmatch page."""
         response = self._session.okc_get('quickmatch', params={'okc_api': 1})
         return Profile(self._session, response.json()['sn'])
-
-    def upload_photo(self, filename):
-        return PhotoUploader(filename, self._session,
-                             user_id=self.profile._current_user_id)
 
     def __repr__(self):
         return 'User("{0}")'.format(self.profile.username)

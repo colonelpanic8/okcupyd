@@ -60,3 +60,9 @@ def test_parse_date_handles_month_abbreviation_day_pairs():
 def test_parse_time_on_last_day_of_month(patched_datetime):
     patched_datetime.now_ = patched_datetime(year=2014, month=10, day=1)
     assert helpers.parse_date_updated('11:00pm').month == 9
+
+
+def test_parse_time_on_contextual_descriptions(patched_datetime):
+    assert helpers.parse_date_updated('Just Now!') == patched_datetime.now_
+    assert helpers.parse_date_updated('Yesterday') == \
+        patched_datetime.now_ - datetime.timedelta(days=1)

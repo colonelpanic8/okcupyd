@@ -26,7 +26,6 @@ headers = {
 }
 
 
-
 class n_partialable(object):
 
     @staticmethod
