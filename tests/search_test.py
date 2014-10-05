@@ -1,29 +1,21 @@
-import mock
-import pytest
-
-from okcupyd.search import SearchManager, SearchParameterBuilder, search
+from okcupyd.search import SearchFetchable, search
 from okcupyd.profile import Profile
 from . import util
 
 
-@pytest.fixture
-@util.use_cassette(cassette_name='search_startup')
-def search_manager():
-    return SearchManager(looking_for='everybody')
-
-
 @util.use_cassette(cassette_name='search_age_filter')
-def test_age_filter(search_manager):
+def test_age_filter():
     age = 22
-    search_manager.set_options(age_min=age, age_max=age)
-    profile, = search_manager.get_profiles(count=1)
+    search_fetchable = SearchFetchable(looking_for='everybody',
+                                       age_min=age, age_max=age)
+
+    profile = next(iter(search_fetchable))
     assert profile.age == age
 
 
 @util.use_cassette(cassette_name='search_count')
-def test_count_variable(search_manager, request):
-    search_manager.set_options(looking_for='everybody')
-    profiles = search_manager.get_profiles(count=14)
+def test_count_variable(request):
+    profiles = search(looking_for='everybody', count=14)
     assert len(profiles) == 14
 
     for profile in profiles:
@@ -38,10 +30,10 @@ def test_count_variable(search_manager, request):
 
 
 @util.use_cassette(cassette_name='search_location_filter')
-def test_location_filter(search_manager):
+def test_location_filter():
     location = 'Portland, OR'
-    search_manager.set_options(location=location, radius=25)
-    profile, = search_manager.get_profiles(count=1)
+    search_fetchable = SearchFetchable(location=location, radius=25)
+    profile = search_fetchable[0]
     assert profile.location == 'Portland, OR'
 
 
@@ -61,28 +53,11 @@ def test_search_function():
 
 
 @util.use_cassette
-def test_search_manager_iter():
-    search_manager = SearchManager(looking_for='everybody',
-                                   religion='buddhist', age_min=25, age_max=25,
-                                   location='new york, ny', keywords='bicycle')
-    for profile in search_manager:
+def test_search_fetchable_iter():
+    search_fetchable = SearchFetchable(looking_for='everybody',
+                                       religion='buddhist', age_min=25, age_max=25,
+                                       location='new york, ny', keywords='bicycle')
+    for count, profile in enumerate(search_fetchable):
         assert isinstance(profile, Profile)
-
-
-@mock.patch('okcupyd.helpers.get_locid', return_value=2)
-def test_construction_of_all_search_parameters(mock_get_locid):
-    spb = SearchParameterBuilder()
-    spb.set_options(location='new york, ny', religion='buddhist',
-                    height_min=66, height_max=68, looking_for='everybody',
-                    smokes=['no', 'trying to quit'], age_min=18, age_max=24,
-                    radius=12, order_by='MATCH', last_online=1234125,
-                    status='single', drugs=['very_often', 'sometimes'],
-                    job=['retired'], education=['high school'],
-                    income='less than $20,000', monogomy='monogamous',
-                    diet='vegan', ethnicity=['asian', 'middle eastern'],
-                    pets=['owns dogs', 'likes cats'], kids=['has a kid'])
-    spb.build(mock.Mock(), count=10)
-
-
-def test_empty_string_looking_for():
-    SearchParameterBuilder(looking_for='').build(mock.Mock())
+        if count > 30:
+            break

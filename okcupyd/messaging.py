@@ -10,10 +10,15 @@ from .xpath import XPathBuilder, xpb
 
 log = logging.getLogger(__name__)
 
-
+thread_element_xpath = XPathBuilder(relative=False).li.with_classes('thread',
+                                                                    'message')
 def ThreadFetcher(session, mailbox_number):
-    return util.FetchMarshall(ThreadHTMLFetcher(session, mailbox_number),
-                              ThreadProcessor(session))
+    return util.FetchMarshall(
+        ThreadHTMLFetcher(session, mailbox_number),
+        util.SimpleProcessor(
+            session, lambda elem: MessageThread(session, elem), thread_element_xpath
+        )
+    )
 
 
 class ThreadHTMLFetcher(object):
@@ -39,29 +44,6 @@ class ThreadHTMLFetcher(object):
                                                 self._mailbox_number)
 
 
-class ThreadProcessor(object):
-
-    xpath_builder = XPathBuilder(relative=False).li.with_classes('thread', 'message')
-
-    def __init__(self, session):
-        self._session = session
-
-    def process(self, text_response):
-        if not text_response.strip():
-            yield StopIteration
-            raise StopIteration()
-        for thread_element in self.xpath_builder.apply_(
-            html.fromstring(text_response)
-        ):
-            yield self._process_thread_element(thread_element)
-
-    def _process_thread_element(self, thread_element):
-        return MessageThread(self._session, thread_element)
-
-    def __repr__(self):
-        return '{0}()'.format(type(self).__name__)
-
-
 class MessageFetcher(object):
 
     def __init__(self, session, message_thread, read_messages=False):
@@ -79,8 +61,8 @@ class MessageFetcher(object):
 
     @util.cached_property
     def messages_tree(self):
-        messages_response = self._session.get('https://www.okcupid.com/messages',
-                                              params=self.params)
+        messages_response = self._session.okc_get('messages',
+                                                  params=self.params)
         return html.fromstring(messages_response.content.decode('utf8'))
 
     def refresh(self):
@@ -93,9 +75,11 @@ class MessageFetcher(object):
                 continue
             yield Message(message_element, self._message_thread)
 
+    _message_elements_xpb = xpb.li.with_classes('to_me', 'from_me').or_
+
     @util.cached_property
     def message_elements(self):
-        return xpb.li.with_classes('to_me', 'from_me')._or.apply_(self.messages_tree)
+        return self._message_elements_xpb.apply_(self.messages_tree)
 
 
 class Message(object):

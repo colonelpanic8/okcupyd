@@ -11,7 +11,7 @@ class XPathBuilder(object):
                                                         for node in self.nodes)
 
     @property
-    def _or(self):
+    def or_(self):
         updated_final_node = self.nodes[-1].make_or
         return type(self)(self.nodes[:-1] + (updated_final_node,),
                           relative=self.relative, direct_child=self.direct_child)

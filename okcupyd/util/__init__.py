@@ -2,7 +2,7 @@ import functools
 import collections
 import inspect
 
-from .fetchable import Fetchable, FetchMarshall, PaginationProcessor, GETFetcher
+from .fetchable import *
 from .compose import compose
 from .currying import curry
 from .misc import *

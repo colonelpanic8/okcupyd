@@ -57,4 +57,5 @@ def cached_attractiveness_finder():
 
 @util.use_cassette(cassette_name='attractiveness_finder_live')
 def test_attractiveness_finder_live(cached_attractiveness_finder):
-    assert cached_attractiveness_finder('_iWarhol') == 3000
+    assert cached_attractiveness_finder('_iWarhol') == 1000
+    assert cached_attractiveness_finder('dasmitches') == 5000

@@ -10,7 +10,7 @@ class _AttractivenessFinder(object):
         self._session = session or Session.login(settings.AF_USERNAME,
                                                  settings.AF_PASSWORD)
 
-    def find_attractiveness(self, username, accuracy=900,
+    def find_attractiveness(self, username, accuracy=1000,
                             _lower=0, _higher=10000):
         average = (_higher + _lower)//2
         if _higher - _lower <= accuracy:
@@ -20,7 +20,8 @@ class _AttractivenessFinder(object):
                          looking_for='everybody',
                          keywords=username,
                          attractiveness_min=average,
-                         attractiveness_max=_higher)
+                         attractiveness_max=_higher,
+                         count=1)
 
         if results:
             return self.find_attractiveness(username, accuracy,

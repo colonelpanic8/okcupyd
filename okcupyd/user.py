@@ -5,7 +5,7 @@ from .messaging import ThreadFetcher
 from .photo import PhotoUploader
 from .profile import Profile
 from .question import Questions
-from .search import SearchManager
+from .search import SearchFetchable, search
 from .session import Session
 from .xpath import xpb
 
@@ -114,20 +114,9 @@ class User(object):
         return self._message_sender.send(username, message_text)
 
     def search(self, **kwargs):
-        """Return a :class:`.util.fetchable.Fetchable` that wraps the
-        :class:`okcupyd.search.SearchManager` returned from a call to
-        :py:meth:`search_manager` with the provided arguments.
+        """Return a :class:`.util.fetchable.Fetchable` that wraps a
+        :function:`okcupyd.search.SearchFetcher`.
 
-        :param kwargs: arguments to pass to :meth:`search_manager`.
-        """
-        if 'count' in kwargs:
-            count = kwargs.pop('count')
-            return self.search_manager(**kwargs).get_profiles(count=count)
-        return util.Fetchable(self.search_manager(**kwargs))
-
-    def search_manager(self, **kwargs):
-        """Return a :class:`okcupyd.search.SearchManager` built with this
-        object's session object.
         Defaults for `gender`, `looking_for`, `location` and `radius` will
         be provided to the constructor of the
         :class:`okcupyd.search.SearchManager` unless they are explicitly
@@ -135,6 +124,8 @@ class User(object):
 
         :param kwargs: Arguments that should be passed to the constructor of
                        :class:`okcupyd.search.SearchManager`
+
+        :param kwargs: arguments to pass to :meth:`search_manager`.
         """
         kwargs.setdefault('gender', self.profile.gender[0])
         looking_for = helpers.get_looking_for(self.profile.gender,
@@ -142,7 +133,10 @@ class User(object):
         kwargs.setdefault('looking_for', looking_for)
         kwargs.setdefault('location', self.profile.location)
         kwargs.setdefault('radius', 25)
-        return SearchManager(session=self._session, **kwargs)
+        if 'count' in kwargs:
+            count = kwargs.pop('count')
+            return search(session=self._session, count=count, **kwargs)
+        return SearchFetchable(self._session, **kwargs)
 
     def quickmatch(self):
         """Return a :class:`okcupyd.profile.Profile` obtained by visiting the

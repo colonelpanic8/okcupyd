@@ -12,27 +12,27 @@ def crazy(a, self):
     return a + self.starter
 
 
-class HasPartialableMethods(object):
+class HasCurryMethods(object):
 
     def __init__(self, starter):
         self.starter = starter
         self.on_instance = crazy
 
     @util.curry
-    def partialable(self, x, y=0):
+    def curry(self, x, y=0):
         return self.starter * x * y
 
     on_class = crazy(1)
 
 
-def test_partialable_method_behavior():
-    assert HasPartialableMethods(2).partialable(y=2)(1) == 4
-    hpm = HasPartialableMethods(2)
+def test_curry_method_behavior():
+    assert HasCurryMethods(2).curry(y=2)(1) == 4
+    hpm = HasCurryMethods(2)
     assert hpm.on_instance(2, hpm) == 4
     assert hpm.on_class() == 3
 
 
-def test_partialable_with_kwargs_taking_function():
+def test_curry_with_kwargs_taking_function():
     @util.curry
     def kwarg_taking_function(arg, **kwargs):
         kwargs['k'] = arg
@@ -152,3 +152,15 @@ def test_bool_on_fetchable():
     fetchable = util.Fetchable(fetcher)
 
     assert fetchable
+
+
+def test_curry_on_classmethod():
+    class TestClass(object):
+
+        @classmethod
+        @util.curry
+        def test(cls, arg, optional=3):
+            return optional + arg
+
+    assert TestClass.test(optional=1)(2) == 3
+    assert TestClass().test(optional=3)(2) == 5

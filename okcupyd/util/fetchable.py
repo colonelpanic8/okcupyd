@@ -67,9 +67,8 @@ class Fetchable(object):
         return new_iterable
 
     def __getitem__(self, item):
-        iterator = iter(self)
-
         if not isinstance(item, slice):
+            iterator = iter(self)
             assert isinstance(item, int)
             if item < 0:
                 return list(iterator)[item]
@@ -81,8 +80,10 @@ class Fetchable(object):
                 self.exhausted = True
                 raise IndexError("The Fetchable does not have a value at the "
                                  "index that was provided.")
+        return self._handle_slice(item)
 
-        # We have a slice
+    def _handle_slice(self, item):
+        iterator = iter(self)
         if item.start is None and item.stop is None:
             # No point in being lazy if they want it all.
             self.exhausted = True
@@ -177,6 +178,27 @@ class FetchMarshall(object):
         return '{0}({1}, {2})'.format(type(self).__name__,
                                       repr(self._fetcher),
                                       repr(self._processor))
+
+
+class SimpleProcessor(object):
+
+    def __init__(self, session, object_factory, element_xpath):
+        self._object_factory = object_factory
+        self._element_xpath = element_xpath
+
+    def process(self, text_response):
+        if not text_response.strip():
+            yield StopIteration
+            raise StopIteration()
+        for element in self._element_xpath.apply_(
+            html.fromstring(text_response)
+        ):
+            yield self._object_factory(element)
+
+    def __repr__(self):
+        return '<{0}({1}, {2})>'.format(type(self).__name__,
+                                        repr(self._object_factory),
+                                        repr(self._element_xpath))
 
 
 class PaginationProcessor(object):
