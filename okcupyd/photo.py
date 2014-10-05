@@ -13,6 +13,7 @@ from .xpath import xpb
 log = logging.getLogger(__name__)
 
 
+@util.curry
 class PhotoUploader(object):
 
     _uri = 'ajaxuploader'
@@ -144,8 +145,11 @@ class Info(object):
         return '{0}{1}.jpg'.format(self.base_uri, self.id)
 
     def __repr__(self):
-        return 'photo.{0}({1}, {2}, {3}, {4}, {5})'.format(type(self).__name__, self.id,
-                                         self.thumb_nail_left,
-                                         self.thumb_nail_top,
-                                         self.thumb_nail_right,
-                                         self.thumb_nail_bottom)
+        return 'photo.{0}({1}, {2}, {3}, {4}, {5})'.format(
+            type(self).__name__,
+            self.id,
+            self.thumb_nail_left,
+            self.thumb_nail_top,
+            self.thumb_nail_right,
+            self.thumb_nail_bottom
+        )

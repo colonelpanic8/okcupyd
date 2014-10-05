@@ -65,7 +65,7 @@ class Messager(object):
         return MessageInfo(response_dict.get('threadid'), response_dict['msgid'])
 
 
-@util.n_partialable
+@util.curry
 def get_js_variable(html_response, variable_name):
     script_elements = xpb.script.apply_(html_response)
     html_response = '\n'.join(script_element.text_content()

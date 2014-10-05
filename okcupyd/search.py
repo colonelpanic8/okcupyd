@@ -103,7 +103,7 @@ def all_decider(function, incoming_keys, accepted_keys):
     return set(accepted_keys).issubset(incoming_keys)
 
 
-@util.n_partialable
+@util.curry
 def register_filter_builder(function, keys=(), decider=all_decider):
     function_arguments = inspect.getargspec(function).args
     if keys:

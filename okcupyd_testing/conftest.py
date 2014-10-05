@@ -66,7 +66,7 @@ patch_settings = patch('credentials_modules',
 patch_save = patch('resave',
                    mock.patch.object(
                        Cassette, '_save',
-                       okcupyd_util.n_partialable(Cassette._save)(force=True)))
+                       okcupyd_util.curry(Cassette._save)(force=True)))
 patch_use_cassette_enabled = patch('skip_vcrpy',
                                    mock.patch.object(CassetteContextDecorator,
                                                      '__enter__'),

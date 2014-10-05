@@ -7,7 +7,7 @@ import pytest
 from okcupyd import util
 
 
-@util.n_partialable
+@util.curry
 def crazy(a, self):
     return a + self.starter
 
@@ -18,7 +18,7 @@ class HasPartialableMethods(object):
         self.starter = starter
         self.on_instance = crazy
 
-    @util.n_partialable
+    @util.curry
     def partialable(self, x, y=0):
         return self.starter * x * y
 
@@ -33,7 +33,7 @@ def test_partialable_method_behavior():
 
 
 def test_partialable_with_kwargs_taking_function():
-    @util.n_partialable
+    @util.curry
     def kwarg_taking_function(arg, **kwargs):
         kwargs['k'] = arg
         return kwargs
@@ -69,7 +69,7 @@ def test_get_cached_properties():
 
 def test_overwrite_kwarg():
 
-    @util.n_partialable
+    @util.curry
     def test(k, a=0, b=0):
         return k + a + b
 
@@ -152,4 +152,3 @@ def test_bool_on_fetchable():
     fetchable = util.Fetchable(fetcher)
 
     assert fetchable
-

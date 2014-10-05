@@ -31,7 +31,7 @@ def check_should_scrub(function, instance, args, kwargs):
         return args[0] # The request or response
 
 
-@util.n_partialable
+@util.curry
 def remove_headers(request, headers_to_remove=()):
     headers = copy.copy(request.headers)
     headers_to_remove = [h.lower() for h in headers_to_remove]
@@ -180,7 +180,7 @@ class cassette(object):
                             'vcr_cassettes', '{0}.yaml'.format(cassette_name))
 
 
-@util.n_partialable
+@util.curry
 def use_cassette(function=None, cassette_name=None, *args, **kwargs):
     if cassette_name is None:
         assert function, 'Must supply function if no cassette name given'

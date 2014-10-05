@@ -290,7 +290,7 @@ class Profile(object):
             details[title.lower()] = helpers.replace_chars(details[title.lower()])
         return details
 
-    @util.n_partialable
+    @util.curry
     def message(self, message, thread_id=None):
         return_value =  helpers.Messager(
             self._session
