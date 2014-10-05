@@ -172,10 +172,10 @@ class Questions(object):
     def __init__(self, session, importances=importances, user_id=None):
         self.importance_name_to_fetchable = {}
         for importance in importances:
-            fetchable = util.Fetchable(util.FetchMarshall(
+            fetchable = util.Fetchable.fetch_marshall(
                 QuestionHTMLFetcher(session, 'questions', **{importance: 1}),
                 QuestionProcessor(UserQuestion)
-            ))
+            )
             self.importance_name_to_fetchable[importance] = fetchable
             setattr(self, importance, fetchable)
         self._session = session
@@ -241,6 +241,7 @@ _question_xpb = xpb.div.with_class('question')
 def QuestionProcessor(question_class):
     return util.PaginationProcessor(question_class, _question_xpb,
                                     _current_page_xpb, _total_page_xpb)
+
 
 class QuestionHTMLFetcher(object):
 
