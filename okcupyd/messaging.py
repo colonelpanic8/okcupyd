@@ -140,6 +140,7 @@ class Message(object):
 
 
 class MessageThread(object):
+    """Represent a message thread between two users."""
 
     def __init__(self, session, thread_element):
         self._session = session

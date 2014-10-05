@@ -234,13 +234,34 @@ def save_file(filename, data):
 
 
 class Fetchable(object):
+    """List-like container object that lazily loads its contained items."""
 
     def __init__(self, fetcher, **kwargs):
+        """
+        :param fetcher: An object with a `fetch` generator method that retrieves
+                        items for the fetchable.
+        :param nice_repr: Append the repr of a list containing the items that
+                          have been fetched to this point by the fetcher. Defaults
+                          to True
+        :param kwargs: Arguments that should be to the fetcher when it's fetch
+                       method is called. These are stored on the fetchable so
+                       they can be passed to the fetcher whenever
+                       :method:`refresh` is called.
+        """
         self._fetcher = fetcher
         self._kwargs = kwargs
         self.refresh()
 
     def refresh(self, nice_repr=True, **kwargs):
+        """
+        :param nice_repr: Append the repr of a list containing the items that
+                          have been fetched to this point by the fetcher.
+        :type nice_repr: bool
+        :param kwargs: kwargs that should be passed to the fetcher when its
+                       fetch method is called. These are merged with the values
+                       provided to the constructor, with the ones provided here
+                       taking precedence if there is a conflict.
+        """
         for key, value in self._kwargs.items():
             kwargs.setdefault(key, value)
         # No real good reason to hold on to this. DONT TOUCH.

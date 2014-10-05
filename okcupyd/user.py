@@ -13,27 +13,58 @@ from .xpath import xpb
 
 
 class User(object):
+    """Encapsulate a logged in okcupid user."""
 
     @classmethod
     def with_credentials(cls, username, password):
+        """
+        :param username: The username to log in with.
+        :type username: str
+        :param password: The password to log in with.
+        :type password: str
+        """
         return cls(Session.login(username, password))
 
     def __init__(self, session=None):
+        """
+        :param session: A logged in :class:`okcupyd.session.Session`
+        """
         self._session = session or Session.login()
+        self._message_sender = helpers.Messager(self._session)
         assert self._session.log_in_name is not None, (
             "The session provided to the user constructor must be logged in."
         )
-
-        self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
-        self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
-        self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
-        self.photo = PhotoUploader(self._session)
+        #: A :class:`okcupyd.profile.Profile` belonging to the logged in user.
         self.profile = Profile(self._session, self._session.log_in_name)
+
+        #: A :class:`okcupyd.util.Fetchable` of
+        #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
+        #: messages that are currently in the user's inbox.
+        self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
+        #: A :class:`okcupyd.util.Fetchable` of
+        #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
+        #: messages that are currently in the user's outbox.
+        self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
+        #: A :class:`okcupyd.util.Fetchable` of
+        #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
+        #: messages that are currently in the user's drafts folder.
+        self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
+        #: A :class:`okcupyd.util.Fetchable` of
+        #: :class:`okcupyd.profile.Profile` objects of okcupid.com users that have
+        #: visited this user's profile.
+        # self.visitors = util.Fetchable()
+
+        #: A :class:`okcupyd.question.Questions` that is instantiated with
+        #: this instance's session.
         self.questions = Questions(self._session)
-        self._message_sender = helpers.Messager(self._session)
         self.attractiveness_finder = AttractivenessFinder(self._session)
+        self.photo = PhotoUploader(self._session)
 
     def get_profile(self, username):
+        """Get the :class:`okcupyd.profile.Profile` associated with the supplied
+        username.
+        :param username: The username of the profile to retrieve.
+        """
         return self._session.get_profile(username)
 
     _visitors_xpb = xpb.div.with_class('user_info').\
@@ -73,6 +104,15 @@ class User(object):
         return util.Fetchable(self.search_manager(**kwargs))
 
     def search_manager(self, **kwargs):
+        """Return a :class:`okcupyd.search.SearchManager` built with this
+        object's session object.
+        Defaults for `gender`, `looking_for`, `location` and `radius` will
+        be provided to the constructor of the
+        :class:`okcupyd.search.SearchManager` unless they are explicitly
+        provided.
+        :param kwargs: Arguments that should be passed to the constructor of the
+        :class:`okcupyd.search.SearchManager`
+        """
         kwargs.setdefault('gender', self.profile.gender[0])
         looking_for = helpers.get_looking_for(self.profile.gender,
                                               self.profile.orientation)

@@ -71,6 +71,9 @@ class XPathBuilder(object):
     def get_text_(self, tree):
         return self.apply_(tree)[0].text_content()
 
+    def __repr__(self):
+        return '{0}("{1}"}'.format(type(self).__name__, self.xpath)
+
 
 class XPathNode(object):
 

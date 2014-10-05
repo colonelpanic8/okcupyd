@@ -143,6 +143,7 @@ class Details(object):
 
 
 class Profile(object):
+    """Represent the profile of an okcupid user."""
 
     def __init__(self, session, username, **kwargs):
         self._session = session

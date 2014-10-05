@@ -12,6 +12,8 @@ log = logging.getLogger(__name__)
 
 
 class Session(requests.Session):
+    """A :ref:`requests.Session` with convenience methods for interacting with
+    okcupid.com"""
 
     default_login_headers = {
         'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) '
@@ -22,6 +24,14 @@ class Session(requests.Session):
 
     @classmethod
     def login(cls, username=None, password=None):
+        """
+        :param username: The username to log in with.
+        :type username: str
+        :param password: The password to log in with.
+        :type password: str
+        Get a session that has authenticated with okcupid.com.
+        If no username or password is supplied, the
+        """
         # settings.USERNAME and settings.PASSWORD should not be made
         # the defaults to their respective arguments because doing so
         # would prevent this function from picking up any changes made
@@ -60,11 +70,13 @@ class Session(requests.Session):
         return response
 
     def okc_get(self, path, secure=None, **kwargs):
+        """Perform an HTTP GET to the www.okcupid.com at the provide path."""
         response = self.get(self.build_path(path, secure), **kwargs)
         response.raise_for_status()
         return response
 
     def okc_post(self, path, secure=None, **kwargs):
+        """Perform an HTTP POST to the www.okcupid.com at the provide path."""
         return self.post(self.build_path(path, secure), **kwargs)
 
     def build_path(self, path, secure=None):
@@ -74,7 +86,13 @@ class Session(requests.Session):
                                      util.DOMAIN, path)
 
     def get_profile(self, username):
+        """Get the profile associated with the supplied username
+        :param username: The username of the profile to retrieve."""
         return profile.Profile(self, username)
 
     def get_current_user_profile(self):
+        """Get the `okcupyd.profile.Profile`  associated with the supplied
+        username.
+        :param username: The username of the profile to retrieve.
+        """
         return self.get_profile(self.log_in_name)

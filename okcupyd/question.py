@@ -39,7 +39,7 @@ class QuestionProcessor(object):
             # This is pretty gross: Part of the processor protocol
             # is that if StopIteration is yielded, the loop above
             # will be terminated. No easy way around this short
-            # Of making bigger objects or abstracting less.
+            # of making bigger objects or abstracting less.
             yield StopIteration
 
 
@@ -89,8 +89,9 @@ class BaseQuestion(object):
 
 
 class Question(BaseQuestion):
+    """Represent a question answered by a user other than the logged in user."""
 
-    def return_none_if_broken(function):
+    def return_none_if_unanswered(function):
         def wrapped(self):
             if self.answered:
                 return function(self)
@@ -110,32 +111,32 @@ class Question(BaseQuestion):
             pass
 
     @util.cached_property
-    @return_none_if_broken
+    @return_none_if_unanswered
     def their_answer(self):
         return self._their_answer_span.text_content().strip()
 
     @util.cached_property
-    @return_none_if_broken
+    @return_none_if_unanswered
     def my_answer(self):
         return self._my_answer_span.text_content().strip()
 
     @util.cached_property
-    @return_none_if_broken
+    @return_none_if_unanswered
     def their_answer_matches(self):
         return 'not_accepted' not in self._their_answer_span.attrib['class']
 
     @util.cached_property
-    @return_none_if_broken
+    @return_none_if_unanswered
     def my_answer_matches(self):
         return 'not_accepted' not in self._my_answer_span.attrib['class']
 
     @util.cached_property
-    @return_none_if_broken
+    @return_none_if_unanswered
     def their_note(self):
         return self._their_note_span.text_content().strip()
 
     @util.cached_property
-    @return_none_if_broken
+    @return_none_if_unanswered
     def my_note(self):
         return self._my_note_span.text_content().strip()
 
@@ -143,6 +144,7 @@ class Question(BaseQuestion):
 
 
 class UserQuestion(BaseQuestion):
+    """Represent a question answered by the logged in user."""
 
     _answer_option_xpb = xpb.ul.with_class('self_answers').li
     _explanation_xpb = xpb.div.with_class('your_explanation').p.with_class('value')
@@ -213,6 +215,7 @@ importances = ('not_important', 'little_important', 'somewhat_important',
 
 
 class Questions(object):
+    """Interface to accessing and answering the logged in users questions."""
 
     headers = {
         'accept': 'application/json, text/javascript, */*; q=0.01',

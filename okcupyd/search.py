@@ -349,7 +349,7 @@ class SearchManager(object):
     fetch = __iter__
 
     def __unicode__(self):
-        return u"{0}({1})".format(type(self).__name__, self._parameter_builder)
+        return u'{0}({1})'.format(type(self).__name__, repr(self._parameter_builder))
 
 
 def search(session=None, count=9, **kwargs):
