@@ -1,8 +1,13 @@
 import itertools
+from lxml import html
 
 
 class Fetchable(object):
     """List-like container object that lazily loads its contained items."""
+
+    @classmethod
+    def fetch_marshall(cls, fetcher, processor):
+        return cls(FetchMarshall(fetcher, processor))
 
     def __init__(self, fetcher, **kwargs):
         """
@@ -172,3 +177,50 @@ class FetchMarshall(object):
         return '{0}({1}, {2})'.format(type(self).__name__,
                                       repr(self._fetcher),
                                       repr(self._processor))
+
+
+class PaginationProcessor(object):
+
+    def __init__(self, object_factory, element_xpb,
+                 current_page_xpb, total_page_xpb):
+        self._object_factory = object_factory
+        self._element_xpb = element_xpb
+        self._current_page_xpb = current_page_xpb
+        self._total_page_xpb = total_page_xpb
+
+    def _current_page(self, tree):
+        return int(self._current_page_xpb.one_(tree))
+
+    def _page_count(self, tree):
+        return int(self._total_page_xpb.one_(tree))
+
+    def _are_pages_left(self, tree):
+        return self._current_page(tree) < self._page_count(tree)
+
+    def process(self, text_response):
+        tree = html.fromstring(text_response)
+        for element in self._element_xpb.apply_(tree):
+            yield self._object_factory(element)
+        if not self._are_pages_left(tree):
+            # This is pretty gross: Part of the processor protocol
+            # is that if StopIteration is yielded, the loop above
+            # will be terminated. No easy way around this short
+            # of making bigger objects or abstracting less.
+            yield StopIteration
+
+
+class GETFetcher(object):
+
+    def __init__(self, session, path, query_param_builder=lambda: {}):
+        self._session = session
+        self._path = path
+        self._query_param_builder = query_param_builder
+
+    def fetch(self, *args, **kwargs):
+        response = self._session.okc_get(
+            self._path, params=self._query_param_builder(*args, **kwargs)
+        )
+        return response.content.strip()
+
+    def __repr__(self):
+        return '<{0}("{1}")>'.format(type(self).__name__, self._path)

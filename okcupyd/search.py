@@ -304,6 +304,9 @@ class MatchCardExtractor(object):
 
 
 class SearchManager(object):
+    """Manage a search query that could span several http requests.
+    Implements the fetcher interface required by :class:`okcupyd.util.Fetchable`
+    """
 
     def __init__(self, session=None, low=1, **kwargs):
         self._session = session or Session.login()

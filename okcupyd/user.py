@@ -1,5 +1,3 @@
-from lxml import html
-
 from . import helpers
 from . import util
 from .attractiveness_finder import AttractivenessFinder
@@ -25,6 +23,15 @@ class User(object):
         """
         return cls(Session.login(username, password))
 
+    _visitors_xpb = xpb.div.with_class('user_info').\
+                   div.with_class('profile_info').div.with_class('username').\
+                   a.with_class('name').text_
+
+    _visitors_current_page_xpb = xpb.div.with_class('pages').\
+                                 span.with_class('curpage').text_
+    _visitors_total_page_xpb = xpb.div.with_class('pages').\
+                               a.with_class('last').text_
+
     def __init__(self, session=None):
         """
         :param session: A logged in :class:`okcupyd.session.Session`
@@ -37,27 +44,41 @@ class User(object):
         #: A :class:`okcupyd.profile.Profile` belonging to the logged in user.
         self.profile = Profile(self._session, self._session.log_in_name)
 
-        #: A :class:`okcupyd.util.Fetchable` of
+        #: A :class:`okcupyd.util.fetchable.Fetchable` of
         #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
         #: messages that are currently in the user's inbox.
         self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
-        #: A :class:`okcupyd.util.Fetchable` of
+        #: A :class:`okcupyd.util.fetchable.Fetchable` of
         #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
         #: messages that are currently in the user's outbox.
         self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
-        #: A :class:`okcupyd.util.Fetchable` of
+        #: A :class:`okcupyd.util.fetchable.Fetchable` of
         #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
         #: messages that are currently in the user's drafts folder.
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
-        #: A :class:`okcupyd.util.Fetchable` of
+
+        #: A :class:`okcupyd.util.fetchable.Fetchable` of
         #: :class:`okcupyd.profile.Profile` objects of okcupid.com users that have
         #: visited this user's profile.
-        # self.visitors = util.Fetchable()
+        self.visitors = util.Fetchable.fetch_marshall(
+            util.GETFetcher(self._session, 'visitors',
+                            lambda start_at: {'low': start_at}),
+            util.PaginationProcessor(
+                lambda username: Profile(self._session, username), self._visitors_xpb,
+                self._visitors_current_page_xpb, self._visitors_total_page_xpb,
+            )
+        )
 
         #: A :class:`okcupyd.question.Questions` that is instantiated with
         #: this instance's session.
         self.questions = Questions(self._session)
+
+        #: A :class:`okcupyd.attractiveness_finder.AttractivenessFinder`
+        #: that is instantiated with this instance's session.
         self.attractiveness_finder = AttractivenessFinder(self._session)
+
+        #: A :class:`okcupyd.photo.PhotoUploader` that is instantiated with
+        #: this instance's session.
         self.photo = PhotoUploader(self._session)
 
     def get_profile(self, username):
@@ -67,25 +88,20 @@ class User(object):
         """
         return self._session.get_profile(username)
 
-    _visitors_xpb = xpb.div.with_class('user_info').\
-                   div.with_class('profile_info').div.with_class('username').\
-                   a.with_class('name')
-
-    _visitors_xpb = xpb.div.with_class('username').\
-                   a.with_class('name')
-
     @property
     def username(self):
+        """Return the username associated with the :class:`.User`."""
         return self.profile.username
 
-    @util.cached_property
-    def visitors(self):
-        visitors_response = self._session.okc_get('visitors').content.decode('utf8')
-        visitors_tree = html.fromstring(visitors_response)
-        return [Profile(self._session, username)
-                for username in self._visitors_xpb.text_.apply_(visitors_tree)]
-
     def message(self, username, message_text):
+        """Message an okcupid user. If an existing conversation between the
+        logged in user and the target user can be found, reply to that thread
+        instead of starting a new one.
+        :param username: The username of the user to which the message should
+                         be sent.
+        :param message_text: The body of the message.
+
+        """
         # Try to reply to an existing thread.
         if not isinstance(username, str):
             username = username.username
@@ -98,6 +114,12 @@ class User(object):
         return self._message_sender.send(username, message_text)
 
     def search(self, **kwargs):
+        """Return a :class:`.util.fetchable.Fetchable` that wraps the
+        :class:`okcupyd.search.SearchManager` returned from a call to
+        :py:meth:`search_manager` with the provided arguments.
+
+        :param kwargs: arguments to pass to :meth:`search_manager`.
+        """
         if 'count' in kwargs:
             count = kwargs.pop('count')
             return self.search_manager(**kwargs).get_profiles(count=count)
@@ -110,8 +132,9 @@ class User(object):
         be provided to the constructor of the
         :class:`okcupyd.search.SearchManager` unless they are explicitly
         provided.
-        :param kwargs: Arguments that should be passed to the constructor of the
-        :class:`okcupyd.search.SearchManager`
+
+        :param kwargs: Arguments that should be passed to the constructor of
+                       :class:`okcupyd.search.SearchManager`
         """
         kwargs.setdefault('gender', self.profile.gender[0])
         looking_for = helpers.get_looking_for(self.profile.gender,
@@ -122,7 +145,8 @@ class User(object):
         return SearchManager(session=self._session, **kwargs)
 
     def quickmatch(self):
-        """Return a Profile obtained by visiting the quickmatch page."""
+        """Return a :class:`okcupyd.profile.Profile` obtained by visiting the
+        quickmatch page."""
         response = self._session.okc_get('quickmatch', params={'okc_api': 1})
         return Profile(self._session, response.json()['sn'])
 

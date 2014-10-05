@@ -55,6 +55,9 @@ def test_user_essay_refresh():
 def test_visitors():
     user = User()
     assert isinstance(user.visitors[0], Profile)
+    # If the user has more than one page of visitors, this ensures that
+    assert isinstance(user.visitors[-1], Profile)
+    assert len(user.visitors) > 26
 
 
 @pytest.mark.skipif(bool(os.environ.get('CI')), reason="Unicode issues...")
@@ -77,7 +80,8 @@ def test_profile_titles():
         'think_about': 'I spend a lot of time thinking about'
     }
 
-    expected_names_dict = {key: helpers.replace_chars(value) for key, value in expected_names_dict.items()}
+    expected_names_dict = {key: helpers.replace_chars(value)
+                           for key, value in expected_names_dict.items()}
 
     assert user.profile.essays.short_name_to_title == expected_names_dict
 

@@ -125,6 +125,7 @@ class Essays(object):
 
 Essays._init_essay_properties()
 
+
 _profile_details_xpb = xpb.div.with_classes('profile_details')
 def detail(name, setter=False):
     dd_xpb = _profile_details_xpb.dd(id='ajax_{0}'.format(name))
@@ -134,6 +135,7 @@ def detail(name, setter=False):
     if setter:
         return detail_property.setter
     return detail_property
+
 
 class Details(object):
 

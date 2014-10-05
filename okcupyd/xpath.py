@@ -72,7 +72,7 @@ class XPathBuilder(object):
         return self.apply_(tree)[0].text_content()
 
     def __repr__(self):
-        return '{0}("{1}"}'.format(type(self).__name__, self.xpath)
+        return '{0}("{1}")'.format(type(self).__name__, self.xpath)
 
 
 class XPathNode(object):

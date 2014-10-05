@@ -1,68 +1,10 @@
 import logging
 
-from lxml import html
-
 from . import util
 from .xpath import xpb
 
 
 log = logging.getLogger(__name__)
-
-
-class QuestionProcessor(object):
-
-    _page_data_xpb = xpb.div.with_class('pages_data')
-    _current_page_xpb = _page_data_xpb.input(id='questions_pages_page').\
-                        select_attribute_('value')
-    _total_page_xpb = _page_data_xpb.input(id='questions_pages_total').\
-                      select_attribute_('value')
-
-    def __init__(self, question_class):
-        self.question_class = question_class
-
-    def _current_page(self, tree):
-        return int(self._current_page_xpb.one_(tree))
-
-    def _page_count(self, tree):
-        return int(self._total_page_xpb.one_(tree))
-
-    def _are_pages_left(self, tree):
-        return self._current_page(tree) < self._page_count(tree)
-
-    _question_xpb = xpb.div.with_class('question')
-
-    def process(self, text_response):
-        tree = html.fromstring(text_response)
-        for question_element in self._question_xpb.apply_(tree):
-            yield self.question_class(question_element)
-        if not self._are_pages_left(tree):
-            # This is pretty gross: Part of the processor protocol
-            # is that if StopIteration is yielded, the loop above
-            # will be terminated. No easy way around this short
-            # of making bigger objects or abstracting less.
-            yield StopIteration
-
-
-class QuestionHTMLFetcher(object):
-
-    @classmethod
-    def from_username(cls, session, username, **kwargs):
-        return cls(session, u'profile/{0}/questions'.format(username), **kwargs)
-
-    def __init__(self, session, uri, **additional_parameters):
-        self._session = session
-        self._uri = uri
-        self._additional_parameters = additional_parameters
-
-    def _query_params(self, start_at):
-        parameters = {'low': start_at, 'leanmode': 1}
-        parameters.update(self._additional_parameters)
-        return parameters
-
-    def fetch(self, start_at):
-        response = self._session.okc_get(self._uri,
-                                         params=self._query_params(start_at))
-        return response.content.decode('utf8')
 
 
 class BaseQuestion(object):
@@ -200,16 +142,6 @@ class AnswerOption(object):
         )
 
 
-def QuestionFetcher(session, username, question_class=Question,
-                    is_user=False, **kwargs):
-    if is_user:
-        question_class = UserQuestion
-    return util.FetchMarshall(
-        QuestionHTMLFetcher.from_username(session, username, **kwargs),
-        QuestionProcessor(question_class)
-    )
-
-
 importances = ('not_important', 'little_important', 'somewhat_important',
                'very_important', 'mandatory')
 
@@ -299,3 +231,44 @@ class Questions(object):
         return self._session.okc_post(
             'questions', data={'clear_all': 1}, headers=self.headers
         )
+
+_page_data_xpb = xpb.div.with_class('pages_data')
+_current_page_xpb = _page_data_xpb.input(id='questions_pages_page').\
+                    select_attribute_('value')
+_total_page_xpb = _page_data_xpb.input(id='questions_pages_total').\
+                  select_attribute_('value')
+_question_xpb = xpb.div.with_class('question')
+def QuestionProcessor(question_class):
+    return util.PaginationProcessor(question_class, _question_xpb,
+                                    _current_page_xpb, _total_page_xpb)
+
+class QuestionHTMLFetcher(object):
+
+    @classmethod
+    def from_username(cls, session, username, **kwargs):
+        return cls(session, u'profile/{0}/questions'.format(username), **kwargs)
+
+    def __init__(self, session, uri, **additional_parameters):
+        self._session = session
+        self._uri = uri
+        self._additional_parameters = additional_parameters
+
+    def _query_params(self, start_at):
+        parameters = {'low': start_at, 'leanmode': 1}
+        parameters.update(self._additional_parameters)
+        return parameters
+
+    def fetch(self, start_at):
+        response = self._session.okc_get(self._uri,
+                                         params=self._query_params(start_at))
+        return response.content.decode('utf8')
+
+
+def QuestionFetcher(session, username, question_class=Question,
+                    is_user=False, **kwargs):
+    if is_user:
+        question_class = UserQuestion
+    return util.FetchMarshall(
+        QuestionHTMLFetcher.from_username(session, username, **kwargs),
+        QuestionProcessor(question_class)
+    )

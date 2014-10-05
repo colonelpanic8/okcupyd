@@ -17,7 +17,7 @@ setup(
     keywords="okcupid",
     url="https://github.com/IvanMalison/okcupyd",
     long_description='',
-    entry_points={"console_scripts": ["okcupyd=okcupyd:run_invoke"]},
+    entry_points={"console_scripts": ["okcupyd=okcupyd:interactive"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",

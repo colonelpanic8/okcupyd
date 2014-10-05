@@ -18,10 +18,11 @@ okcupyd
    :members:
 .. automodule:: okcupyd.question
    :members:
-
+.. automodule:: okcupyd.search
+   :members:
 .. automodule:: okcupyd.session
    :members:
-.. automodule:: okcupyd.util
+.. automodule:: okcupyd.util.fetchable
    :members:
    :special-members: __init__
 
