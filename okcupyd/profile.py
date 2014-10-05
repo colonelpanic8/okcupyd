@@ -154,6 +154,7 @@ class Profile(object):
 
     def refresh(self, reload=True):
         util.cached_property.bust_caches(self)
+        self.questions = self.question_fetchable()
         if reload:
             return self._profile_tree
 
