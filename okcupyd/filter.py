@@ -1,6 +1,7 @@
 import inspect
 
 from . import util
+from . import magicnumbers
 
 
 class Filters(object):
@@ -45,14 +46,28 @@ class Filters(object):
         }
 
     @util.curry
-    def register_filter_builder(cls, function, keys=(), decider=None):
-        decider = decider or cls.all_not_none_decider
+    def register_filter_builder(self, function, keys=(), decider=None):
+        decider = decider or self.all_not_none_decider
         function_arguments = inspect.getargspec(function).args
         if keys:
             assert len(keys) == len(function_arguments)
         else:
             keys = function_arguments
-        cls.builder_to_keys[function] = keys
-        cls.builder_to_decider[function] = decider
+        self.builder_to_keys[function] = keys
+        self.builder_to_decider[function] = decider
 
         return function
+
+
+def gentation_filter(gentation):
+    return '0,{0}'.format(magicnumbers.gentation_to_number[gentation.lower()])
+
+
+def age_filter(age_min=18, age_max=99):
+    if age_min == None:
+        age_min = 18
+    return '2,{0},{1}'.format(age_min, age_max)
+
+
+def location_filter(radius):
+    return '3,{0}'.format(radius)

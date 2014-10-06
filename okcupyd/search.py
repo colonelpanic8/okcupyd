@@ -5,7 +5,7 @@ import simplejson
 from . import helpers
 from . import magicnumbers
 from . import util
-from .filter import Filters
+from . import filter
 from .profile import Profile
 from .session import Session
 from .xpath import xpb
@@ -14,21 +14,13 @@ from .xpath import xpb
 log = logging.getLogger(__name__)
 
 
-search_filters = Filters()
-
-
-@search_filters.register_filter_builder
-def gentation_for_filter(gentation):
-    return '0,{0}'.format(magicnumbers.gentation_to_number[gentation.lower()])
-
-
-@search_filters.register_filter_builder(
-    decider=search_filters.any_not_none_decider
+search_filters = filter.Filters()
+search_filters.register_filter_builder(filter.gentation_filter)
+search_filters.register_filter_builder(filter.location_filter)
+search_filters.register_filter_builder(
+    filter.age_filter,
+    decider=filter.Filters.any_not_none_decider
 )
-def age_filter(age_min=18, age_max=99):
-    if age_min == None:
-        age_min = 18
-    return '2,{0},{1}'.format(age_min, age_max)
 
 
 @search_filters.register_filter_builder(decider=search_filters.any_decider)
@@ -60,11 +52,6 @@ def status_filter(status):
     elif status.lower() == 'any':
         status_int = 0
     return '35,{0}'.format(status_int)
-
-
-@search_filters.register_filter_builder
-def location_filter(radius):
-    return '3,{0}'.format(radius)
 
 
 def build_option_filter(key):

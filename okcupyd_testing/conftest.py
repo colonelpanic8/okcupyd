@@ -2,6 +2,7 @@ import datetime
 import logging
 import itertools
 import os
+import time
 
 import mock
 import contextlib2 as contextlib
@@ -258,3 +259,10 @@ def pytest_exception_interact():
         log.info(model_class_to_instances)
     except:
         pass
+
+
+@pytest.fixture
+def vcr_live_sleep(request):
+    return (time.sleep
+            if request.config.getoption('record')
+            else mock.Mock())

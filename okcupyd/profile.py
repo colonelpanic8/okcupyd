@@ -1,189 +1,19 @@
-import collections
 import datetime
 import logging
-import re
+
 
 from lxml import html
 import simplejson
 
 from . import helpers
-from . import magicnumbers
 from . import util
-from .filter import Filters
+from . import essay
+from . import looking_for
 from .question import QuestionFetcher
 from .xpath import xpb
 
 
 log = logging.getLogger(__name__)
-
-
-class LookingFor(object):
-
-    Ages = collections.namedtuple('ages', ('min', 'max'))
-    _ages_re = re.compile(u'Ages ([0-9]{1,3})\u2013([0-9]{1,3})')
-
-    _looking_for_xpb = xpb.div.with_classes('text', 'what_i_want')
-
-    def __init__(self, profile):
-        self._profile = profile
-
-    @util.cached_property
-    def raw_fields(self):
-        li_elements = self._looking_for_xpb.li.apply_(
-            self._profile.profile_tree
-        )
-        return {li.attrib['id'].split('_')[1]: li.text_content()
-                for li in li_elements}
-
-    def update_property(function):
-        @property
-        def wrapped(self):
-            return function(self)
-
-        @wrapped.setter
-        def wrapped_setter(self, value):
-            self.update(**{function.__name__: value})
-
-        return wrapped_setter
-
-    @update_property
-    def gentation(self):
-        return self.raw_fields.get('gentation').lower()
-
-    @update_property
-    def ages(self):
-        match = self._ages_re.match(self.raw_fields.get('ages'))
-        return self.Ages(int(match.group(1)), int(match.group(2)))
-
-    @update_property
-    def single(self):
-        return 'display: none;' not in self._looking_for_xpb.li(id='ajax_single').\
-            one_(self._profile.profile_tree).attrib['style']
-
-    @update_property
-    def near_me(self):
-        return 'near' in self.raw_fields.get('near', '').lower()
-
-    @update_property
-    def kinds(self):
-        return self.raw_fields.get('lookingfor', '').replace('For', '').strip().split(', ')
-
-    def update(self, ages=None, single=None, near_me=None, kinds=None,
-               gentation=None):
-        ages = ages or self.ages
-        single = single or self.single
-        near_me = near_me or self.near_me
-        kinds = kinds or self.kinds
-        data = {
-            'okc_api': '1',
-            'searchprefs.submit': '1',
-            'update_prefs': '1',
-            'lquery': '',
-            'locid': '0',
-            'filter4': '1,1',
-            'filter5': '7,1'
-        }
-        if kinds:
-            kinds_numbers = self._build_kinds_numbers(kinds)
-            if kinds_numbers:
-                data['lookingfor'] = kinds_numbers[0]
-        age_min, age_max = ages
-        data.update(Filters(status='single' if single else 'any',
-                            gentation=gentation,
-                            age_min=age_min, age_max=age_max,
-                            radius=25 if near_me else 0).build())
-        log.info(simplejson.dumps({'looking_for_update': data}))
-        util.cached_property.bust_caches(self)
-        response = self._profile.authcode_get('profileedit2', params=data)
-        self._profile.refresh(reload=False)
-        return response.content
-
-    @staticmethod
-    def _build_kinds_numbers(looking_for_items):
-        looking_for_numbers = []
-        if not isinstance(looking_for_items, collections.Iterable):
-            looking_for_numbers = (looking_for_items,)
-        for item in looking_for_items:
-            for matcher, number in magicnumbers.looking_for_re_numbers:
-                if matcher.search(item) is not None:
-                    looking_for_numbers.append(number)
-        return looking_for_numbers
-
-    del update_property
-
-
-class Essays(object):
-    """Interface to reading and writing a users essays."""
-
-    @staticmethod
-    def build_essay_property(essay_index, essay_name):
-        essay_xpb = xpb.div(id='essay_{0}'.format(essay_index))
-        essay_text_xpb = essay_xpb.div.with_class('text').div.with_class('essay')
-        @property
-        def essay(self):
-            try:
-                essay_text = essay_text_xpb.get_text_(self._essays).strip()
-            except IndexError:
-                return None
-            if essay_name not in self._short_name_to_title:
-                self._short_name_to_title[essay_name] = helpers.replace_chars(
-                    essay_xpb.a.with_class('essay_title').get_text_(
-                        self._profile.profile_tree
-                    )
-                )
-            return essay_text
-
-        @essay.setter
-        def set_essay_text(self, essay_text):
-            self._submit_essay(essay_index, essay_text)
-
-        return set_essay_text
-
-    @classmethod
-    def _init_essay_properties(cls):
-        for essay_index, essay_name in enumerate(cls.essay_names):
-            setattr(cls, essay_name,
-                    cls.build_essay_property(essay_index, essay_name))
-
-    _essays_xpb = xpb.div(id='main_column')
-    #: A list of the attribute names that are used to store the text of
-    #: of essays on instances of this class.
-    essay_names = ['self_summary', 'my_life', 'good_at', 'people_first_notice',
-                   'favorites', 'six_things', 'think_about', 'friday_night',
-                   'private_admission', 'message_me_if']
-
-    def __init__(self, profile):
-        """:param profile: A :class:`.Profile`"""
-        self._profile = profile
-        self._short_name_to_title = {}
-
-    @property
-    def short_name_to_title(self):
-        for i in self: pass # Make sure that all essays names have been retrieved
-        return self._short_name_to_title
-
-    @util.cached_property
-    def _essays(self):
-        return self._essays_xpb.one_(self._profile.profile_tree)
-
-    def _submit_essay(self, essay_id, essay_body):
-        self._profile.authcode_post('profileedit2', data={
-            "essay_id": essay_id,
-            "essay_body": essay_body,
-            "okc_api": 1
-        })
-        self.refresh()
-
-    def refresh(self):
-        self._profile.refresh()
-        util.cached_property.bust_caches(self)
-
-    def __iter__(self):
-        for essay_name in self.essay_names:
-            yield getattr(self, essay_name)
-
-
-Essays._init_essay_properties()
 
 
 _profile_details_xpb = xpb.div.with_classes('profile_details')
@@ -288,9 +118,10 @@ class Profile(object):
 
     @util.cached_property
     def looking_for(self):
-        """Return a :class:`.LookingFor` instance associated with this profile.
+        """Return a :class:`okcupyd.looking_for.LookingFor` instance associated
+        with this profile.
         """
-        return LookingFor(self)
+        return looking_for.LookingFor(self)
 
     _rating_xpb = xpb.div(id='rating').ul(id='personality-rating').li.\
                   with_class('current-rating')
@@ -346,8 +177,10 @@ class Profile(object):
 
     @util.cached_property
     def essays(self):
-        """An :class:`.Essays` instance that is associated with this profile."""
-        return Essays(self)
+        """An :class:`okcupyd.essay.Essays` instance that is associated with
+        this profile.
+        """
+        return essay.Essays(self)
 
     @util.cached_property
     def age(self):

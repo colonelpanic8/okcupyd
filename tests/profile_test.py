@@ -1,8 +1,7 @@
 import datetime
 
-import pytest
-
 from . import util
+from okcupyd import looking_for
 from okcupyd import profile
 from okcupyd import session
 from okcupyd import User
@@ -73,26 +72,47 @@ def test_looking_for_on_user_profile():
     assert isinstance(profile.looking_for.kinds, list)
 
 
-@pytest.mark.xfail
-def test_looking_for_write_on_user_profile():
+@util.use_cassette
+def test_looking_for_write_on_user_profile(vcr_live_sleep):
+    profile = User().profile
     new_single = not profile.looking_for.single
     new_ages_min, new_ages_max = profile.looking_for.ages
     new_ages_min += 1
     new_ages_max += 1
     new_near_me = not profile.looking_for.near_me
-    new_relationships = ['short_term']
-    new_gentation = []
+    new_kinds = (['long-term dating', 'casual sex']
+                 if 'short-term dating' in profile.looking_for.kinds
+                 else ['short-term dating', 'casual sex'])
+    new_gentation = ('bi girls only' if 'everybody' in profile.looking_for.gentation
+                     else 'everybody')
 
+    sleep_time = 4
     profile.looking_for.ages = new_ages_min, new_ages_max
-    profile.looking_for.single = new_single
+    vcr_live_sleep(sleep_time)
     profile.looking_for.near_me = new_near_me
-    profile.looking_for.relationships = new_relationships
+    vcr_live_sleep(sleep_time)
+    profile.looking_for.kinds = new_kinds
+    vcr_live_sleep(sleep_time)
     profile.looking_for.gentation = new_gentation
+    vcr_live_sleep(sleep_time)
+    profile.looking_for.single = new_single
+
+    vcr_live_sleep(sleep_time)
+    new_profile = profile._session.get_profile(profile.username)
+    assert new_profile.looking_for.single == new_single
+    assert new_profile.looking_for.near_me == new_near_me
+    assert new_profile.looking_for.ages == looking_for.LookingFor.Ages(new_ages_min,
+                                                                       new_ages_max)
+    assert set(new_profile.looking_for.kinds) == set(new_kinds)
+    assert new_profile.looking_for.gentation == new_gentation
+
 
     assert profile.looking_for.single == new_single
-    assert profile.relationships == new_gentation
-    assert profile.looking_for.ages == profile.LookingFor.ages(new_ages_min,
-                                                               new_ages_max)
+    assert profile.looking_for.near_me == new_near_me
+    assert profile.looking_for.ages == looking_for.LookingFor.Ages(new_ages_min,
+                                                                   new_ages_max)
+    assert set(profile.looking_for.kinds) == set(new_kinds)
+    assert profile.looking_for.gentation == new_gentation
 
 
 @util.use_cassette
