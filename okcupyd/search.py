@@ -3,6 +3,7 @@ import logging
 import simplejson
 
 from . import helpers
+from . import magicnumbers
 from . import util
 from .filter import Filters
 from .profile import Profile
@@ -13,7 +14,82 @@ from .xpath import xpb
 log = logging.getLogger(__name__)
 
 
-_username_xpb = xpb.div.with_classes('match_card').div.with_class('username').a.text_
+search_filters = Filters()
+
+
+@search_filters.register_filter_builder
+def gentation_for_filter(gentation):
+    return '0,{0}'.format(magicnumbers.gentation_to_number[gentation.lower()])
+
+
+@search_filters.register_filter_builder(
+    decider=search_filters.any_not_none_decider
+)
+def age_filter(age_min=18, age_max=99):
+    if age_min == None:
+        age_min = 18
+    return '2,{0},{1}'.format(age_min, age_max)
+
+
+@search_filters.register_filter_builder(decider=search_filters.any_decider)
+def attractiveness_filter(attractiveness_min, attractiveness_max):
+    if attractiveness_min == None:
+        attractiveness_min = 0
+    if attractiveness_max == None:
+        attractiveness_max = 10000
+    return '25,{0},{1}'.format(attractiveness_min, attractiveness_max)
+
+
+@search_filters.register_filter_builder(
+    decider=search_filters.any_not_none_decider
+)
+def height_filter(height_min, height_max):
+    return magicnumbers.get_height_query(height_min, height_max)
+
+
+@search_filters.register_filter_builder
+def last_online_filter(last_online):
+    return '5,{0}'.format(helpers.format_last_online(last_online))
+
+
+@search_filters.register_filter_builder
+def status_filter(status):
+    status_int = 2  # single, default
+    if status.lower() in ('not single', 'married'):
+        status_int = 12
+    elif status.lower() == 'any':
+        status_int = 0
+    return '35,{0}'.format(status_int)
+
+
+@search_filters.register_filter_builder
+def location_filter(radius):
+    return '3,{0}'.format(radius)
+
+
+def build_option_filter(key):
+    @search_filters.register_filter_builder(keys=(key,))
+    @util.makelist_decorator
+    def option_filter(value):
+        return magicnumbers.get_options_query(key, value)
+
+
+for key in ['smokes', 'drinks', 'drugs', 'education', 'job',
+            'income', 'religion', 'monogamy', 'diet', 'sign',
+            'ethnicity']:
+    build_option_filter(key)
+
+pairs = [('pets', util.makelist_decorator(magicnumbers.get_pet_queries)),
+         ('offspring', util.makelist_decorator(magicnumbers.get_kids_query)),
+         ('join_date', magicnumbers.get_join_date_query),
+         ('languages', magicnumbers.get_language_query)]
+for key, function in pairs:
+
+    search_filters.register_filter_builder(keys=(key,))(function)
+
+
+_username_xpb = xpb.div.with_classes('match_card').\
+                div.with_class('username').a.text_
 def SearchFetchable(session=None, **kwargs):
     """Build a search object that conforms to the fetcher interface of
     :class:`.util.fetchable.Fetchable`.
@@ -36,7 +112,6 @@ class SearchHTMLFetcher(object):
     def __init__(self, session=None, **options):
         self._session = session or Session.login()
         self._options = options
-        self._filter_builder = Filters(**options)
 
     @property
     def location(self):
@@ -74,7 +149,7 @@ class SearchHTMLFetcher(object):
         if low:
             search_parameters['low'] = low
         if self.keywords: search_parameters['keywords'] = self.keywords
-        search_parameters.update(self._filter_builder.build())
+        search_parameters.update(search_filters.build(**self._options))
         return search_parameters
 
     def fetch(self, start_at=None, count=None):

@@ -73,30 +73,33 @@ class LookingFor(object):
         ages = ages or self.ages
         single = single or self.single
         near_me = near_me or self.near_me
+        kinds = kinds or self.kinds
         data = {
             'okc_api': '1',
             'searchprefs.submit': '1',
             'update_prefs': '1',
             'lquery': '',
-            'locid': '0'
+            'locid': '0',
+            'filter4': '1,1',
+            'filter5': '7,1'
         }
         if kinds:
             kinds_numbers = self._build_kinds_numbers(kinds)
             if kinds_numbers:
-                data['lookingfor'] = kinds_numbers
-        age_min, age_max = ages or (None, None)
+                data['lookingfor'] = kinds_numbers[0]
+        age_min, age_max = ages
         data.update(Filters(status='single' if single else 'any',
                             gentation=gentation,
                             age_min=age_min, age_max=age_max,
                             radius=25 if near_me else 0).build())
         log.info(simplejson.dumps({'looking_for_update': data}))
         util.cached_property.bust_caches(self)
-        response = self._profile.authcode_post('profileedit2', data=data)
+        response = self._profile.authcode_get('profileedit2', params=data)
         self._profile.refresh(reload=False)
         return response.content
 
     @staticmethod
-    def _build_looking_for_numbers(looking_for_items):
+    def _build_kinds_numbers(looking_for_items):
         looking_for_numbers = []
         if not isinstance(looking_for_items, collections.Iterable):
             looking_for_numbers = (looking_for_items,)

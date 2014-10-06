@@ -140,7 +140,8 @@ class User(object):
 
     def quickmatch(self):
         """Return a :class:`okcupyd.profile.Profile` obtained by visiting the
-        quickmatch page."""
+        quickmatch page.
+        """
         response = self._session.okc_get('quickmatch', params={'okc_api': 1})
         return Profile(self._session, response.json()['sn'])
 

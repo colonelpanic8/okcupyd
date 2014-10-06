@@ -56,5 +56,9 @@ class curry(object):
         setattr(obj, self.function.__name__, bound)
         return bound
 
+    def __repr__(self):
+        return '<{0}.{1} of {2}>'.format(__name__, type(self).__name__, 
+                                  repr(self.function))
+
 
 curry = curry(curry)

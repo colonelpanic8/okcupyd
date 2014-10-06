@@ -27,10 +27,9 @@ gentation_to_number = {
 looking_for_re_numbers = ((re.compile("[Ff]riends"), 1),
                           (re.compile("[Ll]ong.*[Dd]ating"), 2),
                           (re.compile("[Ss]hort.*[Dd]ating"), 3),
-                          (re.compile("[Ss]ex"), 12))
+                          (re.compile("[Ss]ex"), 6))
 
 
-# Wtf, OKCupid?
 has_kids = {
     "has a kid": {"addition": 33686018, "power": 1},
     "has kids": {"addition": 67372036, "power": 2},
