@@ -14,9 +14,9 @@ ns = Collection()
 def build_copy(source_credentials, dest_credentials):
     source_module = importlib.import_module(source_credentials)
     dest_module = importlib.import_module(dest_credentials)
-    source_user = User.with_credentials(source_module.USERNAME,
+    source_user = User.from_credentials(source_module.USERNAME,
                                         source_module.PASSWORD)
-    dest_user = User.with_credentials(dest_module.USERNAME,
+    dest_user = User.from_credentials(dest_module.USERNAME,
                                       dest_module.PASSWORD)
 
     return Copy(source_user, dest_user)
@@ -26,7 +26,7 @@ for method in Copy.copy_methods:
     @task
     def copy_task(source_credentials, dest_credentials):
         copy = build_copy(source_credentials, dest_credentials)
-        getattr(method, copy)()
+        getattr(copy, method)()
     ns.add_task(copy_task, name=method)
 
 

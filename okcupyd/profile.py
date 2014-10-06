@@ -5,10 +5,11 @@ import logging
 from lxml import html
 import simplejson
 
-from . import helpers
-from . import util
+from . import details
 from . import essay
+from . import helpers
 from . import looking_for
+from . import util
 from .question import QuestionFetcher
 from .xpath import xpb
 
@@ -16,36 +17,21 @@ from .xpath import xpb
 log = logging.getLogger(__name__)
 
 
-_profile_details_xpb = xpb.div.with_classes('profile_details')
-def detail(name, setter=False):
-    dd_xpb = _profile_details_xpb.dd(id='ajax_{0}'.format(name))
-    @property
-    def detail_property(self):
-        dd_xpb.get_text_(self.profile_tree)
-    if setter:
-        return detail_property.setter
-    return detail_property
-
-
-class Details(object):
-
-    def __init__(self, session, profile_tree):
-        self._session = session
-        self.profile_tree = profile_tree
-
-
 class Profile(object):
     """Represent the profile of an okcupid user.
+
     Many of the attributes on this object are
     :class:`okcupyd.util.cached_property` instances which lazily load their
-    values, and cache them once they have been accessed. This avoids makes it so
+    values, and cache them once they have been accessed. This makes it so
     that this object avoids making unnecessary HTTP requests to retrieve the
-    same piece of information twice. Because of this caching behavior, care must
+    same piece of information twice.
+
+    Because of this caching behavior, care must
     be taken to invalidate cached attributes on the object if an up to date view
     of the profile is needed. It is recommended that you call :meth:`refresh` to
     accomplish this, but it is also possible to use
-    :meth:`okcupyd.util.cached_property.bust_self` to bust individual methods if
-    necessary.
+    :meth:`okcupyd.util.cached_property.bust_self` to bust individual propeties
+    if necessary.
     """
 
     def __init__(self, session, username):
@@ -56,6 +42,7 @@ class Profile(object):
         self._session = session
         self.username = username
         self.questions = self.question_fetchable()
+        self.details = details.Details(self)
 
     def refresh(self, reload=False):
         """
@@ -76,12 +63,14 @@ class Profile(object):
 
     @util.cached_property
     def _profile_response(self):
-        return self._session.okc_get(u'profile/{0}'.format(self.username)).content
+        return self._session.okc_get(
+            u'profile/{0}'.format(self.username)
+        ).content
 
     @util.cached_property
     def profile_tree(self):
-        """Return a :class:`lxml.etree` created from the html of the profile page
-        of the account associated with the username that this profile was
+        """Return a :class:`lxml.etree` created from the html of the profile
+        page of the account associated with the username that this profile was
         insantiated with.
         """
         return html.fromstring(self._profile_response)
@@ -104,8 +93,9 @@ class Profile(object):
 
     @util.cached_property
     def photo_infos(self):
-        """Return a list containing a :class:`okcupyd.photo.Info` instance
-        for each picture that the owner of this profile displays on okcupid.
+        """
+        :returns: list of :class:`okcupyd.photo.Info` instances for each photo
+        displayed on okcupid.
         """
         pics_request = self._session.okc_get(
             u'profile/{0}/photos#0'.format(self.username)
@@ -157,10 +147,11 @@ class Profile(object):
 
     @util.cached_property
     def responds(self):
-        """The frequency with which the user associated with this profile
+        """Return the frequency with which the user associated with this profile
         responds to messages.
         """
-        contacted_text = self._contacted_xpb.get_text_(self.profile_tree).lower()
+        contacted_text = self._contacted_xpb.\
+                         get_text_(self.profile_tree).lower()
         if 'contacted' not in contacted_text:
             return contacted_text.strip().replace('replies ', '')
 
@@ -222,25 +213,8 @@ class Profile(object):
     @util.cached_property
     def orientation(self):
         """The sexual orientation of the user associated with this profile."""
-        return xpb.dd(id='ajax_orientation').get_text_(self.profile_tree).strip()
-
-    _details_xpb = xpb.div(id='profile_details')
-
-    @util.cached_property
-    def details(self):
-        details = {}
-        details_div = self._details_xpb.one_(self.profile_tree)
-        for dl in details_div.iter('dl'):
-            title = dl.find('dt').text
-            item = dl.find('dd')
-            if title == 'Last Online' and item.find('span') is not None:
-                details[title.lower()] = item.find('span').text.strip()
-            elif title.lower() in details and len(item.text):
-                details[title.lower()] = item.text.strip()
-            else:
-                continue
-            details[title.lower()] = helpers.replace_chars(details[title.lower()])
-        return details
+        return xpb.dd(id='ajax_orientation').\
+            get_text_(self.profile_tree).strip()
 
     @util.curry
     def message(self, message, thread_id=None):

@@ -1,5 +1,4 @@
 import re
-from .errors import InvalidInputError
 
 
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
@@ -45,7 +44,6 @@ wants_kids = {
 
 
 language_map = {
-    'English': '74',
     'Afrikaans': '2',
     'Albanian': '3',
     'Ancient Greek': '27',
@@ -65,6 +63,7 @@ language_map = {
     'Czech': '15',
     'Danish': '16',
     'Dutch': '17',
+    'English': '74',
     'Esperanto': '18',
     'Estonian': '19',
     'Farsi': '20',
@@ -122,6 +121,87 @@ language_map = {
     'Vietnamese': '68',
     'Welsh': '69',
     'Yiddish': '70',
+}
+
+
+language_map_2 = {
+    'afrikaans': 'af',
+    'albanian': 'sq',
+    'arabic': 'ar',
+    'armenian': 'hy',
+    'basque': 'eu',
+    'belarusan': 'be',
+    'bengali': 'bn',
+    'breton': 'br',
+    'bulgarian': 'bg',
+    'catalan': 'ca',
+    'cebuano': '11',
+    'chechen': 'ce',
+    'chinese': 'zh',
+    'c++': '71',
+    'croatian': 'hr',
+    'czech': 'cs',
+    'danish': 'da',
+    'dutch': 'nl',
+    'english': 'en',
+    'esperanto': 'eo',
+    'estonian': 'et',
+    'farsi': '20',
+    'finnish': 'fi',
+    'french': 'fr',
+    'frisian': '23',
+    'georgian': '24',
+    'german': 'de',
+    'greek': 'el',
+    'gujarati': 'gu',
+    'ancient greek': '27',
+    'hawaiian': '28',
+    'hebrew': 'he',
+    'hindi': 'hi',
+    'hungarian': 'hu',
+    'icelandic': 'is',
+    'ilongo': '32',
+    'indonesian': 'id',
+    'irish': 'ga',
+    'italian': 'it',
+    'japanese': 'ja',
+    'khmer': '37',
+    'korean': 'ko',
+    'latin': 'la',
+    'latvian': 'lv',
+    'lisp': '72',
+    'lithuanian': 'lt',
+    'malay': 'ms',
+    'maori': 'mi',
+    'mongolian': 'mn',
+    'norwegian': 'no',
+    'occitan': 'oc',
+    'other': '73',
+    'persian': 'fa',
+    'polish': 'pl',
+    'portuguese': 'pt',
+    'romanian': 'ro',
+    'rotuman': '51',
+    'russian': 'ru',
+    'sanskrit': 'sa',
+    'sardinian': '54',
+    'serbian': 'sr',
+    'sign language': '1',
+    'slovak': 'sk',
+    'slovenian': 'sl',
+    'spanish': 'es',
+    'swahili': 'sw',
+    'swedish': 'sv',
+    'tagalog': 'tl',
+    'tamil': 'ta',
+    'thai': 'th',
+    'tibetan': 'bo',
+    'turkish': 'tr',
+    'ukrainian': 'uk',
+    'urdu': 'ur',
+    'vietnamese': 'vi',
+    'welsh': 'cy',
+    'yiddish': 'yi'
 }
 
 
@@ -244,23 +324,23 @@ def get_language_query(language):
     return '22,{0}'.format(language_map[language.title()])
 
 
+hour = 60*60
+join_date_string_to_int = {
+    'hour': hour,
+    'day': hour*24,
+    'week': hour*24*7,
+    'month': hour*24*30,
+    'year': 365*24*hour
+}
+
+
 def get_join_date_query(date):
     date_int = 0
     if isinstance(date, str) and not date.isdigit():
-        if date.lower() in ('hour', 'last hour'):
-            date_int = 3600
-        elif date.lower() in ('day', 'last day'):
-            date_int = 86400
-        elif date.lower() in ('week', 'last week'):
-            date_int = 604800
-        elif date.lower() in ('month', 'last month'):
-            date_int = 2678400
-        elif date.lower() in ('year', 'last year'):
-            date_int = 31536000 
-        elif date.lower() in ('decade', 'last decade'):
-            date_int = 315360000
+        if date in join_date_string_to_int:
+            date_int = join_date_string_to_int[date]
         else:
-            raise InvalidInputError('Could not parse date string')
+            date_int = int(date)
     else:
         date_int = date
     return '6,{0}'.format(date_int)

@@ -60,22 +60,15 @@ class Session(requests.Session):
         return session
 
     def get(self, *args, **kwargs):
-        log.debug(kwargs)
-        filter_keys = [key for key in kwargs.get('params', {}) if 'filter' in key]
-        log.debug({k: kwargs.get('params', {})[k] for k in filter_keys})
         response = super(Session, self).get(*args, **kwargs)
-        log.debug(response.content[:300])
-        # log.debug(simplejson.dumps({'reponse': response.content[:300]}))
         response.raise_for_status()
         return response
 
     def post(self, *args, **kwargs):
         log.debug(kwargs)
-        filter_keys = [key for key in kwargs.get('data', {}) if 'filter' in key]
-        log.debug({k: kwargs.get('data', {})[k] for k in filter_keys})
         response = super(Session, self).post(*args, **kwargs)
-        log.debug(response.content[:300])
         response.raise_for_status()
+        log.debug(response.content)
         return response
 
     def okc_get(self, path, secure=None, **kwargs):

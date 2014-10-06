@@ -90,7 +90,7 @@ class LookingFor(object):
             'update_prefs': '1',
             'lquery': '',
             'locid': '0',
-            'filter5': '1, 1'
+            'filter5': '1, 1' # TODO(@IvanMalison) Do this better...
         }
         if kinds:
             kinds_numbers = self._build_kinds_numbers(kinds)

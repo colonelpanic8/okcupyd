@@ -1,3 +1,13 @@
+"""The public interface to `search` is through `SearchFetchable`.
+
+profiles = SearchFetchable(location='new york, ny', religion='buddhist',
+                           height_min=66, height_max=68, gentation='everybody',
+                           smokes=['no', 'trying to quit'])
+      for profile in profiles[:2]:
+        for photo_info in profile.photo_infos:
+          print photo_info.jpg_uri
+"""
+
 import logging
 
 import simplejson
@@ -15,15 +25,33 @@ log = logging.getLogger(__name__)
 
 
 search_filters = filter.Filters()
-search_filters.register_filter_builder(filter.gentation_filter)
-search_filters.register_filter_builder(filter.location_filter)
+search_filters.register_filter_builder(
+    filter.gentation_filter,
+    descriptions="The gentation of returned search results.",
+    acceptable_values=magicnumbers.gentation_to_number.keys(),
+    types=str
+)
+search_filters.register_filter_builder(
+    filter.location_filter,
+    types=int,
+    descriptions=("The maximum distance from the specified location of "
+                  "returned search results.")
+)
 search_filters.register_filter_builder(
     filter.age_filter,
-    decider=filter.Filters.any_not_none_decider
+    decider=filter.Filters.any_not_none_decider,
+    types=int,
+    descriptions=['The minimum age of returned search results.',
+                  'The maximum age of returned search results.']
 )
 
 
-@search_filters.register_filter_builder(decider=search_filters.any_decider)
+@search_filters.register_filter_builder(
+    decider=search_filters.any_decider,
+    types=int,
+    descriptions=["The minimum attractiveness of returned search results.",
+                  "The maximum attractiveness of returned search results."]
+)
 def attractiveness_filter(attractiveness_min, attractiveness_max):
     if attractiveness_min == None:
         attractiveness_min = 0
@@ -55,7 +83,11 @@ def status_filter(status):
 
 
 def build_option_filter(key):
-    @search_filters.register_filter_builder(keys=(key,))
+    @search_filters.register_filter_builder(
+        keys=(key,),
+        acceptable_values=magicnumbers.binary_lists[key],
+        types=str
+    )
     @util.makelist_decorator
     def option_filter(value):
         return magicnumbers.get_options_query(key, value)
@@ -66,21 +98,27 @@ for key in ['smokes', 'drinks', 'drugs', 'education', 'job',
             'ethnicity']:
     build_option_filter(key)
 
-pairs = [('pets', util.makelist_decorator(magicnumbers.get_pet_queries)),
-         ('offspring', util.makelist_decorator(magicnumbers.get_kids_query)),
-         ('join_date', magicnumbers.get_join_date_query),
-         ('languages', magicnumbers.get_language_query)]
-for key, function in pairs:
 
-    search_filters.register_filter_builder(keys=(key,))(function)
+         # ('offspring', util.makelist_decorator(magicnumbers.get_kids_query)),
+         # ('join_date', magicnumbers.get_join_date_query),
+         # ('languages', magicnumbers.get_language_query)]
+
+# search_filters.register_filter_builder(
+#     util.makelist_decorator(magicnumbers.get_pet_queries)),
+# keys=('pets',),
+#     types=str,
+# )
 
 
 _username_xpb = xpb.div.with_classes('match_card').\
                 div.with_class('username').a.text_
 def SearchFetchable(session=None, **kwargs):
-    """Build a search object that conforms to the fetcher interface of
-    :class:`.util.fetchable.Fetchable`.
+    """Search okcupid.com with the given parameters.
+
+    :returns: A :class:`okcupyd.util.fetchable.Fetchable` of
+              :class:`okcupyd.profile.Profile` instances.
     """
+
     session = session or Session.login()
     return util.Fetchable.fetch_marshall(
         SearchHTMLFetcher(session, **kwargs),
@@ -90,6 +128,9 @@ def SearchFetchable(session=None, **kwargs):
             _username_xpb
         )
     )
+
+
+SearchFetchable.__doc__ += '\n' + search_filters.build_documentation()
 
 
 class SearchHTMLFetcher(object):

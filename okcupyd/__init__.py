@@ -9,7 +9,6 @@ from . import tasks
 from . import util
 from .attractiveness_finder import AttractivenessFinder
 from .photo import PhotoUploader
-from .search import search
 from .session import Session
 from .statistics import Statistics
 from .user import User
@@ -42,5 +41,5 @@ def interactive():
     # executor.execute(*_tasks, dedupe=dedupe)
 
 
-__all__ = ('search', 'User', 'AttractivenessFinder', 'Statistics',
+__all__ = ('User', 'AttractivenessFinder', 'Statistics',
            'save_file', 'interactive', 'PhotoUploader', 'Session')

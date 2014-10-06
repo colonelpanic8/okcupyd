@@ -264,5 +264,6 @@ def pytest_exception_interact():
 @pytest.fixture
 def vcr_live_sleep(request):
     return (time.sleep
-            if request.config.getoption('record')
+            if (request.config.getoption('record') or
+                request.config.getoption('skip_vcrpy'))
             else mock.Mock())

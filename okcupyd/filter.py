@@ -5,10 +5,41 @@ from . import magicnumbers
 
 
 class Filters(object):
+    """Registers kwargs that can be used to construct filters for submission
+    in requests to okcupid.com
+    """
 
-    def __init__(self, builder_to_keys=None, builder_to_decider=None):
-        self.builder_to_keys = builder_to_keys or {}
-        self.builder_to_decider = builder_to_decider or {}
+    def __init__(self):
+        self.builder_to_keys = {}
+        self.builder_to_decider = {}
+        self.keys = set()
+        self._key_to_type = {}
+        self._key_to_values = {}
+        self._key_to_string = {}
+
+    def build_documentation(self):
+        return u'\n'.join(self.build_paramter_string(key)
+                         for key in sorted(self.keys))
+
+    def build_paramter_string(self, key):
+        description_string = u''
+        if key in self._key_to_string:
+            description_string = u' {0}'.format(self._key_to_string[key])
+        if key in self._key_to_values:
+            description_string += u' Allowed values: {0}'.format(
+                u', '.join([repr(value)
+                           for value in self._key_to_values[key]])
+            )
+        parameter_string = u':param {0}:{1}'.format(
+            key, description_string
+        )
+        if key in self._key_to_type:
+            parameter_string += u'\n'
+            the_type = self._key_to_type[key]
+            parameter_string += u':type {0}: {1}'.format(
+                key, the_type.__name__ if isinstance(the_type, type) else the_type
+            )
+        return parameter_string
 
     @staticmethod
     def any_decider(function, incoming, accepted_keys):
@@ -40,13 +71,16 @@ class Filters(object):
 
     def build(self, **kwargs):
         return {
-            'filter{0}'.format(filter_number): filter_string
+            u'filter{0}'.format(filter_number): filter_string
             for filter_number, filter_string
             in enumerate(self.filters(**kwargs), 1)
         }
 
     @util.curry
-    def register_filter_builder(self, function, keys=(), decider=None):
+    def register_filter_builder(self, function, keys=(), decider=None,
+                                acceptable_values=None,
+                                types=None,
+                                descriptions=None):
         decider = decider or self.all_not_none_decider
         function_arguments = inspect.getargspec(function).args
         if keys:
@@ -56,18 +90,38 @@ class Filters(object):
         self.builder_to_keys[function] = keys
         self.builder_to_decider[function] = decider
 
+        self.keys.update(keys)
+        self._update_docs_dict(self._key_to_type, types, keys)
+        self._update_docs_dict(self._key_to_string, descriptions, keys)
+        self._update_docs_dict(self._key_to_values, acceptable_values,
+                               keys, unpack_lists=False)
+
         return function
+
+    def _update_docs_dict(self, docs_dict, incoming, keys, unpack_lists=True):
+        if incoming:
+            if not isinstance(incoming, dict):
+                if isinstance(incoming, (tuple, list)) and unpack_lists:
+                    assert len(keys) == len(incoming), (
+                        "Got {0}, for keys: {1}".format(
+                            incoming, keys
+                        )
+                    )
+                    incoming = zip(keys, incoming)
+                else:
+                    incoming = {key: incoming for key in keys}
+            docs_dict.update(incoming)
 
 
 def gentation_filter(gentation):
-    return '0,{0}'.format(magicnumbers.gentation_to_number[gentation.lower()])
+    return u'0,{0}'.format(magicnumbers.gentation_to_number[gentation.lower()])
 
 
 def age_filter(age_min=18, age_max=99):
     if age_min == None:
         age_min = 18
-    return '2,{0},{1}'.format(age_min, age_max)
+    return u'2,{0},{1}'.format(age_min, age_max)
 
 
 def location_filter(radius):
-    return '3,{0}'.format(radius)
+    return u'3,{0}'.format(radius)

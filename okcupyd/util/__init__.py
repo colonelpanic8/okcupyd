@@ -1,6 +1,8 @@
-import functools
 import collections
+import functools
 import inspect
+import logging
+import re
 
 from .fetchable import *
 from .compose import compose
@@ -9,6 +11,7 @@ from .misc import *
 
 _pyflakes_ignore = (compose, curry, Fetchable, FetchMarshall,
                     GETFetcher, PaginationProcessor)
+log = logging.getLogger(__name__)
 
 
 
@@ -55,4 +58,71 @@ class cached_property(object):
     @classmethod
     def get_cached_properties(cls, obj):
         return inspect.getmembers(type(obj), lambda x: isinstance(x, cls))
+
+
+class CallableMap(object):
+
+    def __init__(self, func_value_pairs=()):
+        if isinstance(func_value_pairs, dict):
+            func_value_pairs = func_value_pairs.items()
+        self.func_value_pairs = list(func_value_pairs)
+
+    def __getitem__(self, item):
+        for func, value in self.func_value_pairs:
+            if func(item):
+                return value
+        raise KeyError('{0} did not match any of this objects functions.'.format(item))
+
+    def __setitem__(self, function, value):
+        self.add(func, value)
+
+    def add(func, value):
+        self.func_value_pairs.append((func, value))
+
+
+class REMap(object):
+
+    NO_DEFAULT = object()
+
+    @classmethod
+    def from_string_pairs(cls, string_value_pairs, **kwargs):
+        return cls(re_value_pairs=[(re.compile(s), v)
+                                   for s, v in string_value_pairs],
+                   **kwargs)
+
+    def __init__(self, re_value_pairs=(), default=NO_DEFAULT):
+        self.default = default
+        if isinstance(re_value_pairs, dict):
+            re_value_pairs = re_value_pairs.items()
+        self.re_value_pairs = list(re_value_pairs)
+
+    def __getitem__(self, item):
+        if item is None:
+            if self.default is self.NO_DEFAULT:
+                raise KeyError("None does not match any expression")
+            else:
+                return self.default
+        for matcher, value in self.re_value_pairs:
+            if matcher.search(item):
+                return value
+        if self.default is not self.NO_DEFAULT:
+            if item is not None and len(item) > 1:
+                log.warning("Returning default from REMAP for {0}.".format(
+                    repr(item)
+                ))
+            return self.default
+        else:
+            raise KeyError('{0} did not match any of this objects regular'
+                           'expressions.'.format(repr(item)))
+
+    def __setitem__(self, re, value):
+        self.add(re, value)
+
+    def add(re, value):
+        self.re_value_pairs.append((re, value))
+
+    @property
+    def pattern_to_value(self):
+        return {expression.pattern: value
+                for expression, value in self.re_value_pairs}
 

@@ -14,7 +14,7 @@ class User(object):
     """Encapsulate a logged in okcupid user."""
 
     @classmethod
-    def with_credentials(cls, username, password):
+    def from_credentials(cls, username, password):
         """
         :param username: The username to log in with.
         :type username: str
@@ -97,6 +97,7 @@ class User(object):
         """Message an okcupid user. If an existing conversation between the
         logged in user and the target user can be found, reply to that thread
         instead of starting a new one.
+
         :param username: The username of the user to which the message should
                          be sent.
         :param message_text: The body of the message.
