@@ -7,7 +7,7 @@ import okcupyd
 session = okcupyd.Session.login()
 u = okcupyd.User(session)
 fetchable = u.search(location='new york, ny', religion='buddhist',
-                     height_min=66, height_max=68, looking_for='everybody',
+                     height_min=66, height_max=68, gentation='everybody',
                      smokes=['no', 'trying to quit'])
 
 

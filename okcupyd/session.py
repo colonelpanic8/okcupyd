@@ -61,29 +61,32 @@ class Session(requests.Session):
 
     def get(self, *args, **kwargs):
         response = super(Session, self).get(*args, **kwargs)
+        # log.debug(simplejson.dumps({'reponse': response.content[:300]}))
         response.raise_for_status()
         return response
 
     def post(self, *args, **kwargs):
+        log.debug(kwargs)
         response = super(Session, self).post(*args, **kwargs)
+        log.debug(response.content[:300])
         response.raise_for_status()
         return response
 
     def okc_get(self, path, secure=None, **kwargs):
-        """Perform an HTTP GET to the www.okcupid.com at the provide path."""
+        """Perform an HTTP GET to the www.okcupid.com at the provided path."""
         response = self.get(self.build_path(path, secure), **kwargs)
-        response.raise_for_status()
         return response
 
     def okc_post(self, path, secure=None, **kwargs):
-        """Perform an HTTP POST to the www.okcupid.com at the provide path."""
+        """Perform an HTTP POST to the www.okcupid.com at the provided path."""
         return self.post(self.build_path(path, secure), **kwargs)
 
     def build_path(self, path, secure=None):
         if secure is None:
-            secure = 'secure_login' in self.cookies and int(self.cookies['secure_login']) != 0
+            secure = ('secure_login' in self.cookies and
+                      int(self.cookies['secure_login']) != 0)
         return u'{0}://{1}/{2}'.format('https' if secure else 'http',
-                                     util.DOMAIN, path)
+                                       util.DOMAIN, path)
 
     def get_profile(self, username):
         """Get the profile associated with the supplied username

@@ -248,30 +248,25 @@ def update_details(profile_tree, details):
         details[title.lower()] = replace_chars(details[title.lower()])
 
 
-def get_looking_for(gender, orientation):
-    """
-    Return a string containing the default gender/orientation of a
-    search if no value has been provided to the looking_for kwarg.
-    Returns
-    ----------
-    str
-    """
-    looking_for = ''
-    if gender.lower() in ('male', 'm',):
-        if orientation == 'Straight':
-            looking_for = 'girls who like guys'
-        elif orientation == 'Gay':
-            looking_for = 'guys who like guys'
-        elif orientation == 'Bisexual':
-            looking_for = 'both who like bi guys'
-    elif gender.loiwer() in ('female', 'f'):
-        if orientation == 'Straight':
-            looking_for = 'guys who like girls'
-        elif orientation == 'Gay':
-            looking_for = 'girls who like girls'
-        elif orientation == 'Bisexual':
-            looking_for = 'both who like bi girls'
-    return looking_for
+gender_to_orientation_to_gentation = {
+    'm': {
+        'straight': 'girls who like guys',
+        'gay': 'guys who like guys',
+        'bisexual': 'both who like bi guys'
+    },
+    'f': {
+        'straight': 'guys who like girls',
+        'gay': 'girls who like girls',
+        'bisexual': 'both who like bi girls'
+    }
+}
+
+
+def get_default_gentation(gender, orientation):
+    """Return the default gentation for the given gender and orientation."""
+    gender = gender.lower()[0]
+    orientation = orientation.lower()
+    return gender_to_orientation_to_gentation[gender][orientation]
 
 
 def replace_chars(astring):

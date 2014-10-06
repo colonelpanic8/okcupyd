@@ -7,7 +7,8 @@ from .compose import compose
 from .currying import curry
 from .misc import *
 
-_pyflakes_ignore = (compose, curry, Fetchable, FetchMarshall)
+_pyflakes_ignore = (compose, curry, Fetchable, FetchMarshall,
+                    GETFetcher, PaginationProcessor)
 
 
 

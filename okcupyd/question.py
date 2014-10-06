@@ -147,7 +147,8 @@ importances = ('not_important', 'little_important', 'somewhat_important',
 
 
 class Questions(object):
-    """Interface to accessing and answering the logged in users questions."""
+    """Interface to accessing and answering questions belonging to the logged
+    in user."""
 
     headers = {
         'accept': 'application/json, text/javascript, */*; q=0.01',
@@ -187,6 +188,14 @@ class Questions(object):
         return self._session.get_current_user_profile().id
 
     def respond_from_user_question(self, user_question, importance):
+        """Respond to a question in exactly the way that is described by
+        the given user_question.
+        :param user_question: The user question to respond with.
+        :type user_question: :class:`.UserQuestion`
+        :param importance: The importance that should be used in responding to
+                           the question.
+        :type importance: int
+        """
         user_response_ids = [option.id
                              for option in user_question.answer_options
                              if option.is_users]
@@ -231,6 +240,7 @@ class Questions(object):
         return self._session.okc_post(
             'questions', data={'clear_all': 1}, headers=self.headers
         )
+
 
 _page_data_xpb = xpb.div.with_class('pages_data')
 _current_page_xpb = _page_data_xpb.input(id='questions_pages_page').\

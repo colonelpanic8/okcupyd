@@ -6,7 +6,7 @@ from . import util
 @util.use_cassette(cassette_name='search_age_filter')
 def test_age_filter():
     age = 22
-    search_fetchable = SearchFetchable(looking_for='everybody',
+    search_fetchable = SearchFetchable(gentation='everybody',
                                        age_min=age, age_max=age)
 
     profile = next(iter(search_fetchable))
@@ -15,7 +15,7 @@ def test_age_filter():
 
 @util.use_cassette(cassette_name='search_count')
 def test_count_variable(request):
-    profiles = search(looking_for='everybody', count=14)
+    profiles = search(gentation='everybody', count=14)
     assert len(profiles) == 14
 
     for profile in profiles:
@@ -54,7 +54,7 @@ def test_search_function():
 
 @util.use_cassette
 def test_search_fetchable_iter():
-    search_fetchable = SearchFetchable(looking_for='everybody',
+    search_fetchable = SearchFetchable(gentation='everybody',
                                        religion='buddhist', age_min=25, age_max=25,
                                        location='new york, ny', keywords='bicycle')
     for count, profile in enumerate(search_fetchable):

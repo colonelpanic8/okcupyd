@@ -12,10 +12,11 @@ from .xpath import xpb
 
 log = logging.getLogger(__name__)
 
+
 _username_xpb = xpb.div.with_classes('match_card').div.with_class('username').a.text_
 def SearchFetchable(session=None, **kwargs):
     """Build a search object that conforms to the fetcher interface of
-    :class:`util.fetchable.Fetchable`.
+    :class:`.util.fetchable.Fetchable`.
     """
     session = session or Session.login()
     return util.Fetchable.fetch_marshall(
@@ -84,15 +85,15 @@ class SearchHTMLFetcher(object):
         try:
             search_html = response.json()['html']
         except:
-            log.warning(simplejson.dumps(
-                {'failure': response.content.decode('utf8')}
-            ))
+            log.warning(simplejson.dumps({'failure': response.content}))
             raise
         return search_html
 
     def __unicode__(self):
         return u'{0}({1})'.format(type(self).__name__, repr(self._options))
 
+    __repr__ = __unicode__
 
-def search(session=None, count=9, **kwargs):
+
+def search(session=None, count=1, **kwargs):
     return SearchFetchable(session, count=count, **kwargs)[:count]

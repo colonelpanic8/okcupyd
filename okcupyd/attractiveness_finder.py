@@ -17,11 +17,11 @@ class _AttractivenessFinder(object):
             return average
 
         results = search(self._session,
-                         looking_for='everybody',
+                         count=1,
+                         gentation='everybody',
                          keywords=username,
                          attractiveness_min=average,
-                         attractiveness_max=_higher,
-                         count=1)
+                         attractiveness_max=_higher,)
 
         if results:
             return self.find_attractiveness(username, accuracy,
@@ -49,8 +49,9 @@ class CheckForExistenceAttractivenessFinder(AttractivenessFinderDecorator):
 
     def _check_for_existence(self, username):
         return bool(search(self._session,
-                           looking_for='everybody',
-                           keywords=username))
+                           gentation='everybody',
+                           keywords=username,
+                           count=1))
 
 
     def find_attractiveness(self, username, *args, **kwargs):

@@ -58,13 +58,13 @@ class User(object):
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
 
         #: A :class:`okcupyd.util.fetchable.Fetchable` of
-        #: :class:`okcupyd.profile.Profile` objects of okcupid.com users that have
-        #: visited this user's profile.
+        #: :class:`okcupyd.profile.Profile` objects of okcupid.com users that
+        #: have visited this user's profile.
         self.visitors = util.Fetchable.fetch_marshall(
             util.GETFetcher(self._session, 'visitors',
                             lambda start_at: {'low': start_at}),
             util.PaginationProcessor(
-                lambda username: Profile(self._session, username), self._visitors_xpb,
+                lambda user: Profile(self._session, user), self._visitors_xpb,
                 self._visitors_current_page_xpb, self._visitors_total_page_xpb,
             )
         )
@@ -117,7 +117,7 @@ class User(object):
         """Return a :class:`.util.fetchable.Fetchable` that wraps a
         :function:`okcupyd.search.SearchFetcher`.
 
-        Defaults for `gender`, `looking_for`, `location` and `radius` will
+        Defaults for `gender`, `gentation`, `location` and `radius` will
         be provided to the constructor of the
         :class:`okcupyd.search.SearchManager` unless they are explicitly
         provided.
@@ -128,9 +128,9 @@ class User(object):
         :param kwargs: arguments to pass to :meth:`search_manager`.
         """
         kwargs.setdefault('gender', self.profile.gender[0])
-        looking_for = helpers.get_looking_for(self.profile.gender,
+        gentation = helpers.get_default_gentation(self.profile.gender,
                                               self.profile.orientation)
-        kwargs.setdefault('looking_for', looking_for)
+        kwargs.setdefault('gentation', gentation)
         kwargs.setdefault('location', self.profile.location)
         kwargs.setdefault('radius', 25)
         if 'count' in kwargs:

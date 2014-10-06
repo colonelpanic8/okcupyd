@@ -1,10 +1,11 @@
+import re
 from .errors import InvalidInputError
 
 
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
 
 
-seeking = {
+gentation_to_number = {
     'girls who like guys': '34',
     'guys who like girls': '17',
     'girls who like girls': '40',
@@ -21,6 +22,12 @@ seeking = {
     'everybody': '63',
     '': '63'
 }
+
+
+looking_for_re_numbers = ((re.compile("[Ff]riends"), 1),
+                          (re.compile("[Ll]ong.*[Dd]ating"), 2),
+                          (re.compile("[Ss]hort.*[Dd]ating"), 3),
+                          (re.compile("[Ss]ex"), 12))
 
 
 # Wtf, OKCupid?

@@ -11,9 +11,10 @@ okcupyd
 
 .. automodule:: okcupyd.user
    :members:
-   :special-members: __init__
+
 .. automodule:: okcupyd.profile
    :members:
+   :special-members: __init__
 .. automodule:: okcupyd.messaging
    :members:
 .. automodule:: okcupyd.question

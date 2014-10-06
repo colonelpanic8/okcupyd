@@ -1,15 +1,20 @@
 from invoke import task, run
 
 
+@task(default=True)
+def install():
+    run("python setup.py install")
+
+
 @task
 def pypi():
     run("python setup.py sdist upload -r pypi")
 
 
 @task(aliases='r')
-def rerecord(rest=''):
-    run('tox -e py27 -- --record --credentials test_credentials {0}'.format(rest))
-    run('tox -e py27 -- --resave --scrub --credentials test_credentials {0}'.format(rest))
+def rerecord(rest):
+    run('tox -e py27 -- --record --credentials test_credentials -k {0}'.format(rest))
+    run('tox -e py27 -- --resave --scrub --credentials test_credentials -k {0}'.format(rest))
 
 
 @task
