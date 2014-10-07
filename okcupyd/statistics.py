@@ -36,11 +36,11 @@ class Statistics(object):
 
     @util.cached_property
     def initiated(self):
-        return self.with_filters(lambda mt: mt.initiator == self._user.username)
+        return self.with_filters(lambda mt: mt.initiator == self._user.profile)
 
     @util.cached_property
     def recieved(self):
-        return self.with_filters(lambda mt: mt.initiator != self._user.username)
+        return self.with_filters(lambda mt: mt.initiator != self._user.profile)
 
     @util.cached_property
     def has_attractiveness(self):
@@ -80,7 +80,7 @@ class Statistics(object):
 
     @property
     def response_rate(self):
-        return self.with_responses.count/self.count
+        return float(self.has_response.count)/self.count
 
     def _average(self, function):
         return sum(map(function, self.threads))/self.count
@@ -95,8 +95,11 @@ class Statistics(object):
 
     def _average_attractiveness(self, attractiveness_finder=None):
         attractiveness_finder = attractiveness_finder or self._attractiveness_finder
-        return self.has_attractiveness._average(lambda thread: attractiveness_finder.find_attractiveness(
-            thread.correspondent))
+        return self.has_attractiveness._average(lambda thread: (
+            attractiveness_finder.find_attractiveness(
+                thread.correspondent
+            ))
+        )
 
     @property
     def average_attractiveness(self):
