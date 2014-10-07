@@ -14,7 +14,7 @@ setup(
     author_email="ivanmalison@gmail.com",
     description="A package for interacting with okcupid.com",
     license="MIT",
-    keywords=["okcupid", "okcupyd", "pyokc" "online dating"],
+    keywords=["okcupid", "okcupyd", "pyokc", "online dating"],
     url="https://github.com/IvanMalison/okcupyd",
     long_description='',
     entry_points={"console_scripts": ["okcupyd=okcupyd:interactive"]},
