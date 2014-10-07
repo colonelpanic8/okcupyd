@@ -12,4 +12,4 @@ profiles = u.search(location='new york, ny', religion='buddhist',
 
 for profile in profiles[:2]:
     for photo_info in profile.photo_infos:
-        print photo_info.jpg_uri
+        print(photo_info.jpg_uri)

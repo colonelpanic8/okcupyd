@@ -93,22 +93,6 @@ class DeclarativeDetail(object):
 
 class Details(object):
 
-    class __metaclass__(type):
-        def __init__(cls, *args):
-            for id_name, detail in cls.name_detail_pairs():
-                if detail.id_name is None:
-                    detail.id_name = id_name
-
-            is_declarative_detail = lambda x: (isinstance(x, type) and
-                                          issubclass(x, DeclarativeDetail))
-            for id_name, declarative_detail in inspect.getmembers(
-                cls, is_declarative_detail
-            ):
-                detail = Detail(presenter=declarative_detail.presenter,
-                                updater=declarative_detail.updater,
-                                id_name=id_name)
-                setattr(cls, id_name, detail)
-
     @classmethod
     def name_detail_pairs(cls):
         is_detail = lambda x: isinstance(x, Detail)
@@ -333,6 +317,8 @@ class Details(object):
 
         @classmethod
         def updater(cls, id_name, value):
+            if value is None:
+                return {'income': 0}
             if isinstance(value, string_types):
                 for matcher, sign in ((cls.range_matcher, 1),
                                       (cls.lt_matcher, -1),
@@ -401,3 +387,18 @@ class Details(object):
                 data['cont_lang_{0}'.format(i)] = ''
                 data['language{0}status'.format(i)] = ''
             return data
+
+
+for id_name, detail in Details.name_detail_pairs():
+    if detail.id_name is None:
+        detail.id_name = id_name
+
+    is_declarative_detail = lambda x: (isinstance(x, type) and
+                                  issubclass(x, DeclarativeDetail))
+    for id_name, declarative_detail in inspect.getmembers(
+        Details, is_declarative_detail
+    ):
+        detail = Detail(presenter=declarative_detail.presenter,
+                        updater=declarative_detail.updater,
+                        id_name=id_name)
+        setattr(Details, id_name, detail)

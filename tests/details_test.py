@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+import sys
+
+import pytest
+
 from okcupyd import User
 from okcupyd import details
 from okcupyd.util import REMap
@@ -17,6 +21,9 @@ def get_re_map(updater):
         if isinstance(item, REMap):
             return item
 
+
+@pytest.mark.skipif(sys.version_info > (3, 0),
+                    reason="get_re_map doesn't work in python3")
 @util.use_cassette
 def test_job_detail(vcr_live_sleep):
     updater = details.Details.job.updater
@@ -56,18 +63,24 @@ def test_income_detail(vcr_live_sleep):
     details = User().profile.details
     details.income = None
     vcr_live_sleep(sleep_time)
+    assert details.income == None
+    vcr_live_sleep(sleep_time)
     details.income = 55000
+    vcr_live_sleep(sleep_time)
     assert details.income == u'$50,000-$60,000'
 
     details.income = u'$40,000-$50,000'
+    vcr_live_sleep(sleep_time)
     assert details.income == u'$40,000-$50,000'
     vcr_live_sleep(sleep_time)
 
     details.income = u'More than $1,000,000'
+    vcr_live_sleep(sleep_time)
     assert details.income == u'More than $1,000,000'
     vcr_live_sleep(sleep_time)
 
     details.income = u'Less than $20,000'
+    vcr_live_sleep(sleep_time)
     assert details.income == u'Less than $20,000'
 
 

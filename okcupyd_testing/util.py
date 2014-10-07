@@ -134,14 +134,14 @@ before_record = check_should_scrub(util.compose(
 ))
 
 
-def match_search_query(left, right):
-    left_filter = set([value for param_name, value in left.query
-                               if 'filter' in param_name])
-    right_filter = set([value for param_name, value in right.query
-                                if 'filter' in param_name])
-    left_rest = set([(param_name, value) for param_name, value in left.query
+def _match_search_query(left, right):
+    left_filter = set([value for param_name, value in left
+                       if 'filter' in param_name])
+    right_filter = set([value for param_name, value in right
+                        if 'filter' in param_name])
+    left_rest = set([(param_name, value) for param_name, value in left
                      if 'filter' not in param_name])
-    right_rest = set([(param_name, value) for param_name, value in right.query
+    right_rest = set([(param_name, value) for param_name, value in right
                       if 'filter' not in param_name])
 
     log.info(simplejson.dumps(
@@ -154,11 +154,21 @@ def match_search_query(left, right):
     return left_filter == right_filter and left_rest == right_rest
 
 
+def match_search_query(left, right):
+    return _match_search_query(left.query, right.query)
+
+
 def body_as_query_string(left, right):
     try:
-        return urllib.parse.parse_qs(left.body) == urllib.parse.parse_qs(right.body)
-    except:
+        left_qs_items = list(urllib.parse.parse_qs(left.body).items())
+        right_qs_items = list(urllib.parse.parse_qs(right.body).items())
+    except Exception as exc:
+        log.debug(exc)
         return left.body == right.body
+    else:
+        left_qs_items = [(k, tuple(v)) for k, v in left_qs_items]
+        right_qs_items = [(k, tuple(v)) for k, v in right_qs_items]
+        return _match_search_query(left_qs_items, right_qs_items)
 
 
 okcupyd_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
