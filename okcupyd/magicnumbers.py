@@ -89,6 +89,13 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
 
     diet_type = util.IndexedREMap('anything', 'vegetarian', 'vegan',
                                   'kosher', 'halal', 'other')
+    income = util.IndexedREMap(
+        'less than $20,000', '$20,000-$30,000', '$30,000-$40,000',
+        '$40,000-$50,000', '$50,000-$60,000', '$60,000-$70,000',
+        '$70,000-$80,000', '$80,000-$100,000', '$100,000-$150,000',
+        '$150,000-$250,000', '$250,000-$500,000', '$500,000-$1,000,000',
+        'More than $1,000,000'
+    )
 
 
 class MappingUpdater(object):
@@ -104,16 +111,36 @@ class MappingUpdater(object):
 
 class SimpleFilterBuilder(object):
 
-    def __init__(self, filter_number, mapping):
+    def __init__(self, filter_number, mapping, offset=0):
         self.filter_number = filter_number
         self.mapping = mapping
 
-    def build_filter(self, ):
-        pass
+    def get_number(self, values):
+        acc = 0
+        for value in values:
+            acc += 2 ** int(self.mapping[value])
+        return acc
+
+    def get_filter(self, values):
+        return '{0},{1}'.format(self.filter_number, self.get_number(values))
+
+    __call__ = get_filter
 
 
 class filters(six.with_metaclass(util.GetAttrGetItem)):
-    pass
+
+    smokes = SimpleFilterBuilder(11, maps.smoking)
+    drinking = SimpleFilterBuilder(12, maps.drinking)
+    drugs = SimpleFilterBuilder(13, maps.drugs)
+    education = SimpleFilterBuilder(19, maps.education_level)
+    job = SimpleFilterBuilder(15, maps.job)
+    income = SimpleFilterBuilder(14, maps.income)
+    religion = SimpleFilterBuilder(8, maps.religion)
+    monogamy = SimpleFilterBuilder(73, maps.monogamous)
+    diet = SimpleFilterBuilder(54, maps.diet_type)
+    sign = SimpleFilterBuilder(21, maps.sign)
+    ethnicity = SimpleFilterBuilder(9, maps.ethnicities)
+
 
 
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
@@ -349,7 +376,7 @@ binary_lists = {
     'ethnicity': ['9', 'asian', 'middle eastern', 'black', 'native american',
                   'indian', 'pacific islander', 'hispanic/latin', 'white',
                   'human (other)']
-    }
+}
 
 
 dogs = ['owns dogs', 'likes dogs', 'dislikes dogs']

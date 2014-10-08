@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
-
-import pytest
-
 from okcupyd import User
 from okcupyd import details
 from okcupyd.magicnumbers import maps
@@ -13,8 +9,6 @@ from tests import util
 sleep_time = 1
 
 
-@pytest.mark.skipif(sys.version_info > (3, 0),
-                    reason="get_re_map doesn't work in python3")
 @util.use_cassette
 def test_job_detail(vcr_live_sleep):
     updater = details.Details.job.updater

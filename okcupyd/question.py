@@ -190,6 +190,7 @@ class Questions(object):
     def respond_from_user_question(self, user_question, importance):
         """Respond to a question in exactly the way that is described by
         the given user_question.
+
         :param user_question: The user question to respond with.
         :type user_question: :class:`.UserQuestion`
         :param importance: The importance that should be used in responding to

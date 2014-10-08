@@ -26,6 +26,9 @@ def status_filter(status):
 
 
 class LookingFor(object):
+    """Represent the looking for attributes belonging to an okcupid.com
+    profile.
+    """
 
     Ages = collections.namedtuple('ages', ('min', 'max'))
     _ages_re = re.compile(u'Ages ([0-9]{1,3})\u2013([0-9]{1,3})')

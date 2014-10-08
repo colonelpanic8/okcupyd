@@ -35,6 +35,9 @@ def makelist_decorator(function):
 
 
 class cached_property(object):
+    """Descriptor that caches the result of the first call to resolve its
+    contents.
+    """
 
     def __init__(self, func):
         self.__doc__ = getattr(func, '__doc__')
@@ -48,11 +51,19 @@ class cached_property(object):
         return value
 
     def bust_self(self, obj):
+        """Remove the value that is being stored on `obj` for this
+        :class:`.cached_property`
+        object.
+        :param obj: The instance on which to bust the cache.
+        """
         if self.func.__name__ in obj.__dict__:
             delattr(obj, self.func.__name__)
 
     @classmethod
     def bust_caches(cls, obj):
+        """Bust the cache for all :class:`.cached_property` objects on `obj`
+        :param obj: The instance on which to bust the caches.
+        """
         for name, _ in cls.get_cached_properties(obj):
             if name in obj.__dict__:
                 delattr(obj, name)
@@ -83,11 +94,15 @@ class CallableMap(object):
 
 
 class REMap(object):
+    """A mapping object that matches regular expressions to values."""
 
     NO_DEFAULT = object()
 
     @classmethod
     def from_string_pairs(cls, string_value_pairs, **kwargs):
+        """Build an :class:`~.REMap` from str, value pairs by applying
+        `re.compile` to each string and calling the __init__ of :class:`~.REMap`
+        """
         return cls(re_value_pairs=[(re.compile(s), v)
                                    for s, v in string_value_pairs],
                    **kwargs)
@@ -134,8 +149,20 @@ class GetAttrGetItem(type):
     def __getitem__(self, item):
         return getattr(self, item)
 
+    def __call__(self, *args):
+        return self[args[0]](*args[1:])
+
 
 def IndexedREMap(*re_strings, **kwargs):
+    """Build a :class:`~.REMap` from the provided regular expression string.
+    Each string will be associated with the index corresponding to its position
+    in the argument list.
+
+    :param re_strings: The re_strings that will serve as keys in the map.
+    :param default: The value to return if none of the regular expressions match
+    :param offset: The offset at which to start indexing for regular expressions
+                   defaults to 1.
+    """
     default = kwargs.get('default', 0)
     offset = kwargs.get('offset', 1)
     string_index_pairs = []

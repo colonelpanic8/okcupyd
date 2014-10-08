@@ -34,32 +34,33 @@ class User(object):
 
     def __init__(self, session=None):
         """
-        :param session: A logged in :class:`okcupyd.session.Session`
+        :param session: A logged in :class:`~okcupyd.session.Session`
         """
         self._session = session or Session.login()
         self._message_sender = helpers.Messager(self._session)
         assert self._session.log_in_name is not None, (
             "The session provided to the user constructor must be logged in."
         )
-        #: A :class:`okcupyd.profile.Profile` belonging to the logged in user.
+        #: A :class:`~okcupyd.profile.Profile` object belonging to the logged
+        #: in user.
         self.profile = Profile(self._session, self._session.log_in_name)
 
-        #: A :class:`okcupyd.util.fetchable.Fetchable` of
-        #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
+        #: A :class:`~okcupyd.util.fetchable.Fetchable` of
+        #: :class:`~okcupyd.messaging.MessageThread` objects corresponding to
         #: messages that are currently in the user's inbox.
         self.inbox = util.Fetchable(ThreadFetcher(self._session, 1))
-        #: A :class:`okcupyd.util.fetchable.Fetchable` of
-        #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
+        #: A :class:`~okcupyd.util.fetchable.Fetchable` of
+        #: :class:`~okcupyd.messaging.MessageThread` objects corresponding to
         #: messages that are currently in the user's outbox.
         self.outbox = util.Fetchable(ThreadFetcher(self._session, 2))
-        #: A :class:`okcupyd.util.fetchable.Fetchable` of
-        #: :class:`okcupyd.messaging.MessageThread` objects corresponding to
+        #: A :class:`~okcupyd.util.fetchable.Fetchable` of
+        #: :class:`~okcupyd.messaging.MessageThread` objects corresponding to
         #: messages that are currently in the user's drafts folder.
         self.drafts = util.Fetchable(ThreadFetcher(self._session, 4))
 
-        #: A :class:`okcupyd.util.fetchable.Fetchable` of
-        #: :class:`okcupyd.profile.Profile` objects of okcupid.com users that
-        #: have visited this user's profile.
+        #: A :class:`~okcupyd.util.fetchable.Fetchable` of
+        #: :class:`~okcupyd.profile.Profile` objects of okcupid.com users that
+        #: have visited the user's profile.
         self.visitors = util.Fetchable.fetch_marshall(
             util.GETFetcher(self._session, 'visitors',
                             lambda start_at: {'low': start_at}),
@@ -69,20 +70,21 @@ class User(object):
             )
         )
 
-        #: A :class:`okcupyd.question.Questions` that is instantiated with
-        #: this instance's session.
+        #: A :class:`~okcupyd.question.Questions` object that is instantiated
+        #: with the owning :class:`~.User` instance's session.
         self.questions = Questions(self._session)
 
-        #: A :class:`okcupyd.attractiveness_finder.AttractivenessFinder`
-        #: that is instantiated with this instance's session.
+        #: An :class:`~okcupyd.attractiveness_finder.AttractivenessFinder`
+        #: object that is instantiated with the owning :class:`~.User`
+        #: instance's session.
         self.attractiveness_finder = AttractivenessFinder(self._session)
 
-        #: A :class:`okcupyd.photo.PhotoUploader` that is instantiated with
-        #: this instance's session.
+        #: A :class:`~okcupyd.photo.PhotoUploader` that is instantiated with
+        #: the owning :class:`~.User` instance's session.
         self.photo = PhotoUploader(self._session)
 
     def get_profile(self, username):
-        """Get the :class:`okcupyd.profile.Profile` associated with the supplied
+        """Get the :class:`~okcupyd.profile.Profile` associated with the supplied
         username.
         :param username: The username of the profile to retrieve.
         """
@@ -115,18 +117,16 @@ class User(object):
         return self._message_sender.send(username, message_text)
 
     def search(self, **kwargs):
-        """Return a :class:`.util.fetchable.Fetchable` that wraps a
-        :function:`okcupyd.search.SearchFetcher`.
+        """Call :func:`~okcupyd.search.SearchFetchable`  to get a
+        :class:`~okcupyd.util.fetchable.Fetchable` object that will lazily
+        perform okcupid searches to provide :class:`~okcupyd.profile.Profile`
+        objects matching the search criteria.
 
         Defaults for `gender`, `gentation`, `location` and `radius` will
-        be provided to the constructor of the
-        :class:`okcupyd.search.SearchManager` unless they are explicitly
-        provided.
-
-        :param kwargs: Arguments that should be passed to the constructor of
-                       :class:`okcupyd.search.SearchManager`
-
-        :param kwargs: arguments to pass to :meth:`search_manager`.
+        be provided to the .
+        :param kwargs: See the :func:`~okcupyd.search.SearchFetchable`
+                       docstring for details about what parameters are
+                       available.
         """
         kwargs.setdefault('gender', self.profile.gender[0])
         gentation = helpers.get_default_gentation(self.profile.gender,
@@ -140,7 +140,7 @@ class User(object):
         return SearchFetchable(self._session, **kwargs)
 
     def quickmatch(self):
-        """Return a :class:`okcupyd.profile.Profile` obtained by visiting the
+        """Return a :class:`~okcupyd.profile.Profile` obtained by visiting the
         quickmatch page.
         """
         response = self._session.okc_get('quickmatch', params={'okc_api': 1})

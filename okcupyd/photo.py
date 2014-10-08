@@ -118,6 +118,7 @@ class PhotoUploader(object):
 
 
 class Info(object):
+    """Represent a photo that appears on a okcupid.com user's profile."""
 
     base_uri = "http://k0.okccdn.com/php/load_okc_image.php/images/"
 

@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class Detail(object):
+    """Represent a detail belonging to an okcupid.com profile."""
 
     NO_DEFAULT = object()
 
@@ -70,6 +71,7 @@ class DeclarativeDetail(object):
 
 
 class Details(object):
+    """Represent the details belonging to an okcupid.com profile."""
 
     @classmethod
     def name_detail_pairs(cls):
