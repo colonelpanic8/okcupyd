@@ -1,5 +1,5 @@
 <h1>okcupyd</h1>
-[![Build Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://travis-ci.org/IvanMalison/okcupyd)
+[![Build Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://travis-ci.org/IvanMalison/okcupyd)[![Documentation Status](https://readthedocs.org/projects/pip/badge/?version=latest)](https://readthedocs.org/projects/pip/?badge=latest)
 
 <h2>Installation/Setup</h2>
 
