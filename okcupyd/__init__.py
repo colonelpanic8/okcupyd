@@ -15,6 +15,9 @@ from .user import User
 from .util import save_file
 
 
+version = "0.8.0"
+
+
 def interactive():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--version', action='store_true',
@@ -42,4 +45,4 @@ def interactive():
 
 
 __all__ = ('User', 'AttractivenessFinder', 'Statistics',
-           'save_file', 'interactive', 'PhotoUploader', 'Session')
+           'save_file', 'interactive', 'PhotoUploader', 'Session', version)
