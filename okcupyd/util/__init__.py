@@ -4,6 +4,8 @@ import inspect
 import logging
 import re
 
+import six
+
 from .fetchable import *
 from .compose import compose
 from .currying import curry
@@ -125,4 +127,25 @@ class REMap(object):
     def pattern_to_value(self):
         return {expression.pattern: value
                 for expression, value in self.re_value_pairs}
+
+
+class GetAttrGetItem(type):
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+
+def IndexedREMap(*re_strings, **kwargs):
+    default = kwargs.get('default', 0)
+    offset = kwargs.get('offset', 1)
+    string_index_pairs = []
+    for index, string_or_tuple in enumerate(re_strings, offset):
+        if isinstance(string_or_tuple, six.string_types):
+            string_or_tuple = (string_or_tuple,)
+        for re_string in string_or_tuple:
+            string_index_pairs.append((re_string, index))
+    remap = REMap.from_string_pairs(string_index_pairs,
+                                    default=default)
+    return remap
+
 

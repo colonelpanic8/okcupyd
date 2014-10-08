@@ -5,7 +5,7 @@ import pytest
 
 from okcupyd import User
 from okcupyd import details
-from okcupyd.util import REMap
+from okcupyd.magicnumbers import maps
 
 from tests import util
 
@@ -13,25 +13,15 @@ from tests import util
 sleep_time = 1
 
 
-def get_re_map(updater):
-    # lol... why am I doing this?
-    closure_items = updater.func_closure
-    for item in closure_items:
-        item = item.cell_contents
-        if isinstance(item, REMap):
-            return item
-
-
 @pytest.mark.skipif(sys.version_info > (3, 0),
                     reason="get_re_map doesn't work in python3")
 @util.use_cassette
 def test_job_detail(vcr_live_sleep):
     updater = details.Details.job.updater
-    re_map = get_re_map(updater)
     user = User()
     user.profile.details.job = None
     assert user.profile.details.job == None
-    for pattern, value in sorted(re_map.pattern_to_value.items()):
+    for pattern, value in sorted(maps.job.pattern_to_value.items()):
         user.profile.details.job = pattern
         vcr_live_sleep(sleep_time)
         assert pattern.lower() in user.profile.details.job.lower()
@@ -209,6 +199,15 @@ def test_many_details(vcr_live_sleep):
     }
 
     details.convert_and_update(sample_details)
+    vcr_live_sleep(sleep_time)
+
+
+@util.use_cassette
+def test_education_detail(vcr_live_sleep):
+    details = User().profile.details
+    details.education = 'Dropped out of high school'
+    vcr_live_sleep(sleep_time)
+    assert 'dropped out' in details.education.lower()
     vcr_live_sleep(sleep_time)
 
 

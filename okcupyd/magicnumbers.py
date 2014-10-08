@@ -1,5 +1,120 @@
 import re
 
+import six
+
+from okcupyd import util
+
+
+class maps(six.with_metaclass(util.GetAttrGetItem)):
+
+    bodytype = util.IndexedREMap(
+        'rather not say', 'thin', 'overweight', 'skinny', 'average', 'fit',
+        'athletic', 'jacked', 'a little extra', 'curvy', 'full figured',
+        'used up'
+    )
+
+    orientation = util.IndexedREMap('straight', 'gay', 'bisexual')
+
+    smoking = util.IndexedREMap(
+        'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'
+    )
+
+    drugs = util.IndexedREMap('never', 'sometimes', 'often',
+                              default=3, offset=0)
+
+    drinking = util.IndexedREMap('very often', 'often', 'socially', 'rarely',
+                                 'desperately', 'not at all')
+
+    ethnicities = util.IndexedREMap(
+        'asian', 'middle eastern', 'black', 'native american', 'indian',
+        'pacific islander', ('hispanic', 'latin'), 'white', 'other'
+    )
+
+    job = util.IndexedREMap(
+        'student', ('art', 'music', 'writing'), ('banking', 'finance'),
+        'administration', 'technology', 'construction', 'education',
+        ('entertainment', 'media'), 'management', 'hospitality', 'law',
+        'medicine', 'military', ('politics', 'government'),
+        ('sales', 'marketing'), ('science', 'engineering'),
+        'transportation', 'unemployed', 'other', 'rather not say',
+        'retired'
+    )
+
+    status = util.IndexedREMap(
+        'single', 'seeing someone', 'married', 'in an open relationship'
+    )
+
+    monogamous = util.IndexedREMap('(:?[^\-]monogamous)|(:?^monogamous)',
+                                   'non-monogamous')
+    strictness = util.IndexedREMap('mostly', 'strictly')
+
+    # Doesn't want kids is index 6 for some reason.
+    has_kids = util.IndexedREMap('has a kid', 'has kids', (), (), (),
+                                 "doesn't have kids")
+    wants_kids = util.IndexedREMap('might want', 'wants', "doesn't want")
+
+    education_status = util.IndexedREMap('graduated', 'working', 'dropped out',
+                                         default=0)
+    education_level = util.IndexedREMap(
+        'high ?school', 'two[- ]year college', 'university', 'college',
+        'masters program', 'law school', 'med school', 'ph.d program',
+        'space camp'
+    )
+
+    religion = util.IndexedREMap('agnosticism', 'atheism', 'christianity',
+                                 'judaism', 'catholicism', 'islam', 'hinduism',
+                                 'buddhism', 'other', default=1, offset=2)
+    seriousness = util.IndexedREMap('very serious', 'somewhat serious',
+                                    'not too serious', 'laughing')
+
+    sign = util.IndexedREMap(
+        'aquarius', 'pisces', 'aries', 'taurus', 'gemini', 'cancer', 'leo',
+        'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn',
+    )
+    importance = util.IndexedREMap(
+        "doesn't matter", "matters alot", "fun to think about"
+    )
+
+    dogs = util.REMap.from_string_pairs(
+        (('dislikes dogs', 3), ('has dogs', 1), ('likes dogs', 2)),
+        default=0
+    )
+    cats = util.REMap.from_string_pairs(
+        (('dislikes cats', 3), ('has cats', 1), ('likes cats', 2)),
+        default=0
+    )
+    language_level = util.IndexedREMap('fluently', 'okay', 'poorly')
+
+    diet_strictness = util.IndexedREMap('[Mm]ostly', '[Ss]trictly')
+
+    diet_type = util.IndexedREMap('anything', 'vegetarian', 'vegan',
+                                  'kosher', 'halal', 'other')
+
+
+class MappingUpdater(object):
+
+    def __init__(self, mapping):
+        self.mapping = mapping
+
+    def __call__(self, id_name, value):
+        if isinstance(value, six.string_types):
+            value = value.lower() # :/
+        return {id_name: self.mapping[value]}
+
+
+class SimpleFilterBuilder(object):
+
+    def __init__(self, filter_number, mapping):
+        self.filter_number = filter_number
+        self.mapping = mapping
+
+    def build_filter(self, ):
+        pass
+
+
+class filters(six.with_metaclass(util.GetAttrGetItem)):
+    pass
+
 
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
 

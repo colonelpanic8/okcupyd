@@ -8,22 +8,11 @@ from six import string_types
 from . import helpers
 from . import magicnumbers
 from . import util
+from .magicnumbers import maps
 from .xpath import xpb
 
 
 log = logging.getLogger(__name__)
-
-
-def IndexedREMap(*re_strings, **kwargs):
-    default = kwargs.get('default', 0)
-    offset = kwargs.get('offset', 1)
-    string_index_pairs = []
-    for index, string_or_tuple in enumerate(re_strings, offset):
-        if isinstance(string_or_tuple, string_types):
-            string_or_tuple = (string_or_tuple,)
-        for re_string in string_or_tuple:
-            string_index_pairs.append((re_string, index))
-    return util.REMap.from_string_pairs(string_index_pairs, default=default)
 
 
 class Detail(object):
@@ -47,19 +36,8 @@ class Detail(object):
                                    default=0)
 
     @classmethod
-    def mapping_updater(cls, mapping, default=NO_DEFAULT):
-        def updater(id_name, value):
-            if isinstance(value, string_types):
-                value = value.lower() # :/
-            try:
-                update = mapping[value]
-            except KeyError:
-                if default is not cls.NO_DEFAULT:
-                    update = default
-                else:
-                    raise
-            return {id_name: update}
-        return updater
+    def mapping_updater(cls, mapping):
+        return cls(updater=magicnumbers.MappingUpdater(mapping))
 
     @staticmethod
     def default_updater(id_name, value):
@@ -138,103 +116,46 @@ class Details(object):
         self.refresh()
         return response
 
-    bodytype = Detail(updater=Detail.mapping_updater({
-        None: 0, u'—': 0, 'rather not say': 1, 'thin': 2, 'overweight': 3,
-        'skinny': 4, 'average': 5, 'fit': 6, 'athletic': 7, 'jacked': 8,
-        'a little extra': 9, 'curvy': 10, 'full figured': 11, 'used up': 12
-    }))
-
-    orientation = Detail(updater=Detail.mapping_updater({
-        'straight': 1, 'gay': 2, 'bisexual': 3
-    }))
+    bodytype = Detail.mapping_updater(maps.bodytype)
+    orientation = Detail.mapping_updater(maps.orientation)
+    smoking = Detail.mapping_updater(maps.smoking)
+    drugs = Detail.mapping_updater(maps.drugs)
+    drinking = Detail.mapping_updater(maps.drinking)
+    job = Detail.mapping_updater(maps.job)
+    status = Detail.mapping_updater(maps.status)
+    monogamous = Detail(updater=lambda id_name, value: {
+        'monogamous': maps.monogamous[value],
+        'monogamyflex': maps.strictness[value]
+    })
+    children = Detail(updater=lambda id_name, value: {
+        'children': maps.has_kids[value],
+        'children2': maps.wants_kids[value]
+    })
+    education = Detail(updater=lambda id_name, value: {
+        'educationstatus': maps.education_status[value],
+        'educationlevel': maps.education_level[value]
+    })
+    pets = Detail(updater=lambda id_name, value: {
+        'cats': maps.cats[value],
+        'dogs': maps.dogs[value]
+    })
+    diet = Detail(updater=lambda id_name, value: {
+        'diet': maps.diet_type[value],
+        'dietserious': maps.diet_strictness[value]
+    })
+    religion = Detail(updater=lambda id_name, value: {
+        'religion': maps.religion[value],
+        'religionserious': maps.seriousness[value]
+    })
+    sign = Detail(updater=lambda id_name, value: {
+        'sign': maps.sign[value],
+        'sign_status': maps.importance[value]
+    })
 
     ethnicities = Detail(
         presenter=Detail.comma_separated_presenter,
-        updater=Detail.mapping_multi_updater(IndexedREMap(
-            'asian', 'middle eastern', 'black', 'native american', 'indian',
-            'pacific islander', ('hispanic', 'latin'), 'white', 'other'
-        ))
+        updater=Detail.mapping_multi_updater(maps.ethnicities)
     )
-
-    smoking = Detail(updater=Detail.auto_indexed_updater(
-        'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'
-    ))
-
-    drugs = Detail(updater=Detail.mapping_updater(IndexedREMap(
-        'never', 'sometimes', 'often', default=3, offset=0
-    )))
-
-    drinking = Detail(updater=Detail.auto_indexed_updater(
-        'very often', 'often', 'socially', 'rarely', 'desperately', 'not at all'
-    ))
-
-    job = Detail(updater=Detail.mapping_updater(IndexedREMap(
-        'student', ('art', 'music', 'writing'), ('banking', 'finance'),
-        'administration', 'technology', 'construction', 'education',
-        ('entertainment', 'media'), 'management', 'hospitality', 'law',
-        'medicine', 'military', ('politics', 'government'),
-        ('sales', 'marketing'), ('science', 'engineering'),
-        'transportation', 'unemployed', 'other', 'rather not say',
-        'retired'
-    )))
-
-    status = Detail(updater=Detail.mapping_updater(IndexedREMap(
-        'single', 'seeing someone', 'married', 'in an open relationship'
-    )))
-
-    class monogamous(DeclarativeDetail):
-
-        monogamous = IndexedREMap('(:?[^\-]monogamous)|(:?^monogamous)',
-                                  'non-monogamous')
-
-        strictness = IndexedREMap('mostly', 'strictly')
-
-        @classmethod
-        def updater(cls, id_name, value):
-            return {
-                'monogamous': cls.monogamous[value],
-                'monogamyflex': cls.strictness[value]
-            }
-
-    class children(DeclarativeDetail):
-
-        # Doesn't want kids is index 6 for some reason.
-        has_kids = IndexedREMap('has a kid', 'has kids', (), (), (),
-                                "doesn't have kids")
-        wants_kids = IndexedREMap('might want', 'wants', "doesn't want")
-
-        @classmethod
-        def updater(cls, id_name, value):
-            return {'children': cls.has_kids[value],
-                    'children2': cls.wants_kids[value]}
-
-    class education(DeclarativeDetail):
-
-        education_status = util.REMap.from_string_pairs(
-            (('[Gg]raduated', 1),
-             ('[Ww]orking', 2),
-             ('[Dd]ropped out', 3),
-             ('[Ss]ome', 3)),
-            default=0
-        )
-
-
-        education_level = util.REMap(((re.compile('high ?school'), 1),
-                                      (re.compile('two[- ]year college'), 2),
-                                      (re.compile('university'), 3),
-                                      (re.compile('college'), 3),
-                                      (re.compile('masters program'), 4),
-                                      (re.compile('law school'), 5),
-                                      (re.compile('med school'), 6),
-                                      (re.compile('ph.d program'), 7),
-                                      (re.compile('space camp'), 8)), default=0)
-
-        @classmethod
-        def updater(cls, id_name, value):
-            value = value.lower()
-            status = cls.education_status[value]
-            level = cls.education_level[value]
-            return {'educationstatus': status, 'educationlevel': level}
 
     class height(DeclarativeDetail):
 
@@ -257,47 +178,6 @@ class Details(object):
             else:
                 raise ValueError("The provided height did not match any of "
                                  "the accepted formats.")
-
-    class diet(DeclarativeDetail):
-
-        diet_strictness = IndexedREMap('[Mm]ostly', '[Ss]trictly')
-
-        diet_type = IndexedREMap('anything', 'vegetarian', 'vegan',
-                                  'kosher', 'halal', 'other')
-
-        @classmethod
-        def updater(cls, id_name, value):
-            return {'diet': cls.diet_type[value],
-                    'dietserious': cls.diet_strictness[value]}
-
-    class religion(DeclarativeDetail):
-
-        religion = IndexedREMap('agnosticism', 'atheism', 'christianity',
-                                'judaism', 'catholicism', 'islam', 'hinduism',
-                                'buddhism', 'other', default=1, offset=2)
-        seriousness = IndexedREMap('very serious', 'somewhat serious',
-                                   'not too serious', 'laughing')
-
-        @classmethod
-        def updater(cls, id_name, value):
-            return {'religion': cls.religion[value],
-                    'religionserious': cls.seriousness[value]}
-
-    class sign(DeclarativeDetail):
-
-        sign = IndexedREMap(
-            'aquarius', 'pisces', 'aries', 'taurus', 'gemini', 'cancer', 'leo',
-            'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn',
-        )
-
-        importance = IndexedREMap(
-            "doesn't matter", "matters alot", "fun to think about"
-        )
-
-        @classmethod
-        def updater(cls, id_name, value):
-            return {'sign': cls.sign[value],
-                    'sign_status': cls.importance[value]}
 
     class income(DeclarativeDetail):
 
@@ -336,33 +216,13 @@ class Details(object):
             update = index + 1
             return {'income': update}
 
-    class pets(DeclarativeDetail):
-
-        dogs = util.REMap.from_string_pairs(
-            (('dislikes dogs', 3), ('has dogs', 1), ('likes dogs', 2)),
-            default=0
-        )
-
-        cats = util.REMap.from_string_pairs(
-            (('dislikes cats', 3), ('has cats', 1), ('likes cats', 2)),
-            default=0
-        )
-
-        @classmethod
-        def updater(cls, id_name, value):
-            return {'cats': cls.cats[value],
-                    'dogs': cls.dogs[value]}
-
-
     class languages(DeclarativeDetail):
 
         language_matcher = re.compile('(.*?) \((.*?)\)')
 
         language_to_number = magicnumbers.language_map_2
 
-        level = {
-            'fluently': 1, 'okay': 2, 'poorly': 3, None: 0
-        }
+        level = util.IndexedREMap('fluently', 'okay', 'poorly')
 
         @classmethod
         def presenter(cls, value):
