@@ -86,6 +86,7 @@ class User(object):
     def get_profile(self, username):
         """Get the :class:`~okcupyd.profile.Profile` associated with the supplied
         username.
+
         :param username: The username of the profile to retrieve.
         """
         return self._session.get_profile(username)
@@ -123,14 +124,15 @@ class User(object):
         objects matching the search criteria.
 
         Defaults for `gender`, `gentation`, `location` and `radius` will
-        be provided to the .
+        be provided if none are given.
+
         :param kwargs: See the :func:`~okcupyd.search.SearchFetchable`
                        docstring for details about what parameters are
                        available.
         """
         kwargs.setdefault('gender', self.profile.gender[0])
         gentation = helpers.get_default_gentation(self.profile.gender,
-                                              self.profile.orientation)
+                                                  self.profile.orientation)
         kwargs.setdefault('gentation', gentation)
         kwargs.setdefault('location', self.profile.location)
         kwargs.setdefault('radius', 25)

@@ -40,6 +40,10 @@ def get_credentials():
 
 
 def add_command_line_options(add_argument, use_short_options=True):
+    """
+    :param add_argument: The add_argument method of an ArgParser.
+    :param use_short_options: Whether or not to add short options.
+    """
     logger_args = ("--enable-logger",)
     credentials_args = ("--credentials",)
     if use_short_options:
@@ -57,6 +61,9 @@ def add_command_line_options(add_argument, use_short_options=True):
 
 
 def handle_command_line_options(args):
+    """
+    :param args: The args returned from an ArgParser
+    """
     for enabled_log in args.enabled_loggers:
         enable_logger(enabled_log)
     for credentials_module in args.credentials_modules:

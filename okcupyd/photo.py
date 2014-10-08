@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 
 @util.curry
 class PhotoUploader(object):
+    """Upload photos to okcupid.com."""
 
     _uri = 'ajaxuploader'
 
@@ -84,7 +85,8 @@ class PhotoUploader(object):
         return simplejson.loads(response_text)
 
     def _confirm_parameters(self, thumb_nail_left=None, thumb_nail_top=None,
-                            thumb_nail_right=None, thumb_nail_bottom=None):
+                            thumb_nail_right=None, thumb_nail_bottom=None,
+                            caption=''):
         return {
             'userid': self._user_id,
             'albumid': 0,
@@ -93,7 +95,7 @@ class PhotoUploader(object):
             'picid': self.pic_id,
             'picture.add_ajax': 1,
             'use_new_upload': 1,
-            'caption': '',
+            'caption': caption,
             'height': self.height,
             'width': self.width,
             'tn_upper_left_x': thumb_nail_left or 0,
@@ -107,6 +109,18 @@ class PhotoUploader(object):
                                      params=self._confirm_parameters(**kwargs))
 
     def upload_and_confirm(self, incoming, **kwargs):
+        """Upload the file to okcupid and confirm, among other things, its
+        thumbnail position.
+        :param incoming: A filepath string, :class:`.Info` object or
+                         a file like object to upload to okcupid.com.
+                         If an info object is provided, its thumbnail
+                         positioning will be used by default.
+        :param caption: The caption to add to the photo.
+        :param thumb_nail_left: For thumb nail positioning.
+        :param thumb_nail_top: For thumb nail positioning.
+        :param thumb_nail_right: For thumb nail positioning.
+        :param thumb_nail_bottom: For thumb nail positioning.
+        """
         self.upload(incoming)
         if isinstance(incoming, Info):
             kwargs.setdefault('thumb_nail_left', incoming.thumb_nail_left)
@@ -136,13 +150,18 @@ class Info(object):
 
     def __init__(self, photo_id, tnl, tnt, tnr, tnb):
         self.id = photo_id
+        #: The horizontal position of the left side of this photo's thumbnail.
         self.thumb_nail_left = int(tnl)
+        #: The vertical position of the top side of this photo's thumbnail.
         self.thumb_nail_top = int(tnt)
+        #: The horizontal position of the right side of this photo's thumbnail.
         self.thumb_nail_right = int(tnr)
+        #: The vertical position of the bottom side of this photo's thumbnail.
         self.thumb_nail_bottom = int(tnb)
 
     @property
     def jpg_uri(self):
+        """The jpg uri where this photo can be located."""
         return '{0}{1}.jpg'.format(self.base_uri, self.id)
 
     def __repr__(self):

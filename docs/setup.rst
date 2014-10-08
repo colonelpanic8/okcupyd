@@ -1,4 +1,5 @@
-
+.. toctree::
+   :maxdepth: 2
 Getting Started
 ###############
 
@@ -8,9 +9,10 @@ Installation/Setup
 pip/PyPI
 ========
 okcupyd is available for install from PyPI. If you have pip you can simply run:
-```bash
-pip install okcupyd
-```
+
+.. code-block:: bash
+    pip install okcupyd
+
 to make okcupyd available from import in python.
 
 From Source
@@ -18,100 +20,175 @@ From Source
 
 You can install from source by running the setup.py script included as part of this repository as follows:
 
-```bash
-python setup.py install
-```
+.. code-block:: bash
+
+    python setup.py install
+
 
 This can be useful if you want to install a version that has not yet been released on PyPI.
 
 Use
-===
+***
 
 Interactive
+===========
 
-Installing the okcupyd package should add an executable script to a directory in your path that will allow you to type `okcupyd` to enter an interactive ipython shell that has been prepared for use with okcupyd. Before the shell starts, you will be prompted for your username and password.
+Installing the okcupyd package should add an executable script to a directory in your `$PATH` that will allow you to type `okcupyd` to enter an interactive ipython shell that has been prepared for use with okcupyd. Before the shell starts, you will be prompted for your username and password.
 
-<h3>Credentials</h3>
+Credentials
+===========
 
 If you wish to avoid entering your password each time you start a new session you can do one of the following things:
 
 1. Create a python module (.py file) with your username and password set to the variables USERNAME and PASSWORD respectively. You can start an interactive session with the USERNAME and PASSWORD stored in `my_credentials.py` in the current working directory of the project by running:
 
-```shell
-PYTHONPATH=. okcupyd --credentials my_credentials
-```
+.. code-block:: bash
+
+    PYTHONPATH=. okcupyd --credentials my_credentials
+
 
 The PYTHONPATH=. at the front of this command is necessary to ensure that the current directory is searched for modules.
 
-2. Set the shell environment variables OKC_USERNAME and OKC_PASSWORD to your username and password respectively. Make sure to export the variables so they are visible in processes started from the shell. You can make a credentials.sh file using the following template
+2. Set the shell environment variables OKC_USERNAME and OKC_PASSWORD to your username and password respectively. Make sure to export the variables so they are visible in processes started from the shell. You can make a credentials.sh file to do this using the following template
 
-```shell
-export OKC_USERNAME='your_username'
-export OKC_PASSWORD='your_password'
-```
+.. code-block:: bash
 
-and run source credentials.sh to do this.
+    export OKC_USERNAME='your_username'
+    export OKC_PASSWORD='your_password'
 
-<h3>Basic Examples</h3>
+
+Simply run `source credentials.sh` to set the environment variables and you should
+be ready to go. Note that this approach requires that the environment variables
+be set before :module:`okcupyd.settings` is imported from anywhere.
+
+3. Manually override the values in okcupyd/settings.py. This method is not
+recommended because it requires you to find the installation location of the
+package. Also, If you are working with a source controlled version, you could
+accidentally commit your credentials.
+
+Using ``--credentials`` in a custom script
+========================================
+
+The :func:`~okcupyd.util.misc.add_command_line_options` and
+:func:`~okcupyd.util.misc.handle_command_line_options` can be used to make a
+custom script support the `--credentials` and `--enable-loggers` command line
+flags. The interface to these functions is admittedly a little bit strange.
+Refer to the example below for details concerning how to use them:
+
+.. code-block:: python
+
+   import argparse
+   parser = argparse.ArgumentParser()
+   util.add_command_line_options(parser.add_argument)
+   args = parser.parse_args()
+   util.handle_command_line_options(args)
+
+
+Basic Examples
+**************
 
 All examples in this section assume that the variable u has been initialized as follows:
 
-```python
-import okcupyd
+.. code-block:: python
 
-u = okcupyd.User()
-```
+   import okcupyd
+   u = okcupyd.User()
 
-<h4>Searching profiles</h4>
 
-To search through the user
-```python
-profile_list = u.search(age_min=26, age_max=32)
-```
+Searching profiles
+==================
 
-```python
-profile_list = okcupyd.search(age_min=26, age_max=32)
-```
+To search through the user:
+.. code-block:: python
 
-<h4>Messaging another user</h4>
+    profiles = u.search(age_min=26, age_max=32)
+    for profile in profiles[:10]:
+        profile.message("Pumpkins are just okay.")
 
-```python
-u.message('foxylady899', 'Do you have a map?')
-```
 
-<h4>Rating a profile</h4>
 
-```python
-u.get_profile('foxylady899').rate(5)
-```
+Messaging another user
+======================
 
-<h4>Mailbox</h4>
+.. code-block:: python
 
-```python
-first_thread = u.inbox[0]
-print(first_thread.messages)
-```
-<h3>development</h3>
+   u.message('foxylady899', 'Do you have a map?')
+   # This has slightly different semantics; it will not look through the user's
+   # inbox for an existing thread.
+   u.get_profile('foxylady889').message('Do you have a map?')
+
+
+Rating a profile
+===============
+
+.. code-block:: python
+
+   u.get_profile('foxylady899').rate(5)
+
+
+Mailbox
+=======
+
+.. code-block:: python
+
+   first_thread = u.inbox[0]
+   print(first_thread.messages)
+
+Quickmatch, Essays, Looking For, Details
+========================================
+You can access the essays, looking for attributes and detail attributes of a profile
+very easily
+.. code-block:: python
+
+   profile = u.quickmatch()
+   print(profile.essays.self_summary)
+   print(profile.looking_for.ages)
+   print(profile.details.orientation)
+
+Most of the data for these attributes is loaded from the profile page, but it should
+be noted that this page is only loaded on demand, so the first of these attribute
+access calls will make an http request.
+
+A logged in user can update their own details using these objects:
+.. code-block:: python
+
+   user.profile.essays.self_summary = "I'm pretty boring."
+   user.profile.looking_for.ages = 18, 19
+   user.profile.details.ethnicities = ['asian', 'black', 'hispanic']
+
+These assignments will result in updates to the okcupid website. When these updates
+happen, subsequent access to any profile attribute will result in a new http request
+to reload the profile page.
+
+Development
+***********
 
 If you wish to contribute to this project, it is recommended that you use tox to run tests and enter the interactive environment. You can get tox by running
 
-```bash
-pip install tox
-```
+.. code-block:: bash
+
+    pip install tox
+
 
 if you do not already have it.
 
 Once you have cloned the project and installed tox, run:
 
-```shell
-tox -e interactive
-```
+.. code-block:: bash
 
-This will create a virtualenv that uses the appropriate version of python (python3) and has all dependencies as well as the useful ipython and ipdb libraries installed. This command will put you inside an interactive ipython shell which can be exited with Ctrl-d.
+    tox -e py27
 
-If you want a shell that has direct access to the virtualenv that was created by tox you can run
+This will create a virtualenv that has all dependencies as well as the useful ipython and ipdb libraries installed, and run all okcupyds test suite.
 
-```shell
-source .tox/interactive/bin/activate
-```
-in your shell.
+If you want to run a command with access to a virtualenv that was created by tox you can run
+
+.. code-block:: bash
+    
+    tox -e venv -- you_command
+
+
+To use the development version of the interactive shell (and avoid any conflicts with versions installed in site-packages) you would run the following command:
+
+.. code-block::
+
+    tox -e venv -- okcupyd

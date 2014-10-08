@@ -1,13 +1,3 @@
-"""The public interface to `search` is through `SearchFetchable`.
-
-profiles = SearchFetchable(location='new york, ny', religion='buddhist',
-                           height_min=66, height_max=68, gentation='everybody',
-                           smokes=['no', 'trying to quit'])
-      for profile in profiles[:2]:
-        for photo_info in profile.photo_infos:
-          print photo_info.jpg_uri
-"""
-
 import logging
 
 import simplejson

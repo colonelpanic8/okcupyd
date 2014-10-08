@@ -13,7 +13,8 @@ log = logging.getLogger(__name__)
 
 class Session(requests.Session):
     """A :ref:`requests.Session` with convenience methods for interacting with
-    okcupid.com"""
+    okcupid.com
+    """
 
     default_login_headers = {
         'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) '
@@ -24,13 +25,14 @@ class Session(requests.Session):
 
     @classmethod
     def login(cls, username=None, password=None):
-        """
+        """Get a session that has authenticated with okcupid.com.
+        If no username and password is supplied, the ones stored in
+        :class:`okcupyd.settings` will be used.
+
         :param username: The username to log in with.
         :type username: str
         :param password: The password to log in with.
         :type password: str
-        Get a session that has authenticated with okcupid.com.
-        If no username or password is supplied, the
         """
         # settings.USERNAME and settings.PASSWORD should not be made
         # the defaults to their respective arguments because doing so
@@ -95,6 +97,7 @@ class Session(requests.Session):
     def get_current_user_profile(self):
         """Get the `okcupyd.profile.Profile`  associated with the supplied
         username.
+
         :param username: The username of the profile to retrieve.
         """
         return self.get_profile(self.log_in_name)

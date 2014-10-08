@@ -21,7 +21,7 @@ class Profile(object):
     """Represent the profile of an okcupid user.
 
     Many of the attributes on this object are
-    :class:`okcupyd.util.cached_property` instances which lazily load their
+    :class:`~okcupyd.util.cached_property` instances which lazily load their
     values, and cache them once they have been accessed. This makes it so
     that this object avoids making unnecessary HTTP requests to retrieve the
     same piece of information twice.
@@ -30,7 +30,7 @@ class Profile(object):
     be taken to invalidate cached attributes on the object if an up to date view
     of the profile is needed. It is recommended that you call :meth:`refresh` to
     accomplish this, but it is also possible to use
-    :meth:`okcupyd.util.cached_property.bust_self` to bust individual propeties
+    :meth:`~okcupyd.util.cached_property.bust_self` to bust individual propeties
     if necessary.
     """
 
@@ -57,8 +57,9 @@ class Profile(object):
 
     @property
     def is_logged_in_user(self):
-        """Return True if this profile and the session it was created with
-        belong to the same user and False otherwise."""
+        """
+        :returns: `True` if this profile and the session it was created with
+                   belong to the same user and False otherwise."""
         return self._session.log_in_name.lower() == self.username.lower()
 
     @util.cached_property
@@ -69,9 +70,10 @@ class Profile(object):
 
     @util.cached_property
     def profile_tree(self):
-        """Return a :class:`lxml.etree` created from the html of the profile
-        page of the account associated with the username that this profile was
-        insantiated with.
+        """
+        :returns: a :class:`lxml.etree` created from the html of the profile
+                  page of the account associated with the username that this
+                  profile was insantiated with.
         """
         return html.fromstring(self._profile_response)
 
@@ -95,7 +97,7 @@ class Profile(object):
     def photo_infos(self):
         """
         :returns: list of :class:`okcupyd.photo.Info` instances for each photo
-        displayed on okcupid.
+                  displayed on okcupid.
         """
         pics_request = self._session.okc_get(
             u'profile/{0}/photos#0'.format(self.username)
@@ -108,8 +110,9 @@ class Profile(object):
 
     @util.cached_property
     def looking_for(self):
-        """Return a :class:`okcupyd.looking_for.LookingFor` instance associated
-        with this profile.
+        """
+        :returns: A :class:`okcupyd.looking_for.LookingFor` instance associated
+                  with this profile.
         """
         return looking_for.LookingFor(self)
 
@@ -118,8 +121,9 @@ class Profile(object):
 
     @util.cached_property
     def rating(self):
-        """Return the rating that the logged in user has given this user or
-        0 if no rating has been given.
+        """
+        :returns: the rating that the logged in user has given this user or
+                  0 if no rating has been given.
         """
         if self.is_logged_in_user: return 0
         rating_style = self._rating_xpb.select_attribute_('style').one_(
@@ -133,8 +137,9 @@ class Profile(object):
 
     @util.cached_property
     def contacted(self):
-        """Return a boolean indicating whether the logged in user has contacted
-        the owner of this profile.
+        """
+        :retuns: A boolean indicating whether the logged in user has contacted
+                 the owner of this profile.
         """
         try:
             contacted_span = self._contacted_xpb.span.with_class('fancydate').\
@@ -147,8 +152,9 @@ class Profile(object):
 
     @util.cached_property
     def responds(self):
-        """Return the frequency with which the user associated with this profile
-        responds to messages.
+        """
+        :returns: The frequency with which the user associated with this profile
+                  responds to messages.
         """
         contacted_text = self._contacted_xpb.\
                          get_text_(self.profile_tree).lower()
@@ -157,7 +163,9 @@ class Profile(object):
 
     @util.cached_property
     def id(self):
-        """The id that okcupid.com associates with this profile."""
+        """
+        :returns: The id that okcupid.com associates with this profile.
+        """
         if self.is_logged_in_user: return self._current_user_id
         return int(self._rating_xpb.select_attribute_('id').
                    one_(self.profile_tree).split('-')[-2])
@@ -168,21 +176,25 @@ class Profile(object):
 
     @util.cached_property
     def essays(self):
-        """An :class:`okcupyd.essay.Essays` instance that is associated with
+        """
+        :returns: An :class:`okcupyd.essay.Essays` instance that is associated with
         this profile.
         """
         return essay.Essays(self)
 
     @util.cached_property
     def age(self):
-        """The age of the user associated with this profile."""
+        """
+        :returns: The age of the user associated with this profile.
+        """
         return int(xpb.span(id='ajax_age').get_text_(self.profile_tree).strip())
 
     _percentages_and_ratings_xpb = xpb.div(id='percentages_and_ratings')
 
     @util.cached_property
     def match_percentage(self):
-        """The match percentage of the logged in user and the user associated
+        """
+        :returns: The match percentage of the logged in user and the user associated
         with this object.
         """
         return int(self._percentages_and_ratings_xpb.
@@ -192,7 +204,8 @@ class Profile(object):
 
     @util.cached_property
     def enemy_percentage(self):
-        """The enemy percentage of the logged in user and the user associated
+        """
+        :returns: The enemy percentage of the logged in user and the user associated
         with this object.
         """
         return int(self._percentages_and_ratings_xpb.
@@ -200,10 +213,13 @@ class Profile(object):
                    span.with_class('percent').
                    get_text_(self.profile_tree).strip('%'))
 
+    _location_xpb = xpb.span(id='ajax_location')
     @util.cached_property
     def location(self):
-        """The location of the user associated with this profile."""
-        return xpb.span(id='ajax_location').get_text_(self.profile_tree)
+        """
+        :returns: The location of the user associated with this profile.
+        """
+        return self._location_xpb.get_text_(self.profile_tree)
 
     @util.cached_property
     def gender(self):
@@ -219,6 +235,7 @@ class Profile(object):
     @util.curry
     def message(self, message, thread_id=None):
         """Message the user associated with this profile.
+
         :param message: The message to send to this user.
         :param thread_id: The id of the thread to respond to, if any.
         """
@@ -231,8 +248,8 @@ class Profile(object):
 
     @util.cached_property
     def attractiveness(self):
-        """The average attractiveness rating given to this profile by the
-        okcupid.com community.
+        """:returns: The average attractiveness rating given to this profile by the
+                     okcupid.com community.
         """
         from .attractiveness_finder import AttractivenessFinder
         return AttractivenessFinder(self._session)(self.username)
@@ -240,6 +257,7 @@ class Profile(object):
     def rate(self, rating):
         """Rate this profile as the user that was logged in with the session
         that this object was instantiated with.
+
         :param rating: The rating to give this user.
         """
         parameters = {

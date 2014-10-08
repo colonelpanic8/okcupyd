@@ -16,10 +16,10 @@ class Fetchable(object):
         :param nice_repr: Append the repr of a list containing the items that
                           have been fetched to this point by the fetcher. Defaults
                           to True
-        :param kwargs: Arguments that should be to the fetcher when it's fetch
-                       method is called. These are stored on the fetchable so
-                       they can be passed to the fetcher whenever
-                       :method:`refresh` is called.
+        :param kwargs: Arguments that should be passed to the fetcher when it's
+                       fetch method is called. These are stored on the fetchable
+                       so they can be passed to the fetcher whenever
+                       :meth:`refresh` is called.
         """
         self._fetcher = fetcher
         self._kwargs = kwargs
