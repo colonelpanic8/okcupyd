@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="okcupyd",
-    version="0.8.0",
+    version="0.8.1",
     packages=find_packages(exclude=('tests*', 'examples')),
     install_requires=['lxml', 'requests >= 2.4.1', 'simplejson',
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
