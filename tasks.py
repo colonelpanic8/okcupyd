@@ -29,7 +29,7 @@ def rerecord(rest):
 
 
 @ns.add_task
-@task(aliases='r1')
+@task()
 def rerecord_one(rest):
     run('tox -e py27 -- --record --credentials test_credentials -k {0} -s'
         .format(rest), pty=True)
