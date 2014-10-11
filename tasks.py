@@ -51,5 +51,6 @@ linux_dependencies = ('zlib1g-dev', 'libxml2-dev', 'libxslt1-dev', 'python-dev',
 @ns.add_task
 @task(aliases='linux_dep')
 def install_linux_dependencies():
-    for package in linux_pacakges:
+    install_command = 'sudo apt-get install -y'
+    for package in linux_dependencies:
         run('{0} {1}'.format(install_command, package), pty=False)
