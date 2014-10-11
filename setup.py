@@ -7,7 +7,7 @@ setup(
     packages=find_packages(exclude=('tests*', 'examples')),
     install_requires=['lxml', 'requests >= 2.4.1', 'simplejson',
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
-                      'wrapt', 'coloredlogs >= 0.8', 'invoke >= 0.9', 'six'],
+                      'wrapt', 'coloredlogs >= 0.8', 'invoke >= 0.9', 'six >= 1.8.0'],
     tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",
