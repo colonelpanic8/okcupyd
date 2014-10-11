@@ -44,3 +44,12 @@ def rerecord_failing():
                  hide='out')
     for test_name in result.stdout.split('\n'):
         rerecord_one(rest=test_name.strip())
+
+
+linux_dependencies = ('zlib1g-dev', 'libxml2-dev', 'libxslt1-dev', 'python-dev',
+                      'libncurses5-dev')
+@ns.add_task
+@task(aliases='linux_dep')
+def install_linux_dependencies():
+    for package in linux_pacakges:
+        run('{0} {1}'.format(install_command, package), pty=False)
