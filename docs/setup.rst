@@ -98,6 +98,7 @@ Searching profiles
 ==================
 
 To search through the user:
+
 .. code-block:: python
 
     profiles = u.search(age_min=26, age_max=32)

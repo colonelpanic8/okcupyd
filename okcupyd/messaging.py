@@ -83,6 +83,7 @@ class MessageFetcher(object):
 
 
 class Message(object):
+    """Represent a message sent on okcupid.com"""
 
     def __init__(self, message_element, message_thread):
         self._message_element = message_element
@@ -90,22 +91,36 @@ class Message(object):
 
     @property
     def id(self):
+        """
+        :returns: The id assigned to this message by okcupid.com.
+        """
         return int(self._message_element.attrib['id'].split('_')[-1])
 
     @util.cached_property
     def sender(self):
+        """
+        :returns: A :class:`~okcupyd.profile.Profile` instance belonging
+                  to the sender of this message.
+        """
         return (self._message_thread.user_profile
                 if 'from_me' in self._message_element.attrib['class']
                 else self._message_thread.correspondent_profile)
 
     @util.cached_property
     def recipient(self):
+        """
+        :returns: A :class:`~okcupyd.profile.Profile` instance belonging
+                  to the recipient of this message.
+        """
         return (self._message_thread.correspondent_profile
                 if 'from_me' in self._message_element.attrib['class']
                 else self._message_thread.user_profile)
 
     @util.cached_property
     def content(self):
+        """
+        :returns: The text body of the message.
+        """
         message = xpb.div.with_class('message_body').apply_(self._message_element)
         content = None
         if message:
@@ -135,10 +150,16 @@ class MessageThread(object):
 
     @util.cached_property
     def id(self):
+        """
+        :returns: The id assigned to this message by okcupid.com.
+        """
         return self._thread_element.attrib['data-threadid']
 
     @util.cached_property
     def correspondent_id(self):
+        """
+        :returns: The id assigned to the correspondent of this message.
+        """
         return self._thread_element['data-personid']
 
     _correspondent_xpb = xpb.div.with_class('inner').a.with_class('photo').\
@@ -146,10 +167,18 @@ class MessageThread(object):
 
     @util.cached_property
     def correspondent(self):
+        """
+        :returns: The username of the user with whom the logged in user is
+                  conversing in this :class:`~.MessageThread`.
+        """
         return self._correspondent_xpb.apply_(self._thread_element)[0].split()[-1]
 
     @util.cached_property
     def read(self):
+        """
+        :returns: Whether or not the user has read all the messages in this
+                  :class:`~.MessageThread`.
+        """
         return not 'unreadMessage' in self._thread_element.attrib['class']
 
     @util.cached_property
@@ -158,6 +187,10 @@ class MessageThread(object):
 
     @util.cached_property
     def datetime(self):
+        """
+        :returns: The datetime at which this :class:`~.MessageThread`. was last
+                  updated.
+        """
         timestamp_span = xpb.span.with_class('timestamp').apply_(self._thread_element)
         date_updated_text = timestamp_span[0][0].text_content()
         return helpers.parse_date_updated(date_updated_text)
@@ -173,6 +206,10 @@ class MessageThread(object):
 
     @property
     def initiator(self):
+        """
+        :returns: A :class:`~okcupyd.profile.Profile` instance belonging to the
+                  initiator of this :class:`~.MessageThread`.
+        """
         try:
             return self.messages[0].sender
         except IndexError:
@@ -180,35 +217,30 @@ class MessageThread(object):
 
     @property
     def respondent(self):
+        """
+        :returns: A :class:`~okcupyd.profile.Profile` instance belonging to the
+                  respondent of this :class:`~.MessageThread`.
+        """
         try:
             return self.messages[0].recipient
         except IndexError:
             pass
 
-    @property
-    def redact_messages(self):
-        return self.restore(self.id, self.correspondent, self.read, self.date,
-                            session=self._session,
-                            messages=[self.redact_message(message)
-                                      for message in self.messages])
-
-    @staticmethod
-    def redact_message(message):
-        return Message(message.id, message.sender, message.recipient,
-                       'x'*len(message.content))
-
     @util.cached_property
     def correspondent_profile(self):
+        """
+        :returns: The :class:`~okcupyd.profile.Profile` of the user with whom
+                  the logged in user is conversing in this :class:`~.MessageThread`.
+        """
         return self._session.get_profile(self.correspondent)
 
     @util.cached_property
     def user_profile(self):
+        """
+        :returns: A :class:`~okcupyd.profile.Profile` belonging to the logged in
+                  user.
+        """
         return self._session.get_current_user_profile()
-
-    @property
-    def refreshed_messages(self):
-        if 'messages' in self.__dict__['messages']: del self.__dict__['messages']
-        return self.messages
 
     @property
     def message_count(self):
@@ -220,9 +252,14 @@ class MessageThread(object):
 
     @property
     def got_response(self):
+        """
+        :returns: Whether or not the :class:`~.MessageThread`. has received a
+                  response.
+        """
         return any(message.sender != self.initiator for message in self.messages)
 
     def delete(self):
+        """Delete this thread for the logged in user."""
         return self._session.post('https://www.okcupid.com/mailbox',
                                   params=self.delete_params)
 
