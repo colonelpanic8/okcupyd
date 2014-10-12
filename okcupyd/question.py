@@ -239,7 +239,7 @@ class Questions(object):
         :type user_question: :class:`.UserQuestion`
         :param importance: The importance that should be used in responding to
                            the question.
-        :type importance: int see :attr:`
+        :type importance: int see :attr:`importance_name_to_number`
         """
         user_response_ids = [option.id
                              for option in user_question.answer_options

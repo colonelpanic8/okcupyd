@@ -38,10 +38,10 @@ or another from instances of :class:`~okcupyd.user.User`.
 .. autoclass:: okcupyd.essay.Essays
     :members:
 
-:class:`~okcupyd.photo.PhotoUpload`
-=======================================
+:class:`~okcupyd.photo.PhotoUploader`
+=====================================
 
-.. autoclass:: okcupyd.photo.PhotoUpload
+.. autoclass:: okcupyd.photo.PhotoUploader
     :members:
     
 :class:`~okcupyd.photo.Info`
@@ -90,9 +90,9 @@ or another from instances of :class:`~okcupyd.user.User`.
     :members:
 
 :func:`~okcupyd.util.misc.add_command_line_options`
-========================================
+===================================================
 .. autofunction:: okcupyd.util.misc.add_command_line_options
 
 :func:`~okcupyd.util.misc.handle_command_line_options`
-========================================
+======================================================
 .. autofunction:: okcupyd.util.misc.handle_command_line_options

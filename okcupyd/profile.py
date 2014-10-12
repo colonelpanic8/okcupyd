@@ -178,7 +178,7 @@ class Profile(object):
     def essays(self):
         """
         :returns: An :class:`okcupyd.essay.Essays` instance that is associated with
-        this profile.
+                  this profile.
         """
         return essay.Essays(self)
 
@@ -195,7 +195,7 @@ class Profile(object):
     def match_percentage(self):
         """
         :returns: The match percentage of the logged in user and the user associated
-        with this object.
+                  with this object.
         """
         return int(self._percentages_and_ratings_xpb.
                    div.with_class('match').
@@ -206,7 +206,7 @@ class Profile(object):
     def enemy_percentage(self):
         """
         :returns: The enemy percentage of the logged in user and the user associated
-        with this object.
+                  with this object.
         """
         return int(self._percentages_and_ratings_xpb.
                    div.with_class('enemy').
@@ -248,8 +248,9 @@ class Profile(object):
 
     @util.cached_property
     def attractiveness(self):
-        """:returns: The average attractiveness rating given to this profile by the
-                     okcupid.com community.
+        """
+        :returns: The average attractiveness rating given to this profile by the
+                  okcupid.com community.
         """
         from .attractiveness_finder import AttractivenessFinder
         return AttractivenessFinder(self._session)(self.username)

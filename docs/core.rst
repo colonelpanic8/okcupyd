@@ -12,6 +12,3 @@ Core Objects
    :special-members: __init__
 .. automodule:: okcupyd.session
    :members:
-.. automodule:: okcupyd.messaging
-   :members:
-   :special-members: __init__

@@ -13,7 +13,6 @@ from .xpath import xpb
 log = logging.getLogger(__name__)
 
 
-@util.curry
 class PhotoUploader(object):
     """Upload photos to okcupid.com."""
 
@@ -111,6 +110,7 @@ class PhotoUploader(object):
     def upload_and_confirm(self, incoming, **kwargs):
         """Upload the file to okcupid and confirm, among other things, its
         thumbnail position.
+
         :param incoming: A filepath string, :class:`.Info` object or
                          a file like object to upload to okcupid.com.
                          If an info object is provided, its thumbnail
