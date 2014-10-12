@@ -1,3 +1,4 @@
+import itertools
 import re
 
 import six
@@ -15,15 +16,15 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
 
     orientation = util.IndexedREMap('straight', 'gay', 'bisexual')
 
-    smoking = util.IndexedREMap(
+    smokes = util.IndexedREMap(
         'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'
     )
 
     drugs = util.IndexedREMap('never', 'sometimes', 'often',
                               default=3, offset=0)
 
-    drinking = util.IndexedREMap('very often', 'often', 'socially', 'rarely',
-                                 'desperately', 'not at all')
+    drinks = util.IndexedREMap('very often', 'often', 'socially', 'rarely',
+                               'desperately', 'not at all')
 
     ethnicities = util.IndexedREMap(
         'asian', 'middle eastern', 'black', 'native american', 'indian',
@@ -44,7 +45,7 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
         'single', 'seeing someone', 'married', 'in an open relationship'
     )
 
-    monogamous = util.IndexedREMap('(:?[^\-]monogamous)|(:?^monogamous)',
+    monogamy = util.IndexedREMap('(:?[^\-]monogamous)|(:?^monogamous)',
                                    'non-monogamous')
     strictness = util.IndexedREMap('mostly', 'strictly')
 
@@ -87,7 +88,7 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
 
     diet_strictness = util.IndexedREMap('[Mm]ostly', '[Ss]trictly')
 
-    diet_type = util.IndexedREMap('anything', 'vegetarian', 'vegan',
+    diet = util.IndexedREMap('anything', 'vegetarian', 'vegan',
                                   'kosher', 'halal', 'other')
     income = util.IndexedREMap(
         'less than $20,000', '$20,000-$30,000', '$30,000-$40,000',
@@ -129,18 +130,20 @@ class SimpleFilterBuilder(object):
 
 class filters(six.with_metaclass(util.GetAttrGetItem)):
 
-    smokes = SimpleFilterBuilder(11, maps.smoking)
-    drinking = SimpleFilterBuilder(12, maps.drinking)
+    bodytype = SimpleFilterBuilder(30, maps.bodytype)
+    smokes = SimpleFilterBuilder(11, maps.smokes)
+    drinks = SimpleFilterBuilder(12, maps.drinks)
     drugs = SimpleFilterBuilder(13, maps.drugs)
-    education = SimpleFilterBuilder(19, maps.education_level)
+    education_level = SimpleFilterBuilder(19, maps.education_level)
     job = SimpleFilterBuilder(15, maps.job)
     income = SimpleFilterBuilder(14, maps.income)
     religion = SimpleFilterBuilder(8, maps.religion)
-    monogamy = SimpleFilterBuilder(73, maps.monogamous)
-    diet = SimpleFilterBuilder(54, maps.diet_type)
+    monogamy = SimpleFilterBuilder(73, maps.monogamy)
+    diet = SimpleFilterBuilder(54, maps.diet)
     sign = SimpleFilterBuilder(21, maps.sign)
-    ethnicity = SimpleFilterBuilder(9, maps.ethnicities)
-
+    ethnicities = SimpleFilterBuilder(9, maps.ethnicities)
+    dogs = SimpleFilterBuilder(16, maps.dogs)
+    cats = SimpleFilterBuilder(17, maps.cats)
 
 
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
@@ -171,6 +174,69 @@ looking_for_re_numbers = ((re.compile("[Ff]riends"), 1),
                           (re.compile("[Ss]ex"), 6))
 
 
+binary_lists = {
+    'smokes': ['11', 'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'],
+    'drinks': ['12', 'very often', 'often', 'socially', 'rarely', 'desperately',
+               'not at all'],
+    'drugs': ['13', 'never', 'sometimes', 'often'],
+    'education': ['19', 'high school', 'two-year college', 'college/university',
+                  'masters program', 'law school', 'medical school',
+                  'ph.d program'],
+    'job': ['15', 'student', 'art / music / writing', 'banking / finance',
+            'administration', 'technology', 'construction', 'education',
+            'entertainment / media', 'management', 'hospitality', 'law',
+            'medicine', 'military', 'politics / government',
+            'sales / marketing', 'science / engineering', 'transporation',
+            'retired'],
+    'income': ['14', 'less than $20,000', '$20,000-$30,000', '$30,000-$40,000',
+               '$40,000-$50,000', '$50,000-$60,000', '$60,000-$70,000',
+               '$70,000-$80,000', '$80,000-$100,000', '$100,000-$150,000',
+               '$150,000-$250,000', '$250,000-$500,000', '$500,000-$1,000,000',
+               'More than $1,000,000'],
+    'religion': ['8', 'agnostic', 'atheist', 'christian', 'jewish', 'catholic',
+                 'muslim', 'hindu', 'buddhist', 'other'],
+    'monogamy': ['73', 'monogamous', 'non-monogamous'],
+    'diet': ['54', 'vegetarian', 'vegan', 'kosher', 'halal'],
+    'sign': ['21', 'acquarius', 'pisces', 'aries', 'taurus', 'gemini',
+             'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius',
+             'capricorn'],
+    'ethnicity': ['9', 'asian', 'middle eastern', 'black', 'native american',
+                  'indian', 'pacific islander', 'hispanic/latin', 'white',
+                  'human (other)']
+}
+
+
+def get_height_query(height_min, height_max):
+    '''Convert from inches to millimeters/10'''
+    min_int = 0
+    max_int = 99999
+    if height_min is not None:
+        min_int = int(height_min) * 254
+    if height_max is not None:
+        max_int = int(height_max) * 254
+    return '10,{0},{1}'.format(str(min_int), str(max_int))
+
+
+def get_options_query(type, inputs):
+    for char in sep_replacements:
+        inputs = [input.replace(char, '') for input in inputs]
+    inputs = [input.lower() for input in inputs]
+    if type in binary_lists:
+        start = 1
+        option_list = binary_lists[type]
+    if type == 'drugs':
+        start = 0
+    if type == 'diet':
+        start = 2
+    int_to_return = 0
+    for power, option in enumerate(option_list[1:], start=start):
+        for char in sep_replacements:
+            option = option.replace(char, '')
+        if option in inputs:
+            int_to_return += 2**power
+    return '{0},{1}'.format(option_list[0], int_to_return)
+
+
 has_kids = {
     "has a kid": {"addition": 33686018, "power": 1},
     "has kids": {"addition": 67372036, "power": 2},
@@ -179,10 +245,105 @@ has_kids = {
 
 
 wants_kids = {
-    "might want kids": {"addition": 18176, "power": 8},
-    "wants kids": {"addition": 4653056, "power": 16},
-    "doesn't want kids": {"addition": 1191182384, "power": 24},
+    1: (18176, 8),
+    2: (4653056, 16),
+    3: (1191182384, 24),
 }
+
+{"UNKNOWN": 0,
+"HAS_ONE": 1,
+"HAS_MANY": 2,
+"HAS_NONE": 6,
+"MAYBE_WANTS_UNKNOWN": 8,
+"MAYBE_WANTS_HAS_ONE": 9,
+"MAYBE_WANTS_HAS_MANY": 10,
+"MAYBE_WANTS_HAS_NONE": 14,
+"YES_WANTS_UNKNOWN": 16,
+"YES_WANTS_HAS_ONE": 17,
+"YES_WANTS_HAS_MANY": 18,
+"YES_WANTS_HAS_NONE": 22,
+"NO_WANTS_UNKNOWN": 24,
+"NO_WANTS_HAS_ONE": 25,
+"NO_WANTS_HAS_MANY": 26,
+"NO_WANTS_HAS_NONE": 30}
+
+
+def get_kids_query(has_kids, wants_kids):
+    return '18,{0}'.format(get_kids_int(has_kids, wants_kids))
+
+
+def get_kids_int(has_kids, wants_kids):
+    has_kids = util.makelist(has_kids)
+    wants_kids = util.makelist(wants_kids)
+    wants_was_unknown = False
+    has_was_unknown = False
+    kids_int = 0
+    has_kids_ints = [maps.has_kids[matchable] for matchable in has_kids]
+    if len(has_kids_ints) == 0 or sum(has_kids_ints) == 0:
+        has_kids_ints = list(maps.has_kids.values()) + [0]
+        has_was_unknown = True
+    wants_kids_ints = [maps.wants_kids[matchable] for matchable in wants_kids]
+    if len(wants_kids_ints) == 0 or sum(wants_kids_ints) == 0:
+        wants_kids_ints = list(maps.wants_kids.values()) + [0]
+        wants_was_unknown = True
+    wants_kids_ints = [v * 8 for v in wants_kids_ints]
+
+    kids_int += sum(2 ** (hk_int + wk_int)
+                    for hk_int, wk_int
+                    in itertools.product(has_kids_ints, wants_kids_ints))
+
+    if not (wants_was_unknown or has_was_unknown):
+        kids_int = subtract_has_kids_exponents(kids_int)
+
+    # This is super crazy and gross. I'm not really sure why they do this.
+    if not wants_was_unknown and has_was_unknown:
+        if 3 in [maps.wants_kids[matchable] for matchable in wants_kids]:
+            kids_int += 48
+
+    return kids_int
+
+
+def subtract_has_kids_exponents(value):
+    has_kids_values = maps.has_kids.values()
+    for exponent in yield_exponents_of_two(value):
+        if exponent in has_kids_values:
+            value -= exponent
+    return value
+
+
+def yield_exponents_of_two(value):
+    power = 0
+    while value > 0:
+        if value & 0b1:
+            yield power
+        power += 1
+        value >>= 1
+
+
+def get_language_query(language):
+    return '22,{0}'.format(language_map[language.title()])
+
+
+hour = 60*60
+join_date_string_to_int = {
+    'hour': hour,
+    'day': hour*24,
+    'week': hour*24*7,
+    'month': hour*24*30,
+    'year': 365*24*hour
+}
+
+
+def get_join_date_query(date):
+    date_int = 0
+    if isinstance(date, str) and not date.isdigit():
+        if date in join_date_string_to_int:
+            date_int = join_date_string_to_int[date]
+        else:
+            date_int = int(date)
+    else:
+        date_int = date
+    return '6,{0}'.format(date_int)
 
 
 language_map = {
@@ -345,144 +506,3 @@ language_map_2 = {
     'welsh': 'cy',
     'yiddish': 'yi'
 }
-
-
-binary_lists = {
-    'smokes': ['11', 'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'],
-    'drinks': ['12', 'very often', 'often', 'socially', 'rarely', 'desperately',
-               'not at all'],
-    'drugs': ['13', 'never', 'sometimes', 'often'],
-    'education': ['19', 'high school', 'two-year college', 'college/university',
-                  'masters program', 'law school', 'medical school',
-                  'ph.d program'],
-    'job': ['15', 'student', 'art / music / writing', 'banking / finance',
-            'administration', 'technology', 'construction', 'education',
-            'entertainment / media', 'management', 'hospitality', 'law',
-            'medicine', 'military', 'politics / government',
-            'sales / marketing', 'science / engineering', 'transporation',
-            'retired'],
-    'income': ['14', 'less than $20,000', '$20,000-$30,000', '$30,000-$40,000',
-               '$40,000-$50,000', '$50,000-$60,000', '$60,000-$70,000',
-               '$70,000-$80,000', '$80,000-$100,000', '$100,000-$150,000',
-               '$150,000-$250,000', '$250,000-$500,000', '$500,000-$1,000,000',
-               'More than $1,000,000'],
-    'religion': ['8', 'agnostic', 'atheist', 'christian', 'jewish', 'catholic',
-                 'muslim', 'hindu', 'buddhist', 'other'],
-    'monogamy': ['73', 'monogamous', 'non-monogamous'],
-    'diet': ['54', 'vegetarian', 'vegan', 'kosher', 'halal'],
-    'sign': ['21', 'acquarius', 'pisces', 'aries', 'taurus', 'gemini',
-             'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius',
-             'capricorn'],
-    'ethnicity': ['9', 'asian', 'middle eastern', 'black', 'native american',
-                  'indian', 'pacific islander', 'hispanic/latin', 'white',
-                  'human (other)']
-}
-
-
-dogs = ['owns dogs', 'likes dogs', 'dislikes dogs']
-cats = ['owns cats', 'likes cats', 'dislikes cats']
-
-
-def get_height_query(height_min, height_max):
-    '''Convert from inches to millimeters/10'''
-    min_int = 0
-    max_int = 99999
-    if height_min is not None:
-        min_int = int(height_min) * 254
-    if height_max is not None:
-        max_int = int(height_max) * 254
-    return '10,{0},{1}'.format(str(min_int), str(max_int))
-
-
-def get_options_query(type, inputs):
-    for char in sep_replacements:
-        inputs = [input.replace(char, '') for input in inputs]
-    inputs = [input.lower() for input in inputs]
-    if type in binary_lists:
-        start = 1
-        option_list = binary_lists[type]
-    if type == 'drugs':
-        start = 0
-    if type == 'diet':
-        start = 2
-    int_to_return = 0
-    for power, option in enumerate(option_list[1:], start=start):
-        for char in sep_replacements:
-            option = option.replace(char, '')
-        if option in inputs:
-            int_to_return += 2**power
-    return '{0},{1}'.format(option_list[0], int_to_return)
-
-
-def get_pet_queries(pets):
-    for char in sep_replacements:
-        pets = [pet.replace(char, '') for pet in pets]
-    pets = [pet.lower() for pet in pets]
-    dog_int = 0
-    cat_int = 0
-    for power, option in enumerate(dogs, start=1):
-        for char in sep_replacements:
-            option = option.replace(char, '')
-        if option in pets:
-            dog_int += 2**power
-    for power, option in enumerate(cats, start=1):
-        for char in sep_replacements:
-            option = option.replace(char, '')
-        if option in pets:
-            cat_int += 2**power
-    dog_query = '16,{0}'.format(dog_int)
-    cat_query = '17,{0}'.format(cat_int)
-    return dog_query, cat_query
-
-
-def get_kids_query(kids):
-    kids = [kid.lower() for kid in kids]
-    kid_int = 0
-    include_has = False
-    include_wants = False
-    for option in kids:
-        if option in has_kids:
-            include_has = True
-        elif option in wants_kids:
-            include_wants = True
-    if include_has and not include_wants:
-        for option in kids:
-            if option in has_kids:
-                kid_int += has_kids[option]['addition']
-    elif include_wants and not include_has:
-        for option in kids:
-            if option in wants_kids:
-                kid_int += wants_kids[option]['addition']
-    elif include_wants and include_has:
-        for has_option in kids:
-            if has_option in has_kids:
-                for wants_option in kids:
-                    if wants_option in wants_kids:
-                        kid_int += 2**(has_kids[has_option]['power'] + wants_kids[wants_option]['power'])
-    return '18,{0}'.format(kid_int)
-
-
-def get_language_query(language):
-    return '22,{0}'.format(language_map[language.title()])
-
-
-hour = 60*60
-join_date_string_to_int = {
-    'hour': hour,
-    'day': hour*24,
-    'week': hour*24*7,
-    'month': hour*24*30,
-    'year': 365*24*hour
-}
-
-
-def get_join_date_query(date):
-    date_int = 0
-    if isinstance(date, str) and not date.isdigit():
-        if date in join_date_string_to_int:
-            date_int = join_date_string_to_int[date]
-        else:
-            date_int = int(date)
-    else:
-        date_int = date
-    return '6,{0}'.format(date_int)

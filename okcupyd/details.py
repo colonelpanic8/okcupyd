@@ -37,8 +37,8 @@ class Detail(object):
                                    default=0)
 
     @classmethod
-    def mapping_updater(cls, mapping):
-        return cls(updater=magicnumbers.MappingUpdater(mapping))
+    def mapping_updater(cls, mapping, id_name=None):
+        return cls(id_name=id_name, updater=magicnumbers.MappingUpdater(mapping))
 
     @staticmethod
     def default_updater(id_name, value):
@@ -93,6 +93,8 @@ class Details(object):
             self.profile.profile_tree
         ):
             value_element = xpb.dd.one_(element)
+            if not 'id' in value_element.attrib:
+                continue
             id_name = value_element.attrib['id'].replace('ajax_', '')
             value = value_element.text_content()
             output[id_name] = value
@@ -120,13 +122,13 @@ class Details(object):
 
     bodytype = Detail.mapping_updater(maps.bodytype)
     orientation = Detail.mapping_updater(maps.orientation)
-    smoking = Detail.mapping_updater(maps.smoking)
+    smokes = Detail.mapping_updater(maps.smokes, id_name='smoking')
     drugs = Detail.mapping_updater(maps.drugs)
-    drinking = Detail.mapping_updater(maps.drinking)
+    drinks = Detail.mapping_updater(maps.drinks, id_name='drinking')
     job = Detail.mapping_updater(maps.job)
     status = Detail.mapping_updater(maps.status)
-    monogamous = Detail(updater=lambda id_name, value: {
-        'monogamous': maps.monogamous[value],
+    monogamy = Detail(id_name='monogamous', updater=lambda id_name, value: {
+        'monogamous': maps.monogamy[value],
         'monogamyflex': maps.strictness[value]
     })
     children = Detail(updater=lambda id_name, value: {
@@ -142,7 +144,7 @@ class Details(object):
         'dogs': maps.dogs[value]
     })
     diet = Detail(updater=lambda id_name, value: {
-        'diet': maps.diet_type[value],
+        'diet': maps.diet[value],
         'dietserious': maps.diet_strictness[value]
     })
     religion = Detail(updater=lambda id_name, value: {

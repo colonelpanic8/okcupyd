@@ -143,6 +143,9 @@ class REMap(object):
         return {expression.pattern: value
                 for expression, value in self.re_value_pairs}
 
+    def values(self):
+        return self.pattern_to_value.values()
+
 
 class GetAttrGetItem(type):
 

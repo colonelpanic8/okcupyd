@@ -1,20 +1,17 @@
 .. toctree::
    :maxdepth: 4
 
-Public Interface Objects
-########################
-The objects on this page are the ones that developers who are using okcupyd
-should expect to interact with during normal use of the library.
-Though you are welcome to do so, it is not necessary to familiarize yourself
-with any of the other objects mentioned in these docs or found elsewhere in
-the codebase.
+API Objects
+###########
+The classes and functions documented on this page constitute the public API to
+the okcupyd library.
 
 :class:`~okcupyd.user.User`
 ===========================
 
 :class:`~okcupyd.user.User` serves as the primary entry point to the okcupyd
-library. All of the objects mentioned on this page are accessible in some way
-or another from an instances of :class:`~okcupyd.user.User`.
+library. Most of the objects mentioned on this page are accessible in some way
+or another from instances of :class:`~okcupyd.user.User`.
 
 .. autoclass:: okcupyd.user.User
     :members:
@@ -22,15 +19,6 @@ or another from an instances of :class:`~okcupyd.user.User`.
 
 :class:`~okcupyd.profile.Profile`
 =================================
-Though it has quite a bit of functionality itself, the
-:class:`~okcupyd.profile.Profile` class delegates much of its most of
-its responsibilities to its many child objects:
-:class:`~okcupyd.looking_for.LookingFor`, :class:`~okcupyd.details.Details`,
-:class:`~okcupyd.essay.Essays`, :class:`~okcupyd.photo.Info`
-
-each of these objects has a relatively narrow, self contained resposibility.
-Profile objects that belong to a profile that has a session that belongs to
-the same user as the profile can be used to update the users profile.
 
 .. autoclass:: okcupyd.profile.Profile
     :members:
@@ -48,6 +36,12 @@ the same user as the profile can be used to update the users profile.
 :class:`~okcupyd.essay.Essays`
 ==============================
 .. autoclass:: okcupyd.essay.Essays
+    :members:
+
+:class:`~okcupyd.photo.PhotoUpload`
+=======================================
+
+.. autoclass:: okcupyd.photo.PhotoUpload
     :members:
     
 :class:`~okcupyd.photo.Info`

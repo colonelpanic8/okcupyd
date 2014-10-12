@@ -1,5 +1,10 @@
+import pytest
+
+from okcupyd.magicnumbers import maps
+from okcupyd.session import Session
 from okcupyd.search import SearchFetchable, search
 from okcupyd.profile import Profile
+
 from . import util
 
 
@@ -61,3 +66,48 @@ def test_search_fetchable_iter():
         assert isinstance(profile, Profile)
         if count > 30:
             break
+
+
+@pytest.mark.xfail
+@util.use_cassette
+def test_easy_search_filters():
+    session = Session.login()
+    query_test_pairs = [#('bodytype', maps.bodytype), # Why doesn't this work?
+                        ('drugs', maps.drugs), ('smokes', maps.smokes),
+                        ('diet', maps.diet,), ('job', maps.job)]
+    for query_param, re_map in query_test_pairs:
+        for value in re_map.pattern_to_value.keys():
+            profile = SearchFetchable(**{
+                'gentation': '',
+                'session': session,
+                'count': 1,
+                query_param: value
+            })[0]
+            attribute = getattr(profile.details, query_param)
+            assert value in (attribute or '').lower()
+
+
+@pytest.mark.xfail
+@util.use_cassette
+def test_children_filter():
+    session = Session.login()
+    profile = SearchFetchable(session, wants_kids="wants kids", count=1)[0]
+    assert "wants kids" in profile.details.children.lower()
+
+    profile = SearchFetchable(session, has_kids=["has kids"],
+                              wants_kids="doesn't want kids",
+                              count=0)[0]
+    assert "has kids" in profile.details.children.lower()
+    assert "doesn't want kids" in profile.details.children.lower()
+
+
+@util.use_cassette
+def test_pets_queries():
+    session = Session.login()
+    profile = SearchFetchable(session, cats=['dislikes cats', 'likes cats'],
+                              count=1)[0]
+    assert 'likes cats' in profile.details.pets.lower()
+
+    profile = SearchFetchable(session, dogs='likes dogs', count=1)[0]
+
+    assert 'likes dogs' in profile.details.pets.lower()

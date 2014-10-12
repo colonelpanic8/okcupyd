@@ -182,9 +182,9 @@ def test_many_details(vcr_live_sleep):
         'bodytype': 'athletic',
         'orientation': 'bisexual',
         'ethnicities': ['Asian', 'White', 'hispanic', 'black'],
-        'smoking': 'when drinking',
+        'smokes': 'when drinking',
         'drugs': 'never',
-        'drinking': 'desperately',
+        'drinks': 'desperately',
         'education': 'Some university',
         'height': '1.52m',
         'religion': 'atheism',
@@ -210,7 +210,7 @@ def test_many_details_2(vcr_live_sleep):
     details = User().profile.details
     sample_details = {
         'income': 'Less than $20,000',
-        'monogamous': 'Mostly monogamous',
+        'monogamy': 'Mostly monogamous',
         'pets': 'Likes dogs and has cats',
         'religion': 'Judaism, and very serious about it',
         'sign': "Pisces, and it's fun to think about",
@@ -221,3 +221,11 @@ def test_many_details_2(vcr_live_sleep):
     vcr_live_sleep(sleep_time)
     for key, value in sorted(sample_details.items()):
         assert getattr(details, key) == value
+
+
+@util.use_cassette
+def test_access_details_on_other_profile():
+    details = User().quickmatch().details
+    details.orientation
+    details.pets
+    details.status

@@ -70,6 +70,12 @@ class Filters(object):
                 for builder in builders]
 
     def build(self, **kwargs):
+        if not self.keys.issuperset(kwargs.keys()):
+            raise TypeError("build() got unexpected keyword arguments: "
+                            "{0}".format(', '.join(
+                                repr(k) for k in kwargs.keys()
+                                if k not in self.keys
+                            )))
         return {
             u'filter{0}'.format(filter_number): filter_string
             for filter_number, filter_string

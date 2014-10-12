@@ -3,7 +3,7 @@ import okcupyd
 
 u = okcupyd.User()
 profiles = u.search(location='minneapolis, mn', keywords='arrested development',
-                    age_min=24, age_max=24, number=20)
+                    age_min=24, age_max=24)
 
 for profile in profiles[:3]:
     profile.rate(5)

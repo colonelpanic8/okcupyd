@@ -75,20 +75,29 @@ def status_filter(status):
 def build_option_filter(key):
     @search_filters.register_filter_builder(
         keys=(key,),
-        acceptable_values=magicnumbers.binary_lists[key],
+        acceptable_values=magicnumbers.maps[key].pattern_to_value.keys(),
         types=str
     )
     @util.makelist_decorator
     def option_filter(value):
-        return magicnumbers.get_options_query(key, value)
+        return magicnumbers.filters[key](value)
 
 
-for key in ['smokes', 'drinks', 'drugs', 'education', 'job',
+for key in ['smokes', 'drinks', 'drugs', 'education_level', 'job',
             'income', 'religion', 'monogamy', 'diet', 'sign',
-            'ethnicity']:
+            'ethnicities', 'cats', 'dogs', 'bodytype']:
     build_option_filter(key)
 
 
+search_filters._key_to_string['bodytype'] = ('DOES NOT WORK.',)
+
+
+search_filters.register_filter_builder(
+    magicnumbers.get_kids_query,
+    keys=('has_kids', 'wants_kids'),
+    acceptable_values=(magicnumbers.maps.has_kids.pattern_to_value.keys(),
+                       magicnumbers.maps.wants_kids.pattern_to_value.keys()),
+)
          # ('offspring', util.makelist_decorator(magicnumbers.get_kids_query)),
          # ('join_date', magicnumbers.get_join_date_query),
          # ('languages', magicnumbers.get_language_query)]
@@ -105,10 +114,9 @@ _username_xpb = xpb.div.with_classes('match_card').\
 def SearchFetchable(session=None, **kwargs):
     """Search okcupid.com with the given parameters.
 
-    :returns: A :class:`okcupyd.util.fetchable.Fetchable` of
-              :class:`okcupyd.profile.Profile` instances.
+    :returns: A :class:`~okcupyd.util.fetchable.Fetchable` of
+              :class:`~okcupyd.profile.Profile` instances.
     """
-
     session = session or Session.login()
     return util.Fetchable.fetch_marshall(
         SearchHTMLFetcher(session, **kwargs),
@@ -130,24 +138,14 @@ class SearchHTMLFetcher(object):
     def __init__(self, session=None, **options):
         self._session = session or Session.login()
         self._options = options
+        self.location = self._options.pop('location', None)
+        self.gender = self._options.pop('gender', 'm')
+        self.keywords = self._options.pop('keywords', None)
+        self.order_by = self._options.pop('order_by', 'match').upper()
+        self.count = self._options.pop('count', 9)
+        self.filters = search_filters.build(**self._options)
 
-    @property
-    def location(self):
-        return self._options.get('location', None)
-
-    @property
-    def gender(self):
-        return self._options.get('gender', 'm')
-
-    @property
-    def keywords(self):
-        return self._options.get('keywords')
-
-    @property
-    def order_by(self):
-        return self._options.get('order_by', 'match').upper()
-
-    def _query_params(self, count=None, low=None):
+    def _query_params(self, low=None):
         search_parameters = {
             'timekey': 1,
             'matchOrderBy': self.order_by,
@@ -157,7 +155,7 @@ class SearchHTMLFetcher(object):
             'update_prefs': '1',
             'sort_type': '0',
             'sa': '1',
-            'count': str(count) if count else self._options.get('count', 9),
+            'count': self.count,
             'locid': (str(helpers.get_locid(self._session, self.location))
                       if self.location else 0),
             'ajax_load': 1,
@@ -167,11 +165,11 @@ class SearchHTMLFetcher(object):
         if low:
             search_parameters['low'] = low
         if self.keywords: search_parameters['keywords'] = self.keywords
-        search_parameters.update(search_filters.build(**self._options))
+        search_parameters.update(self.filters)
         return search_parameters
 
     def fetch(self, start_at=None, count=None):
-        search_parameters = self._query_params(low=start_at, count=count)
+        search_parameters = self._query_params(low=start_at)
         log.info(simplejson.dumps({'search_parameters': search_parameters}))
         response = self._session.okc_get('match',
                                          params=search_parameters)

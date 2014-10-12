@@ -55,31 +55,55 @@ class Question(BaseQuestion):
     @util.cached_property
     @return_none_if_unanswered
     def their_answer(self):
+        """The answer that the user whose :class:`~okcupyd.profile.Profile` this
+        question was retrieved from provided to this
+        :class:`~okcupyd.question.Question`.
+        """
         return self._their_answer_span.text_content().strip()
 
     @util.cached_property
     @return_none_if_unanswered
     def my_answer(self):
+        """The answer that the user whose :class:`~okcupyd.session.Session` was
+        used to create this :class:`~okcupyd.question.Question` provided.
+        """
         return self._my_answer_span.text_content().strip()
 
     @util.cached_property
     @return_none_if_unanswered
     def their_answer_matches(self):
+        """
+        :returns: bool indicating whether or not the answer provided by the user
+                  answering the question is acceptable to the logged in user.
+        """
         return 'not_accepted' not in self._their_answer_span.attrib['class']
 
     @util.cached_property
     @return_none_if_unanswered
     def my_answer_matches(self):
+        """
+        :returns: bool indicating whether or not the answer provided by the
+                  user answering the question is acceptable to the logged in
+                  user.
+        """
         return 'not_accepted' not in self._my_answer_span.attrib['class']
 
     @util.cached_property
     @return_none_if_unanswered
     def their_note(self):
+        """
+        :returns: The note the answering user provided as explanation for their
+                  answer to this question.
+        """
         return self._their_note_span.text_content().strip()
 
     @util.cached_property
     @return_none_if_unanswered
     def my_note(self):
+        """
+        :returns: The note the logged inuser provided as an explanation for their
+                  answer to this question.
+        """
         return self._my_note_span.text_content().strip()
 
     _explanation_xpb = xpb.div.span.with_class('note')
@@ -93,6 +117,10 @@ class UserQuestion(BaseQuestion):
 
     @util.cached_property
     def answer_options(self):
+        """
+        :returns: A list of :class:`~.AnswerOption` instances representing the
+                  available answers to this question.
+        """
         return [
             AnswerOption(element)
             for element in self._answer_option_xpb.apply_(
@@ -119,18 +147,32 @@ class AnswerOption(object):
 
     @util.cached_property
     def is_users(self):
+        """
+        :returns: Whether or not this was the answer selected by the logged in
+                  user.
+        """
         return 'mine' in self._element.attrib['class']
 
     @util.cached_property
     def is_match(self):
+        """
+        :returns: Whether or not this was the answer is acceptable to the logged
+                  in user.
+        """
         return 'match' in self._element.attrib['class']
 
     @util.cached_property
     def text(self):
+        """
+        :returns: The text of this answer.
+        """
         return self._element.text_content().strip()
 
     @util.cached_property
     def id(self):
+        """
+        :returns: The index associated with this answer.
+        """
         return self._element.attrib['id'].split('_')[-1]
 
     def __repr__(self):
@@ -160,6 +202,8 @@ class Questions(object):
         'x-requested-with': 'XMLHttpRequest',
     }
 
+    #: Human readable importance name to integer used to represent them on
+    #: okcupid.com
     importance_name_to_number = {
         'mandatory': 0,
         'very_important': 1,
@@ -195,7 +239,7 @@ class Questions(object):
         :type user_question: :class:`.UserQuestion`
         :param importance: The importance that should be used in responding to
                            the question.
-        :type importance: int
+        :type importance: int see :attr:`
         """
         user_response_ids = [option.id
                              for option in user_question.answer_options
@@ -217,6 +261,18 @@ class Questions(object):
 
     def respond(self, question_id, user_response_ids, match_response_ids,
                 importance, note='', is_public=1, is_new=1):
+        """Respond to an okcupid.com question.
+
+        :param question_id: The okcupid id used to identify this question.
+        :param user_response_ids: The answer id(s) to provide to this question.
+        :param match_response_ids: The answer id(s) that the user considers
+                                   acceptable.
+        :param importance: The importance to attribute to this question. See
+                           :attr:`importance_name_to_number` for details.
+        :param note: The explanation note to add to this question.
+        :param is_public: Whether or not the question answer should be made
+                          public.
+        """
         form_data = {
             'ajax': 1,
             'submit': 1,

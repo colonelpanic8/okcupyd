@@ -11,6 +11,7 @@ pip/PyPI
 okcupyd is available for install from PyPI. If you have pip you can simply run:
 
 .. code-block:: bash
+
     pip install okcupyd
 
 to make okcupyd available from import in python.
@@ -49,7 +50,7 @@ If you wish to avoid entering your password each time you start a new session yo
 
 The PYTHONPATH=. at the front of this command is necessary to ensure that the current directory is searched for modules.
 
-2. Set the shell environment variables OKC_USERNAME and OKC_PASSWORD to your username and password respectively. Make sure to export the variables so they are visible in processes started from the shell. You can make a credentials.sh file to do this using the following template
+2. Set the shell environment variables OKC_USERNAME and OKC_PASSWORD to your username and password respectively. Make sure to export the variables so they are visible in processes started from the shell. You can make a credentials.sh file to do this using the following template:
 
 .. code-block:: bash
 
@@ -57,9 +58,7 @@ The PYTHONPATH=. at the front of this command is necessary to ensure that the cu
     export OKC_PASSWORD='your_password'
 
 
-Simply run `source credentials.sh` to set the environment variables and you should
-be ready to go. Note that this approach requires that the environment variables
-be set before :module:`okcupyd.settings` is imported from anywhere.
+Simply run `source credentials.sh` to set the environment variables and your shell should be properly configured. Note that this approach requires that the relevant environment variables be set before :module:`okcupyd.settings` is imported.
 
 3. Manually override the values in okcupyd/settings.py. This method is not
 recommended because it requires you to find the installation location of the
@@ -67,7 +66,7 @@ package. Also, If you are working with a source controlled version, you could
 accidentally commit your credentials.
 
 Using ``--credentials`` in a custom script
-========================================
+==========================================
 
 The :func:`~okcupyd.util.misc.add_command_line_options` and
 :func:`~okcupyd.util.misc.handle_command_line_options` can be used to make a
@@ -106,7 +105,6 @@ To search through the user:
         profile.message("Pumpkins are just okay.")
 
 
-
 Messaging another user
 ======================
 
@@ -119,7 +117,7 @@ Messaging another user
 
 
 Rating a profile
-===============
+================
 
 .. code-block:: python
 
@@ -145,7 +143,7 @@ very easily
    print(profile.looking_for.ages)
    print(profile.details.orientation)
 
-Most of the data for these attributes is loaded from the profile page, but it should
+The data for these attributes is loaded from the profile page, but it should
 be noted that this page is only loaded on demand, so the first of these attribute
 access calls will make an http request.
 

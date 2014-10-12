@@ -20,7 +20,7 @@ def pypi():
 
 
 @ns.add_task
-@task(aliases='r')
+@task
 def rerecord(rest):
     run('tox -e py27 -- --record --credentials test_credentials {0} -s'
         .format(rest), pty=True)
@@ -29,12 +29,12 @@ def rerecord(rest):
 
 
 @ns.add_task
-@task()
-def rerecord_one(rest):
-    run('tox -e py27 -- --record --credentials test_credentials -k {0} -s'
-        .format(rest), pty=True)
-    run('tox -e py27 -- --resave --scrub --credentials test_credentials -k {0} -s'
-        .format(rest), pty=True)
+@task(aliases='r')
+def rerecord_one(test_name, rest=''):
+    run('tox -e py27 -- --record --credentials test_credentials -k {0} -s {1}'
+        .format(test_name, rest), pty=True)
+    run('tox -e py27 -- --resave --scrub --credentials test_credentials -k {0} -s {1}'
+        .format(test_name, rest), pty=True)
 
 
 @ns.add_task
