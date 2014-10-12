@@ -58,7 +58,7 @@ The PYTHONPATH=. at the front of this command is necessary to ensure that the cu
     export OKC_PASSWORD='your_password'
 
 
-Simply run `source credentials.sh` to set the environment variables and your shell should be properly configured. Note that this approach requires that the relevant environment variables be set before :module:`okcupyd.settings` is imported.
+Simply run `source credentials.sh` to set the environment variables and your shell should be properly configured. Note that this approach requires that the relevant environment variables be set before :mod:`okcupyd.settings` is imported.
 
 3. Manually override the values in okcupyd/settings.py. This method is not
 recommended because it requires you to find the installation location of the
@@ -136,6 +136,7 @@ Quickmatch, Essays, Looking For, Details
 ========================================
 You can access the essays, looking for attributes and detail attributes of a profile
 very easily
+
 .. code-block:: python
 
    profile = u.quickmatch()
@@ -148,6 +149,7 @@ be noted that this page is only loaded on demand, so the first of these attribut
 access calls will make an http request.
 
 A logged in user can update their own details using these objects:
+
 .. code-block:: python
 
    user.profile.essays.self_summary = "I'm pretty boring."
