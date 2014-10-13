@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
-hash pandoc || echo "You do not have pandoc installed. This means that README.md will not be automatically updated." && exit 0
+hash pandoc || echo "You do not have pandoc installed. This means that README.md will not be automatically updated."
+hash pandoc || exit 0
 
 TOP_LEVEL="$(git rev-parse --show-toplevel)"
 
