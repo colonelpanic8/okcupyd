@@ -5,8 +5,8 @@ from . import magicnumbers
 
 
 class Filters(object):
-    """Registers kwargs that can be used to construct filters for submission
-    in requests to okcupid.com
+    """Registrar for functions that construct filters for submission in
+    requests to okcupid.com
     """
 
     def __init__(self):
@@ -17,29 +17,34 @@ class Filters(object):
         self._key_to_values = {}
         self._key_to_string = {}
 
-    def build_documentation(self):
-        return u'\n'.join(self.build_paramter_string(key)
-                         for key in sorted(self.keys))
+    def build_documentation_lines(self):
+        """Build a parameter documentation string that can appended to the
+        docstring of a function that uses this :class:`~.Filters` instance
+        to build filters.
+        """
+        return [
+            line_string for key in sorted(self.keys)
+            for line_string in self.build_paramter_string(key)
+        ]
 
     def build_paramter_string(self, key):
         description_string = u''
         if key in self._key_to_string:
             description_string = u' {0}'.format(self._key_to_string[key])
         if key in self._key_to_values:
-            description_string += u' Allowed values: {0}'.format(
+            description_string += u' expected values: {0}'.format(
                 u', '.join([repr(value)
                            for value in self._key_to_values[key]])
             )
-        parameter_string = u':param {0}:{1}'.format(
+        parameter_string_lines = [u':param {0}:{1}'.format(
             key, description_string
-        )
+        )]
         if key in self._key_to_type:
-            parameter_string += u'\n'
             the_type = self._key_to_type[key]
-            parameter_string += u':type {0}: {1}'.format(
+            parameter_string_lines.append(u':type {0}: {1}'.format(
                 key, the_type.__name__ if isinstance(the_type, type) else the_type
-            )
-        return parameter_string
+            ))
+        return parameter_string_lines
 
     @staticmethod
     def any_decider(function, incoming, accepted_keys):
@@ -87,6 +92,38 @@ class Filters(object):
                                 acceptable_values=None,
                                 types=None,
                                 descriptions=None):
+        """Register a filter function with this :class:`~.Filters` instance.
+        This function is curried with :class:`~okcupyd.util.currying.curry`
+        -- that is, it can be invoked partially before it is fully evaluated.
+        This allows us to pass kwargs to this function when it is used as a
+        decorator:
+
+        .. code-block:: python
+
+            @register_filter_builder(keys=('real_name',),
+                                     decider=Filters.any_decider)
+            def my_filter_function(argument):
+                return '4,{0}'.format(argument)
+
+        :param function: The filter function to register.
+        :param keys: Keys that should be used as the argument names for
+                     `function`, if none are provided, the filter functions
+                     argument names will be used instead.
+        :param decider: a function of signature
+                        `(function, incoming_keys, accepted_keys)` that returns
+                        True if the filter function should be called and False
+                        otherwise. Defaults to
+                        :meth:`~.Filter.all_not_none_decider`
+        :param acceptable_values: A list of acceptable values for the parameter
+                                  of the filter function (or a list of lists if
+                                  the filter function takes multiple parameters)
+        :param types: The type of the parameter accepted by the incoming filter
+                      function (or a list of types if the function takes
+                      multiple parameters)
+        :param descriptions: A description for the incoming filter function's
+                             argument (or a list of descriptions if the filter
+                             function takes multiple arguments)
+        """
         decider = decider or self.all_not_none_decider
         function_arguments = inspect.getargspec(function).args
         if keys:
@@ -99,19 +136,16 @@ class Filters(object):
         self.keys.update(keys)
         self._update_docs_dict(self._key_to_type, types, keys)
         self._update_docs_dict(self._key_to_string, descriptions, keys)
-        self._update_docs_dict(self._key_to_values, acceptable_values,
-                               keys, unpack_lists=False)
+        self._update_docs_dict(self._key_to_values, acceptable_values, keys)
 
         return function
 
-    def _update_docs_dict(self, docs_dict, incoming, keys, unpack_lists=True):
+    def _update_docs_dict(self, docs_dict, incoming, keys):
         if incoming:
             if not isinstance(incoming, dict):
-                if isinstance(incoming, (tuple, list)) and unpack_lists:
+                if len(keys) > 1:
                     assert len(keys) == len(incoming), (
-                        "Got {0}, for keys: {1}".format(
-                            incoming, keys
-                        )
+                        "Got {0}, for keys: {1}".format(incoming, keys)
                     )
                     incoming = zip(keys, incoming)
                 else:

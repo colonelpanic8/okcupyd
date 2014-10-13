@@ -38,34 +38,44 @@ or another from instances of :class:`~okcupyd.user.User`.
 .. autoclass:: okcupyd.essay.Essays
     :members:
 
-    .. attribute:: self_summary
+    .. py:attribute:: self_summary
+
         The contents of the essay labeled 'Self Summary'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: my_life
+    .. py:attribute:: my_life
+
         The contents of the essay labeled 'What I'm doing with my life'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: good_at
+    .. py:attribute:: good_at
+
         The contents of the essay labeled 'I'm really good at'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: people_first_notice
+    .. py:attribute:: people_first_notice
+
         The contents of the essay labeled 'The first thing people notice about me'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: favorites
+    .. py:attribute:: favorites
+
         The contents of the essay labeled 'Favorite books, movies, shows, music, and food'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: six_things
+    .. py:attribute:: six_things
+
         The contents of the essay labeled 'Six things I could never live without'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: think_about
+    .. py:attribute:: think_about
+
         The contents of the essay labeled 'I spend a lot of time thinking about'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: friday_night
+    .. py:attribute:: friday_night
+
         The contents of the essay labeled 'On a typical friday night I am'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: private_admission
+    .. py:attribute:: private_admission
+
         The contents of the essay labeled 'The most private thing I'm willing to admit'. Write to this attribute to change its value for the logged in user.
 
-    .. attribute:: message_me_if
+    .. py:attribute:: message_me_if
+
         The contents of the essay labeled 'You should message me if'. Write to this attribute to change its value for the logged in user.
 
 

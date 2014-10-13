@@ -1,3 +1,4 @@
+import itertools
 import logging
 
 import simplejson
@@ -30,7 +31,7 @@ search_filters.register_filter_builder(
 search_filters.register_filter_builder(
     filter.age_filter,
     decider=filter.Filters.any_not_none_decider,
-    types=int,
+    types=(int, int),
     descriptions=['The minimum age of returned search results.',
                   'The maximum age of returned search results.']
 )
@@ -44,7 +45,7 @@ search_filters.register_filter_builder(
 search_filters.register_filter_builder(
     magicnumbers.get_question_filter,
     decider=filter.Filters.any_not_none_decider,
-    types=(':class:`~okcupyd.question.UserQuestion`', 'list[int]'),
+    types=(':class:`~okcupyd.question.UserQuestion`', list),
     descriptions=["A question whose answer should be used to match search "
                   "results, or a question id. If a question id, "
                   "`question_answers` must be supplied.",
@@ -64,7 +65,7 @@ search_filters.register_filter_builder(
 
 @search_filters.register_filter_builder(
     decider=search_filters.any_decider,
-    types=int,
+    types=(int, int),
     descriptions=["The minimum attractiveness of returned search results.",
                   "The maximum attractiveness of returned search results."]
 )
@@ -78,23 +79,28 @@ def attractiveness_filter(attractiveness_min, attractiveness_max):
 
 search_filters.register_filter_builder(
     magicnumbers.get_height_filter,
-    descriptions=["The minimum attractiveness of returned search results.",
-                  "The maximum attractiveness of returned search results."],
-    acceptable_values=["A height int in inches",
+    descriptions=["The minimum height of returned search results.",
+                  "The maximum height of returned search results."],
+    acceptable_values=[["A height int in inches",
                        "An imperial height string e.g. 5'4\"",
-                       "A metric height string e.g. 1.54m"],
+                       "A metric height string e.g. 1.54m"] for _ in range(2)],
     decider=search_filters.any_not_none_decider
 )
 
 
 @search_filters.register_filter_builder(
-    acceptable_values=('day', 'today', 'week', 'month', 'year', 'decade')
+    acceptable_values=('day', 'today', 'week', 'month', 'year', 'decade'),
+    types=str
 )
 def last_online_filter(last_online):
     return '5,{0}'.format(helpers.format_last_online(last_online))
 
 
-@search_filters.register_filter_builder
+@search_filters.register_filter_builder(
+    types=str,
+    acceptable_values=('not single', 'married', 'single', 'any'),
+    descriptions="The relationship status of returned search results."
+)
 def status_filter(status):
     status_int = 2  # single, default
     if status.lower() in ('not single', 'married'):
@@ -121,11 +127,23 @@ for key in ['smokes', 'drinks', 'drugs', 'education_level', 'job',
 
 _username_xpb = xpb.div.with_classes('match_card').\
                 div.with_class('username').a.text_
+# The docstring below is extended automatically. Read it in its entirety at
+# http://okcupyd.readthedocs.org/en/latest/ or by generating the documentation
+# yourself.
 def SearchFetchable(session=None, **kwargs):
-    """Search okcupid.com with the given parameters.
+    """Search okcupid.com with the given parameters. Parameters are registered
+    to this function through :meth:`.search_filters.register_filter_builder`.
 
     :returns: A :class:`~okcupyd.util.fetchable.Fetchable` of
               :class:`~okcupyd.profile.Profile` instances.
+
+    :param session: A logged in session.
+    :type session: :class:`~okcupyd.session.Session`
+    :param location: A location string which will be used to filter results.
+    :param gender: The gender of the user performing the search.
+    :param keywords: A list or space string of words to search for.
+    :param order_by: The criteria to use for ordering results. expected_values:
+                     'match', 'online', 'special_blend'
     """
     session = session or Session.login()
     return util.Fetchable.fetch_marshall(
@@ -136,9 +154,6 @@ def SearchFetchable(session=None, **kwargs):
             _username_xpb
         )
     )
-
-
-SearchFetchable.__doc__ += '\n' + search_filters.build_documentation()
 
 
 class SearchHTMLFetcher(object):
@@ -158,7 +173,7 @@ class SearchHTMLFetcher(object):
     def _query_params(self, low=None):
         search_parameters = {
             'timekey': 1,
-            'matchOrderBy': self.order_by,
+            'matchOrderBy': self.order_by.upper(),
             'custom_search': '0',
             'fromWhoOnline': '0',
             'mygender': self.gender,
@@ -198,3 +213,10 @@ class SearchHTMLFetcher(object):
 
 def search(session=None, count=1, **kwargs):
     return SearchFetchable(session, count=count, **kwargs)[:count]
+
+
+SearchFetchable.__doc__ = '\n    '.join(
+    itertools.chain(
+        [SearchFetchable.__doc__], search_filters.build_documentation_lines()
+    )
+)
