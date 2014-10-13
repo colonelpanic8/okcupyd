@@ -5,4 +5,5 @@ hash pandoc || echo "You do not have pandoc installed. This means that README.md
 TOP_LEVEL="$(git rev-parse --show-toplevel)"
 
 cp "$TOP_LEVEL/bin/BADGES.md" "$TOP_LEVEL/README.md"
+echo "Writing to README.md"
 pandoc -f rst -t markdown "$TOP_LEVEL/README.rst" >> "$TOP_LEVEL/README.md"
