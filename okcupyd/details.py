@@ -161,27 +161,9 @@ class Details(object):
         updater=Detail.mapping_multi_updater(maps.ethnicities)
     )
 
-    class height(DeclarativeDetail):
-
-        imperial_re = re.compile(u"([0-9])['′\u2032] ?([0-9][0-1]?)[\"″\u2033]",
-                                 flags=re.UNICODE)
-        metric_re = re.compile(u"([0-2]\.[0-9]{2})m")
-
-        @classmethod
-        def updater(cls, id_name, value):
-            match = cls.imperial_re.search(value)
-            if match:
-                return {'feet': match.group(1),
-                        'inches': match.group(2)}
-
-            match = cls.metric_re.search(value)
-            if match:
-                meters = float(match.group(1))
-                centimeters = meters * 100
-                return {'centimeters': int(centimeters)}
-            else:
-                raise ValueError("The provided height did not match any of "
-                                 "the accepted formats.")
+    height = Detail(updater=lambda id_name, value: {
+        'centimeters': int(round(magicnumbers.parse_height_string(value)))
+    })
 
     class income(DeclarativeDetail):
 

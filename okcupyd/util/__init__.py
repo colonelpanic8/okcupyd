@@ -20,6 +20,8 @@ log = logging.getLogger(__name__)
 def makelist(value):
     if not isinstance(value, list):
         if isinstance(value, collections.Iterable):
+            if isinstance(value, six.string_types):
+                return [value]
             return list(value)
         else:
             return [value]

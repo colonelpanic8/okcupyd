@@ -280,10 +280,17 @@ class Profile(object):
                                        'headers': dict(self._session.headers)}))
         self.refresh(reload=False)
 
+    def find_question(self, question_id):
+        for question in self.questions:
+            if int(question.id) == int(question_id):
+                return question
+
     def question_fetchable(self, **kwargs):
-        """Return a :class:`okcupyd.util.fetchable.Fetchable` instance that
-        contains objects representing the answers that the user associated with
-        this profile has given to okcupid.com match questions.
+        """
+        :returns: A :class:`okcupyd.util.fetchable.Fetchable` instance that
+                  contains objects representing the answers that the user
+                  associated with this profile has given to okcupid.com match
+                  questions.
         """
         return util.Fetchable(QuestionFetcher(
             self._session, self.username,

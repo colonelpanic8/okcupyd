@@ -1,9 +1,11 @@
-import pytest
+import operator
 
+from okcupyd import User
+from okcupyd import magicnumbers
 from okcupyd.magicnumbers import maps
-from okcupyd.session import Session
-from okcupyd.search import SearchFetchable, search
 from okcupyd.profile import Profile
+from okcupyd.search import SearchFetchable, search
+from okcupyd.session import Session
 
 from . import util
 
@@ -68,15 +70,14 @@ def test_search_fetchable_iter():
             break
 
 
-@pytest.mark.xfail
 @util.use_cassette
 def test_easy_search_filters():
     session = Session.login()
-    query_test_pairs = [#('bodytype', maps.bodytype), # Why doesn't this work?
+    query_test_pairs = [('bodytype', maps.bodytype), # Why doesn't this work?
                         ('drugs', maps.drugs), ('smokes', maps.smokes),
                         ('diet', maps.diet,), ('job', maps.job)]
     for query_param, re_map in query_test_pairs:
-        for value in re_map.pattern_to_value.keys():
+        for value in sorted(re_map.pattern_to_value.keys()):
             profile = SearchFetchable(**{
                 'gentation': '',
                 'session': session,
@@ -87,18 +88,17 @@ def test_easy_search_filters():
             assert value in (attribute or '').lower()
 
 
-@pytest.mark.xfail
 @util.use_cassette
 def test_children_filter():
     session = Session.login()
     profile = SearchFetchable(session, wants_kids="wants kids", count=1)[0]
-    assert "wants kids" in profile.details.children.lower()
+    assert "wants" in profile.details.children.lower()
 
     profile = SearchFetchable(session, has_kids=["has kids"],
                               wants_kids="doesn't want kids",
                               count=0)[0]
     assert "has kids" in profile.details.children.lower()
-    assert "doesn't want kids" in profile.details.children.lower()
+    assert "doesn't want" in profile.details.children.lower()
 
 
 @util.use_cassette
@@ -108,6 +108,73 @@ def test_pets_queries():
                               count=1)[0]
     assert 'likes cats' in profile.details.pets.lower()
 
-    profile = SearchFetchable(session, dogs='likes dogs', count=1)[0]
+    profile = SearchFetchable(session, dogs='likes dogs', cats='has cats', count=1)[0]
 
     assert 'likes dogs' in profile.details.pets.lower()
+    assert 'has cats' in profile.details.pets.lower()
+
+
+@util.use_cassette
+def test_height_filter():
+    session = Session.login()
+    profile = SearchFetchable(session, height_min='5\'6"', height_max='5\'6"',
+                              gentation='girls who like guys', radius=25, count=1)[0]
+    match = magicnumbers.imperial_re.search(profile.details.height)
+    assert int(match.group(1)) == 5
+    assert int(match.group(2)) == 6
+
+    profile = SearchFetchable(session, height_min='2.00m', count=1)[0]
+    match = magicnumbers.metric_re.search(profile.details.height)
+    assert float(match.group(1)) >= 2.00
+
+    profile = SearchFetchable(session, height_max='1.5m', count=1)[0]
+    match = magicnumbers.metric_re.search(profile.details.height)
+    assert float(match.group(1)) <= 1.5
+
+
+@util.use_cassette
+def test_language_filter():
+    session = Session.login()
+    profile = SearchFetchable(session, language='french', count=1)[0]
+    assert 'french' in map(operator.itemgetter(0), profile.details.languages)
+
+    profile = SearchFetchable(session, language='Afrikaans', count=1)[0]
+    assert 'afrikaans' in map(operator.itemgetter(0), profile.details.languages)
+
+
+@util.use_cassette
+def test_join_date_filter():
+    session = Session.login()
+    SearchFetchable(session, join_date='week', count=1)[0]
+
+
+@util.use_cassette
+def test_attractiveness_filter():
+    session = Session.login()
+    profile = SearchFetchable(session, attractiveness_min=4000,
+                              attractiveness_max=6000, count=1)[0]
+
+    assert profile.attractiveness > 4000
+    assert profile.attractiveness < 6000
+
+
+@util.use_cassette
+def test_question_filter():
+    user = User()
+    user_question = user.questions.somewhat_important[0]
+    for profile in user.search(question=user_question)[:5]:
+        question = profile.find_question(user_question.id)
+        assert question.their_answer_matches
+
+
+@util.use_cassette
+def test_question_filter_with_custom_answers():
+    user = User()
+    user_question = user.questions.somewhat_important[1]
+    unacceptable_answers = [answer_option.id
+                            for answer_option in user_question.answer_options
+                            if not answer_option.is_match]
+    for profile in user.search(question=user_question.id,
+                               question_answers=unacceptable_answers)[:5]:
+        question = profile.find_question(user_question.id)
+        assert not question.their_answer_matches

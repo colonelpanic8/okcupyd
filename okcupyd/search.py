@@ -34,6 +34,32 @@ search_filters.register_filter_builder(
     descriptions=['The minimum age of returned search results.',
                   'The maximum age of returned search results.']
 )
+search_filters.register_filter_builder(
+    magicnumbers.get_kids_filter,
+    keys=('has_kids', 'wants_kids'),
+    acceptable_values=(magicnumbers.maps.has_kids.pattern_to_value.keys(),
+                       magicnumbers.maps.wants_kids.pattern_to_value.keys()),
+    decider=filter.Filters.any_decider
+)
+search_filters.register_filter_builder(
+    magicnumbers.get_question_filter,
+    decider=filter.Filters.any_not_none_decider,
+    types=(':class:`~okcupyd.question.UserQuestion`', 'list[int]'),
+    descriptions=["A question whose answer should be used to match search "
+                  "results, or a question id. If a question id, "
+                  "`question_answers` must be supplied.",
+                  "A list of acceptable question answer indices."]
+)
+search_filters.register_filter_builder(
+    magicnumbers.get_language_query,
+    keys=('language',),
+    acceptable_values=list(magicnumbers.language_map.keys())
+)
+search_filters.register_filter_builder(
+    magicnumbers.get_join_date_filter,
+    types=int,
+    acceptable_values=magicnumbers.join_date_string_to_int.keys()
+)
 
 
 @search_filters.register_filter_builder(
@@ -50,14 +76,20 @@ def attractiveness_filter(attractiveness_min, attractiveness_max):
     return '25,{0},{1}'.format(attractiveness_min, attractiveness_max)
 
 
-@search_filters.register_filter_builder(
+search_filters.register_filter_builder(
+    magicnumbers.get_height_filter,
+    descriptions=["The minimum attractiveness of returned search results.",
+                  "The maximum attractiveness of returned search results."],
+    acceptable_values=["A height int in inches",
+                       "An imperial height string e.g. 5'4\"",
+                       "A metric height string e.g. 1.54m"],
     decider=search_filters.any_not_none_decider
 )
-def height_filter(height_min, height_max):
-    return magicnumbers.get_height_query(height_min, height_max)
 
 
-@search_filters.register_filter_builder
+@search_filters.register_filter_builder(
+    acceptable_values=('day', 'today', 'week', 'month', 'year', 'decade')
+)
 def last_online_filter(last_online):
     return '5,{0}'.format(helpers.format_last_online(last_online))
 
@@ -81,32 +113,10 @@ def build_option_filter(key):
     @util.makelist_decorator
     def option_filter(value):
         return magicnumbers.filters[key](value)
-
-
 for key in ['smokes', 'drinks', 'drugs', 'education_level', 'job',
             'income', 'religion', 'monogamy', 'diet', 'sign',
             'ethnicities', 'cats', 'dogs', 'bodytype']:
     build_option_filter(key)
-
-
-search_filters._key_to_string['bodytype'] = ('DOES NOT WORK.',)
-
-
-search_filters.register_filter_builder(
-    magicnumbers.get_kids_query,
-    keys=('has_kids', 'wants_kids'),
-    acceptable_values=(magicnumbers.maps.has_kids.pattern_to_value.keys(),
-                       magicnumbers.maps.wants_kids.pattern_to_value.keys()),
-)
-         # ('offspring', util.makelist_decorator(magicnumbers.get_kids_query)),
-         # ('join_date', magicnumbers.get_join_date_query),
-         # ('languages', magicnumbers.get_language_query)]
-
-# search_filters.register_filter_builder(
-#     util.makelist_decorator(magicnumbers.get_pet_queries)),
-# keys=('pets',),
-#     types=str,
-# )
 
 
 _username_xpb = xpb.div.with_classes('match_card').\

@@ -1,3 +1,4 @@
+import functools
 import logging
 
 from . import util
@@ -18,7 +19,10 @@ class BaseQuestion(object):
 
     @util.cached_property
     def id(self):
-        return self._question_element.attrib['data-qid']
+        """
+        :returns: The integer id given to this question by okcupid.com.
+        """
+        return int(self._question_element.attrib['data-qid'])
 
     _text_xpb = xpb.div.with_class('qtext').p
 
@@ -27,13 +31,15 @@ class BaseQuestion(object):
         return self._text_xpb.get_text_(self._question_element).strip()
 
     def __repr__(self):
-        return '<Question: {0}>'.format(self.text)
+        return '<{1}: {0}>'.format(self.text, type(self).__name__)
+
 
 
 class Question(BaseQuestion):
     """Represent a question answered by a user other than the logged in user."""
 
     def return_none_if_unanswered(function):
+        @functools.wraps(function)
         def wrapped(self):
             if self.answered:
                 return function(self)
@@ -130,6 +136,10 @@ class UserQuestion(BaseQuestion):
 
     @util.cached_property
     def explanation(self):
+        """
+        :returns: The explanation written by the logged in user for this
+                  question (if any).
+        """
         try:
             return self._explanation_xpb.get_text_(self._question_element)
         except:
@@ -138,6 +148,16 @@ class UserQuestion(BaseQuestion):
     @util.cached_property
     def answer_text_to_option(self):
         return {option.text: option for option in self.answer_options}
+
+    @util.cached_property
+    def answer(self):
+        """
+        :returns: A :class:`~.AnswerOption` instance corresponding to the answer
+                  the user gave to this question.
+        """
+        for answer_option in self.answer_options:
+            if answer_option.is_users:
+                return answer_option
 
 
 class AnswerOption(object):
@@ -171,14 +191,14 @@ class AnswerOption(object):
     @util.cached_property
     def id(self):
         """
-        :returns: The index associated with this answer.
+        :returns: The integer index associated with this answer.
         """
-        return self._element.attrib['id'].split('_')[-1]
+        return int(self._element.attrib['id'].split('_')[-1])
 
     def __repr__(self):
         return '<{0}: "{1}" (is_users={2}, is_match={3})>'.format(
             type(self).__name__,
-            self.answer_text,
+            self.text,
             self.is_users,
             self.is_match
         )

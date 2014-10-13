@@ -74,6 +74,12 @@ or another from instances of :class:`~okcupyd.user.User`.
 
 .. autoclass:: okcupyd.question.UserQuestion
     :members:
+
+:class:`~okcupyd.question.AnswerOption`
+=======================================
+
+.. autoclass:: okcupyd.question.AnswerOption
+    :members:
     
 :func:`~okcupyd.search.SearchFetchable`
 ========================================

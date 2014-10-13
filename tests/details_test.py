@@ -24,14 +24,11 @@ def test_job_detail(vcr_live_sleep):
 
 @util.use_cassette
 def test_height_detail(vcr_live_sleep):
-    updater = details.Details.height.updater
     user = User()
     user.profile.details.height = "5'4\""
     vcr_live_sleep(sleep_time)
     assert user.profile.details.height == u'5\' 4" (1.63m)'
-    assert updater('height', user.profile.details.height) == {
-        'feet': '5', 'inches': '4'
-    }
+
     vcr_live_sleep(sleep_time)
     user.profile.details.height = u'(1.99m)'
     vcr_live_sleep(sleep_time)

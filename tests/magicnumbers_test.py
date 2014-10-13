@@ -20,6 +20,7 @@ def test_get_kids_query_with_both_specified():
                                      ["doesn't want kids"]) == 100663296
 
 def test_get_kids_query_when_has_not_specified():
+    magicnumbers.get_kids_int([], ['wants kids']) == 4653056
     assert magicnumbers.get_kids_int([], ["doesn't want kids",
                                           "wants kids"]) == 1195835440
     assert magicnumbers.get_kids_int([], ["might want kids",

@@ -1,5 +1,6 @@
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
+
 Getting Started
 ###############
 
@@ -70,7 +71,7 @@ Using ``--credentials`` in a custom script
 
 The :func:`~okcupyd.util.misc.add_command_line_options` and
 :func:`~okcupyd.util.misc.handle_command_line_options` can be used to make a
-custom script support the `--credentials` and `--enable-loggers` command line
+custom script support the ``--credentials`` and ``--enable-loggers`` command line
 flags. The interface to these functions is admittedly a little bit strange.
 Refer to the example below for details concerning how to use them:
 
@@ -86,7 +87,8 @@ Refer to the example below for details concerning how to use them:
 Basic Examples
 **************
 
-All examples in this section assume that the variable u has been initialized as follows:
+All examples in this section assume that the variable u has been initialized
+as follows:
 
 .. code-block:: python
 
@@ -104,6 +106,34 @@ To search through the user:
     profiles = u.search(age_min=26, age_max=32)
     for profile in profiles[:10]:
         profile.message("Pumpkins are just okay.")
+
+
+To search for users that have answer a particular question in a way that is
+consistent with the user's preferences for that question:
+
+.. code-block:: python
+
+    user_question = user.questions.very_important[0]
+    profiles = u.search(question=user_question)
+    for profile in profiles[:10]:
+        their_question = profile.find_question(user_question.id)
+        profile.message("I'm really glad that you answered {0} to {1}".format(
+            their_question.their_answer, their_question.question.text
+        ))
+
+The search functionality can be accessed without a :class:`~.okcupyd.user.User`
+instance:
+
+.. code-block:: python
+
+    from okcupyd.search import SearchFetchable
+
+    for profile in SearchFetchable(attractiveness_min=8000)[:5]:
+        profile.message("hawt...")
+    
+   
+For more details about what filter arguments can be used with these search
+functions, see the doucmentation for :func:`~.okcupyd.search.SearchFetchable`
 
 
 Messaging another user
@@ -185,11 +215,11 @@ If you want to run a command with access to a virtualenv that was created by tox
 
 .. code-block:: bash
     
-    tox -e venv -- you_command
+    tox -e venv -- your_command
 
 
 To use the development version of the interactive shell (and avoid any conflicts with versions installed in site-packages) you would run the following command:
 
-.. code-block::
+.. code-block:: bash
 
     tox -e venv -- okcupyd

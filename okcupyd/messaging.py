@@ -146,6 +146,8 @@ class MessageThread(object):
         self._thread_element = thread_element
         self.reply = self.correspondent_profile.message(thread_id=self.id)
         self._message_fetcher = MessageFetcher(self._session, self)
+        #: A :class:`~okcupyd.util.fetchable.Fetchable` of :class:`~.Message`
+        #: objects.
         self.messages = util.Fetchable(self._message_fetcher)
 
     @util.cached_property

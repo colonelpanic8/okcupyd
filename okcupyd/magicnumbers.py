@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+import datetime
 import itertools
 import re
 
 import six
 
 from okcupyd import util
+from okcupyd.question import UserQuestion
 
 
 class maps(six.with_metaclass(util.GetAttrGetItem)):
@@ -146,6 +149,11 @@ class filters(six.with_metaclass(util.GetAttrGetItem)):
     cats = SimpleFilterBuilder(17, maps.cats)
 
 
+imperial_re = re.compile(u"([0-9])['′\u2032] ?([0-9][0-1]?)[\"″\u2033]",
+                                 flags=re.UNICODE)
+metric_re = re.compile(u"([0-2]\.[0-9]{1,2})m")
+
+
 sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
 
 
@@ -174,106 +182,44 @@ looking_for_re_numbers = ((re.compile("[Ff]riends"), 1),
                           (re.compile("[Ss]ex"), 6))
 
 
-binary_lists = {
-    'smokes': ['11', 'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'],
-    'drinks': ['12', 'very often', 'often', 'socially', 'rarely', 'desperately',
-               'not at all'],
-    'drugs': ['13', 'never', 'sometimes', 'often'],
-    'education': ['19', 'high school', 'two-year college', 'college/university',
-                  'masters program', 'law school', 'medical school',
-                  'ph.d program'],
-    'job': ['15', 'student', 'art / music / writing', 'banking / finance',
-            'administration', 'technology', 'construction', 'education',
-            'entertainment / media', 'management', 'hospitality', 'law',
-            'medicine', 'military', 'politics / government',
-            'sales / marketing', 'science / engineering', 'transporation',
-            'retired'],
-    'income': ['14', 'less than $20,000', '$20,000-$30,000', '$30,000-$40,000',
-               '$40,000-$50,000', '$50,000-$60,000', '$60,000-$70,000',
-               '$70,000-$80,000', '$80,000-$100,000', '$100,000-$150,000',
-               '$150,000-$250,000', '$250,000-$500,000', '$500,000-$1,000,000',
-               'More than $1,000,000'],
-    'religion': ['8', 'agnostic', 'atheist', 'christian', 'jewish', 'catholic',
-                 'muslim', 'hindu', 'buddhist', 'other'],
-    'monogamy': ['73', 'monogamous', 'non-monogamous'],
-    'diet': ['54', 'vegetarian', 'vegan', 'kosher', 'halal'],
-    'sign': ['21', 'acquarius', 'pisces', 'aries', 'taurus', 'gemini',
-             'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius',
-             'capricorn'],
-    'ethnicity': ['9', 'asian', 'middle eastern', 'black', 'native american',
-                  'indian', 'pacific islander', 'hispanic/latin', 'white',
-                  'human (other)']
-}
+def inches_to_centimeters(inches):
+    return inches * 2.54
 
 
-def get_height_query(height_min, height_max):
-    '''Convert from inches to millimeters/10'''
+def get_height_filter(height_min=None, height_max=None):
     min_int = 0
     max_int = 99999
-    if height_min is not None:
-        min_int = int(height_min) * 254
-    if height_max is not None:
-        max_int = int(height_max) * 254
-    return '10,{0},{1}'.format(str(min_int), str(max_int))
+    if isinstance(height_min, six.string_types):
+        min_int = 100 * parse_height_string(height_min)
+    elif isinstance(height_min, int):
+        min_int = 100 * inches_to_centimeters(height_min)
+    if isinstance(height_max, six.string_types):
+        max_int = 100 * parse_height_string(height_max)
+    elif isinstance(height_max, int):
+        max_int = 100 * inches_to_centimeters(height_max)
+    return '10,{0},{1}'.format(min_int, max_int)
 
 
-def get_options_query(type, inputs):
-    for char in sep_replacements:
-        inputs = [input.replace(char, '') for input in inputs]
-    inputs = [input.lower() for input in inputs]
-    if type in binary_lists:
-        start = 1
-        option_list = binary_lists[type]
-    if type == 'drugs':
-        start = 0
-    if type == 'diet':
-        start = 2
-    int_to_return = 0
-    for power, option in enumerate(option_list[1:], start=start):
-        for char in sep_replacements:
-            option = option.replace(char, '')
-        if option in inputs:
-            int_to_return += 2**power
-    return '{0},{1}'.format(option_list[0], int_to_return)
+def parse_height_string(height_string):
+    match = imperial_re.search(height_string)
+    if match:
+        return int(round(inches_to_centimeters(int(match.group(1)) * 12 + int(match.group(2)))))
+    match = metric_re.search(height_string)
+    if match:
+        meters = float(match.group(1))
+        centimeters = meters * 100
+        return int(round(centimeters))
+    else:
+        raise ValueError("The provided height did not match any of "
+                         "the accepted formats.")
 
 
-has_kids = {
-    "has a kid": {"addition": 33686018, "power": 1},
-    "has kids": {"addition": 67372036, "power": 2},
-    "doesn't have kids": {"addition": 1077952576, "power": 6},
-}
-
-
-wants_kids = {
-    1: (18176, 8),
-    2: (4653056, 16),
-    3: (1191182384, 24),
-}
-
-{"UNKNOWN": 0,
-"HAS_ONE": 1,
-"HAS_MANY": 2,
-"HAS_NONE": 6,
-"MAYBE_WANTS_UNKNOWN": 8,
-"MAYBE_WANTS_HAS_ONE": 9,
-"MAYBE_WANTS_HAS_MANY": 10,
-"MAYBE_WANTS_HAS_NONE": 14,
-"YES_WANTS_UNKNOWN": 16,
-"YES_WANTS_HAS_ONE": 17,
-"YES_WANTS_HAS_MANY": 18,
-"YES_WANTS_HAS_NONE": 22,
-"NO_WANTS_UNKNOWN": 24,
-"NO_WANTS_HAS_ONE": 25,
-"NO_WANTS_HAS_MANY": 26,
-"NO_WANTS_HAS_NONE": 30}
-
-
-def get_kids_query(has_kids, wants_kids):
+def get_kids_filter(has_kids=(), wants_kids=()):
     return '18,{0}'.format(get_kids_int(has_kids, wants_kids))
 
 
 def get_kids_int(has_kids, wants_kids):
-    has_kids = util.makelist(has_kids)
+    has_kids = util.makelist(has_kids or ())
     wants_kids = util.makelist(wants_kids)
     wants_was_unknown = False
     has_was_unknown = False
@@ -293,6 +239,7 @@ def get_kids_int(has_kids, wants_kids):
                     in itertools.product(has_kids_ints, wants_kids_ints))
 
     if not (wants_was_unknown or has_was_unknown):
+        # ... Why? Apparently this is needed...
         kids_int = subtract_has_kids_exponents(kids_int)
 
     # This is super crazy and gross. I'm not really sure why they do this.
@@ -321,7 +268,7 @@ def yield_exponents_of_two(value):
 
 
 def get_language_query(language):
-    return '22,{0}'.format(language_map[language.title()])
+    return '22,{0}'.format(language_map[language.lower()])
 
 
 hour = 60*60
@@ -334,97 +281,28 @@ join_date_string_to_int = {
 }
 
 
-def get_join_date_query(date):
+def get_join_date_filter(join_date):
     date_int = 0
-    if isinstance(date, str) and not date.isdigit():
-        if date in join_date_string_to_int:
-            date_int = join_date_string_to_int[date]
+    if isinstance(join_date, str):
+        if join_date in join_date_string_to_int:
+            date_int = join_date_string_to_int[join_date]
         else:
-            date_int = int(date)
-    else:
-        date_int = date
+            date_int = int(join_date)
     return '6,{0}'.format(date_int)
 
 
-language_map = {
-    'Afrikaans': '2',
-    'Albanian': '3',
-    'Ancient Greek': '27',
-    'Arabic': '4',
-    'Armenian': '76',
-    'Basque': '5',
-    'Belarusan': '6',
-    'Bengali': '7',
-    'Breton': '8',
-    'Bulgarian': '9',
-    'C++': '71',
-    'Catalan': '10',
-    'Cebuano': '11',
-    'Chechen': '12',
-    'Chinese': '13',
-    'Croatian': '14',
-    'Czech': '15',
-    'Danish': '16',
-    'Dutch': '17',
-    'English': '74',
-    'Esperanto': '18',
-    'Estonian': '19',
-    'Farsi': '20',
-    'Finnish': '21',
-    'French': '22',
-    'Frisian': '23',
-    'Georgian': '24',
-    'German': '25',
-    'Greek': '26',
-    'Gujarati': '77',
-    'Hawaiian': '28',
-    'Hebrew': '29',
-    'Hindi': '75',
-    'Hungarian': '30',
-    'Icelandic': '31',
-    'Ilongo': '32',
-    'Indonesian': '33',
-    'Irish': '34',
-    'Italian': '35',
-    'Japanese': '36',
-    'Khmer': '37',
-    'Korean': '38',
-    'LISP': '72',
-    'Latin': '39',
-    'Latvian': '40',
-    'Lithuanian': '41',
-    'Malay': '42',
-    'Maori': '43',
-    'Mongolian': '44',
-    'Norwegian': '45',
-    'Occitan': '46',
-    'Other': '73',
-    'Persian': '47',
-    'Polish': '48',
-    'Portuguese': '49',
-    'Romanian': '50',
-    'Rotuman': '51',
-    'Russian': '52',
-    'Sanskrit': '53',
-    'Sardinian': '54',
-    'Serbian': '55',
-    'Sign Language': '1',
-    'Slovak': '56',
-    'Slovenian': '57',
-    'Spanish': '58',
-    'Swahili': '59',
-    'Swedish': '60',
-    'Tagalog': '61',
-    'Tamil': '62',
-    'Thai': '63',
-    'Tibetan': '64',
-    'Turkish': '65',
-    'Ukrainian': '66',
-    'Urdu': '67',
-    'Vietnamese': '68',
-    'Welsh': '69',
-    'Yiddish': '70',
-}
+def get_question_filter(question, question_answers=None):
+    question_id = question
+    if isinstance(question, UserQuestion):
+        question_id = question.id
+    if question_answers is None:
+        question_answers = [answer_option.id
+                            for answer_option in question.answer_options
+                            if answer_option.is_match]
+    answers_int = 0
+    for answer_int in question_answers:
+        answers_int += 2 ** answer_int
+    return '65,{0},{1}'.format(question_id, answers_int)
 
 
 language_map_2 = {
@@ -505,4 +383,85 @@ language_map_2 = {
     'vietnamese': 'vi',
     'welsh': 'cy',
     'yiddish': 'yi'
+}
+
+
+language_map = {
+    'afrikaans': '2',
+    'albanian': '3',
+    'ancient greek': '27',
+    'arabic': '4',
+    'armenian': '76',
+    'basque': '5',
+    'belarusan': '6',
+    'bengali': '7',
+    'breton': '8',
+    'bulgarian': '9',
+    'c++': '71',
+    'catalan': '10',
+    'cebuano': '11',
+    'chechen': '12',
+    'chinese': '13',
+    'croatian': '14',
+    'czech': '15',
+    'danish': '16',
+    'dutch': '17',
+    'english': '74',
+    'esperanto': '18',
+    'estonian': '19',
+    'farsi': '20',
+    'finnish': '21',
+    'french': '22',
+    'frisian': '23',
+    'georgian': '24',
+    'german': '25',
+    'greek': '26',
+    'gujarati': '77',
+    'hawaiian': '28',
+    'hebrew': '29',
+    'hindi': '75',
+    'hungarian': '30',
+    'icelandic': '31',
+    'ilongo': '32',
+    'indonesian': '33',
+    'irish': '34',
+    'italian': '35',
+    'japanese': '36',
+    'khmer': '37',
+    'korean': '38',
+    'lisp': '72',
+    'latin': '39',
+    'latvian': '40',
+    'lithuanian': '41',
+    'malay': '42',
+    'maori': '43',
+    'mongolian': '44',
+    'norwegian': '45',
+    'occitan': '46',
+    'other': '73',
+    'persian': '47',
+    'polish': '48',
+    'portuguese': '49',
+    'romanian': '50',
+    'rotuman': '51',
+    'russian': '52',
+    'sanskrit': '53',
+    'sardinian': '54',
+    'serbian': '55',
+    'sign language': '1',
+    'slovak': '56',
+    'slovenian': '57',
+    'spanish': '58',
+    'swahili': '59',
+    'swedish': '60',
+    'tagalog': '61',
+    'tamil': '62',
+    'thai': '63',
+    'tibetan': '64',
+    'turkish': '65',
+    'ukrainian': '66',
+    'urdu': '67',
+    'vietnamese': '68',
+    'welsh': '69',
+    'yiddish': '70',
 }
