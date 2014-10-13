@@ -104,12 +104,48 @@ or another from instances of :class:`~okcupyd.user.User`.
 ====================================
 .. autoclass:: okcupyd.question.Questions
     :members:
+
+    .. py:attribute:: mandatory
+
+       A :class:`~okcupyd.util.fetchable.Fetchable` of
+       :class:`~okcupyd.question.UserQuestion` instances that correspond to
+       questions that have been answered by the logged in user and assigned the
+       'mandatory' importance.
+
+    .. py:attribute:: very_important
+
+       A :class:`~okcupyd.util.fetchable.Fetchable` of
+       :class:`~okcupyd.question.UserQuestion` instances that correspond to
+       questions that have been answered by the logged in user and assigned the
+       'very_important' importance.
+
+    .. py:attribute:: somewhat_important
+
+       A :class:`~okcupyd.util.fetchable.Fetchable` of
+       :class:`~okcupyd.question.UserQuestion` instances that correspond to
+       questions that have been answered by the logged in user and assigned the
+       'somewhat_important' importance.
+
+    .. py:attribute:: little_important
+
+       A :class:`~okcupyd.util.fetchable.Fetchable` of
+       :class:`~okcupyd.question.UserQuestion` instances that correspond to
+       questions that have been answered by the logged in user and assigned the
+       'little_important' importance.
+
+    .. py:attribute:: not_important
+
+       A :class:`~okcupyd.util.fetchable.Fetchable` of
+       :class:`~okcupyd.question.UserQuestion` instances that correspond to
+       questions that have been answered by the logged in user and assigned the
+       'not_important' importance.
+
     
 :class:`~okcupyd.question.Question`
 ===================================
 .. autoclass:: okcupyd.question.Question
     :members:
-    
+
 :class:`~okcupyd.question.UserQuestion`
 =======================================
 

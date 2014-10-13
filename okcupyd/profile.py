@@ -40,8 +40,17 @@ class Profile(object):
         :param username: The username associated with the profile.
         """
         self._session = session
+        #: The username of the user to whom this profile belongs.
         self.username = username
+        #: A :class:`~okcupyd.util.fetchable.Fetchable` of
+        #: :class:`~okcupyd.question.Question` instances, each corresponding
+        #: to a question that has been answered by the user to whom this
+        #: profile belongs.
+        #: The fetchable consists of :class:`~okcupyd.question.UserQuestion`
+        #: instead when the profile belongs to the logged in user.
         self.questions = self.question_fetchable()
+        #: A :class:`~okcupyd.details.Details` instance belonging to the same
+        #: user that this profile belongs to.
         self.details = details.Details(self)
 
     def refresh(self, reload=False):
