@@ -9,5 +9,8 @@ for hook in $SOURCE_DIR/*; do
     if [ ! -h $HOOK_DIR/$hook -a -x $HOOK_DIR/$hook ]; then
         mv $HOOK_DIR/$hook $HOOK_DIR/$hook.local
     fi
-    ln -s -f "$hook" "$HOOK_DIR/$(basename $hook)"
+    source="$hook"
+    dest="$HOOK_DIR/$(basename $hook)"
+    echo "linking ""$dest""to ""$source"
+    ln -s  "$hook" "$HOOK_DIR/$(basename $hook)"
 done
