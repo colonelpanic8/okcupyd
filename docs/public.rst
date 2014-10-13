@@ -133,7 +133,7 @@ or another from instances of :class:`~okcupyd.user.User`.
     
 :class:`~okcupyd.statistics.Statistics`
 =======================================
-.. autoclass:: okcupyd.statistics
+.. autoclass:: okcupyd.statistics.Statistics
     :members:
 
 :func:`~okcupyd.util.misc.add_command_line_options`
