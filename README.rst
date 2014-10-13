@@ -1,8 +1,3 @@
-.. raw:: html
-
-   <!--THIS FILE IS AUTO GENERATED; DO NOT EDIT IT MANUALLY.
-   [EDIT README.rst insted.-->
-
 |Build Status|\ |Documentation Status|
 
 Getting Started
