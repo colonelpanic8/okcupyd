@@ -118,9 +118,10 @@ class curry(object):
             return self
         bound = type(self)(self.function, self.evaluation_checker,
                            args=self.args + (obj,), kwargs=self.kwargs)
-        # TODO(@IvanMalison) Ewwwww. Is this really the only way to do this?
+        # This caches the new partial application of the function on the
+        # instance. Its not clear that this is a good idea but I'm leaving
+        # it for now.
         setattr(obj, self.function.__name__, bound)
-        setattr(obj, self.function.__doc__, bound)
         return bound
 
     def __repr__(self):
