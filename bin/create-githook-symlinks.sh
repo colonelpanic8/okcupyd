@@ -14,4 +14,5 @@ for hook in $SOURCE_DIR/*; do
     fi
     echo "linking ""$source"" to ""$dest"
     ln -s  "$source" "$dest"
+    chmod 755 $dest
 done
