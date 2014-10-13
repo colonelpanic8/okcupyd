@@ -1,5 +1,4 @@
 import os
-import sys
 
 from setuptools import setup, find_packages
 
@@ -7,7 +6,7 @@ from setuptools import setup, find_packages
 version = '0.8.4'
 
 
-with open('README.rst') as file:
+with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as file:
     long_description = file.read()
 
 
