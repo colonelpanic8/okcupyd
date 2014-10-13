@@ -1,9 +1,15 @@
+import os
+import sys
+
 from setuptools import setup, find_packages
+
+sys.path.insert(0, os.path.dirname(__file__))
+from okcupyd import version
 
 
 setup(
     name="okcupyd",
-    version="0.8.1",
+    version=version,
     packages=find_packages(exclude=('tests*', 'examples')),
     install_requires=['lxml', 'requests >= 2.4.1', 'simplejson',
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
