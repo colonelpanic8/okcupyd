@@ -197,6 +197,8 @@ result in a new http request to reload the profile page.
 Development
 -----------
 
+### tox
+
 If you wish to contribute to this project, it is recommended that you
 use tox to run tests and enter the interactive environment. You can get
 tox by running
@@ -231,3 +233,17 @@ following command:
 ``` {.sourceCode .bash}
 tox -e venv -- okcupyd
 ```
+
+### git hooks
+
+It is recommended that you install the git hooks that are included in
+this repository by running
+
+``` {.sourceCode .bash}
+bin/create-githook-symlinks.sh
+```
+
+from the root directory of the repository.
+
+This is only important (at the moment) if you plan to edit README.rst.
+
