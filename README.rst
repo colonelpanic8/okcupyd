@@ -1,6 +1,8 @@
 .. toctree::
    :maxdepth: 4
 
+[![Build Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://travis-ci.org/IvanMalison/okcupyd) [![Documentation Status](https://readthedocs.org/projects/okcupyd/badge/?version=latest)](https://readthedocs.org/projects/okcupyd/?badge=latest)
+
 Getting Started
 ###############
 

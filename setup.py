@@ -3,8 +3,12 @@ import sys
 
 from setuptools import setup, find_packages
 
-sys.path.insert(0, os.path.dirname(__file__))
-from okcupyd import version
+
+version = '0.8.4'
+
+
+with open('README.rst') as file:
+    long_description = file.read()
 
 
 setup(
@@ -22,7 +26,7 @@ setup(
     license="MIT",
     keywords=["okcupid", "okcupyd", "pyokc", "online dating"],
     url="https://github.com/IvanMalison/okcupyd",
-    long_description='',
+    long_description=long_description,
     entry_points={"console_scripts": ["okcupyd=okcupyd:interactive"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
