@@ -41,8 +41,7 @@ def test_profile_properties():
 
 @util.use_cassette
 def test_profile_attractiveness():
-    # TODO: get rid of circular import so you can do this.
-    profile = User().quickmatch()
+    profile = User().search(attractiveness_min=3000, count=1)[0]
     assert 1 < profile.attractiveness < 10001
 
 

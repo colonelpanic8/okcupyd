@@ -143,12 +143,6 @@ def test_language_filter():
 
 
 @util.use_cassette
-def test_join_date_filter():
-    session = Session.login()
-    SearchFetchable(session, join_date='week', count=1)[0]
-
-
-@util.use_cassette
 def test_attractiveness_filter():
     session = Session.login()
     profile = SearchFetchable(session, attractiveness_min=4000,

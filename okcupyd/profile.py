@@ -252,6 +252,7 @@ class Profile(object):
         :returns: The average attractiveness rating given to this profile by the
                   okcupid.com community.
         """
+        # This has to be here to avoid a circular import for now.
         from .attractiveness_finder import AttractivenessFinder
         return AttractivenessFinder(self._session)(self.username)
 
