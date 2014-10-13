@@ -1,4 +1,9 @@
-[![Build Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://travis-ci.org/IvanMalison/okcupyd)[![Documentation Status](https://readthedocs.org/projects/okcupyd/badge/?version=latest)](http://okcupyd.readthedocs.org/en/latest/)
+[![Build Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://travis-ci.org/IvanMalison/okcupyd)[![Documentation Status](https://readthedocs.org/projects/okcupyd/badge/?version=latest)](http://okcupyd.readthedocs.org/en/latest/)..image:: <https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master>
+:target: <https://travis-ci.org/IvanMalison/okcupyd>
+
+..image::
+<https://readthedocs.org/projects/okcupyd/badge/?version=latest>
+:target: <https://readthedocs.org/projects/okcupyd/?badge=latest>
 
 Getting Started
 ===============

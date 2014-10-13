@@ -1,14 +1,6 @@
 .. toctree::
    :maxdepth: 4
 
-
-..image:: https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master
-    :target: https://travis-ci.org/IvanMalison/okcupyd
-
-..image:: https://readthedocs.org/projects/okcupyd/badge/?version=latest
-    :target: https://readthedocs.org/projects/okcupyd/?badge=latest
-
-
 Getting Started
 ###############
 
