@@ -30,9 +30,9 @@ def test_attractiveness_finder(mock_search, attractiveness_finder):
         user_two: 9212
     }
     def mock_search_function(session, attractiveness_min=0,
-                    attractiveness_max=10000, keywords='', **kwargs):
+                             attractiveness_max=10000, keywords='', **kwargs):
         if attractiveness_min <= user_to_attractiveness[keywords] <= attractiveness_max:
-            return mock.Mock()
+            return [mock.Mock(username=keywords)]
     mock_search.side_effect = mock_search_function
 
     user_one_attractiveness = attractiveness_finder(user_one, accuracy=1)
@@ -57,5 +57,4 @@ def cached_attractiveness_finder():
 
 @util.use_cassette(cassette_name='attractiveness_finder_live')
 def test_attractiveness_finder_live(cached_attractiveness_finder):
-    assert cached_attractiveness_finder('_iWarhol') == 1000
     assert cached_attractiveness_finder('dasmitches') == 5000
