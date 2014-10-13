@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 class Session(requests.Session):
-    """A :ref:`requests.Session` with convenience methods for interacting with
+    """A `requests.Session` with convenience methods for interacting with
     okcupid.com
     """
 
