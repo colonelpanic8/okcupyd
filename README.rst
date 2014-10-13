@@ -29,6 +29,19 @@ You can install from source by running the setup.py script included as part of t
 
 This can be useful if you want to install a version that has not yet been released on PyPI.
 
+From Docker
+===========
+
+okcupyd is available on docker (see https://registry.hub.docker.com/u/imalison/okcupyd/)
+
+If you have docker installed on your machine, you can run
+
+.. code-block:: bash
+
+    docker run -t -i imalison/okcupyd okcupyd
+
+to get an interactive okcupyd shell.
+
 Use
 ***
 
