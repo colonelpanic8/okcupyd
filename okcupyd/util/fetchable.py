@@ -116,17 +116,25 @@ class Fetchable(object):
         return accumulator
 
     def __repr__(self):
+        fetched_type = repr(self._fetcher)
         if self._accumulated == None:
             list_repr = ''
         else:
+            try:
+                self[0]
+            except:
+                pass
+            else:
+                fetched_type = type(self._accumulated[0]).__name__
             list_repr = repr(self._accumulated)
             if not self.exhausted:
                 if len(self._accumulated) == 0:
                     list_repr = '[...]'
                 else:
                     list_repr = '{0}, ...]'.format(list_repr[:-1])
-        return '{0}({1}){2}'.format(type(self).__name__,
-                                    repr(self._fetcher), list_repr)
+
+        return '<{0}[{1}]{2}>'.format(type(self).__name__,
+                                    fetched_type, list_repr)
 
     def __len__(self):
         return len(self[:])

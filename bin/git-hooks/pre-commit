@@ -1,0 +1,8 @@
+#!/bin/sh
+
+hash pandoc || echo "You do not have pandoc installed. This means that README.md will not be automatically updated." && exit 0
+
+TOP_LEVEL="$(git rev-parse --show-toplevel)"
+
+cp "$TOP_LEVEL/bin/BADGES.md" "$TOP_LEVEL/README.md"
+pandoc -f rst -t markdown "$TOP_LEVEL/README.rst" >> "$TOP_LEVEL/README.md"
