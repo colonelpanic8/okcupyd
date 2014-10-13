@@ -4,7 +4,7 @@ okcupyd
 .. toctree::
    :maxdepth: 4
 
-   setup
+   includeREADME
    public
    core
 

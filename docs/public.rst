@@ -85,9 +85,9 @@ or another from instances of :class:`~okcupyd.user.User`.
 ========================================
 .. autofunction:: okcupyd.search.SearchFetchable
     
-:class:`~okcupyd.attractiveness_finder.AttractivenessFinder`
-============================================================
-.. autoclass:: okcupyd.attractiveness_finder.AttractivenessFinder
+:class:`~okcupyd.attractiveness_finder._AttractivenessFinder`
+=============================================================
+.. autoclass:: okcupyd.attractiveness_finder._AttractivenessFinder
     :members:
     
 :class:`~okcupyd.statistics.Statistics`
