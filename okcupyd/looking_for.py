@@ -1,4 +1,5 @@
 import collections
+import functools
 import logging
 import re
 
@@ -30,7 +31,6 @@ class LookingFor(object):
     profile.
     """
 
-    Ages = collections.namedtuple('ages', ('min', 'max'))
     _ages_re = re.compile(u'Ages ([0-9]{1,3})\u2013([0-9]{1,3})')
 
     _looking_for_xpb = xpb.div.with_classes('text', 'what_i_want')
@@ -48,6 +48,7 @@ class LookingFor(object):
 
     def update_property(function):
         @property
+        @functools.wraps(function)
         def wrapped(self):
             return function(self)
 
@@ -59,29 +60,53 @@ class LookingFor(object):
 
     @update_property
     def gentation(self):
+        """The sex/orientation that the user is looking for."""
         return self.raw_fields.get('gentation').lower()
 
     @update_property
     def ages(self):
+        """The age range that the user is interested in."""
         match = self._ages_re.match(self.raw_fields.get('ages'))
         return self.Ages(int(match.group(1)), int(match.group(2)))
 
     @update_property
     def single(self):
+        """Whether or not the user is only interested in people that are single.
+        """
         return 'display: none;' not in self._looking_for_xpb.li(id='ajax_single').\
             one_(self._profile.profile_tree).attrib['style']
 
     @update_property
     def near_me(self):
+        """Whether the user is only interested in people that are close to them.
+        """
         return 'near' in self.raw_fields.get('near', '').lower()
 
     @update_property
     def kinds(self):
+        """The kinds of relationship tha the user is looking for."""
         return self.raw_fields.get('lookingfor', '').\
             replace('For', '').strip().split(', ')
 
     def update(self, ages=None, single=None, near_me=None, kinds=None,
                gentation=None):
+        """Update the looking for attributes of the logged in user.
+
+        :param ages: The ages that the logged in user is interested in.
+        :type ages: tuple
+        :param single: Whether or not the user is only interested in people that
+                       are single.
+        :type single: bool
+        :param near_me: Whether or not the user is only interested in people that
+                        are near them.
+        :type near_me: bool
+        :param kinds: What kinds of relationships the user should be updated to
+                      be interested in.
+        :type kinds: list
+        :param gentation: The sex/orientation of people the user is interested
+                          in.
+        :type gentation: str
+        """
         ages = ages or self.ages
         single = single if single is not None else self.single
         near_me = near_me if near_me is not None else self.near_me
@@ -122,3 +147,4 @@ class LookingFor(object):
         return looking_for_numbers
 
     del update_property
+    Ages = collections.namedtuple('Ages', ('min', 'max'))
