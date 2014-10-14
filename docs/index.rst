@@ -9,6 +9,7 @@ okcupyd
    includeREADME
    public
    core
+   modules
 
 Indices and tables
 ==================
