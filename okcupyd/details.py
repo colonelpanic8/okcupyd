@@ -50,6 +50,16 @@ class Detail(object):
                                        else helpers.replace_chars(x.strip()))
         self.updater = updater or self.default_updater
 
+    @property
+    def id_name(self):
+        return self._id_name
+
+    _doc_format = 'The {0} detail of an okcupid.com user\'s profile.'
+    @id_name.setter
+    def id_name(self, value):
+        self._id_name = value
+        self.__doc__ = self._doc_format.format(self.id_name)
+
     def update(self, value):
         if isinstance(value, string_types):
             value = value.lower()

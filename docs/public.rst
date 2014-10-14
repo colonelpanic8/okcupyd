@@ -32,6 +32,7 @@ or another from instances of :class:`~okcupyd.user.User`.
 =================================
 .. autoclass:: okcupyd.details.Details
     :members:
+    :undoc-members:
     
 :class:`~okcupyd.essay.Essays`
 ==============================
