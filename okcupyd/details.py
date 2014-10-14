@@ -27,6 +27,8 @@ class Detail(object):
     @classmethod
     def mapping_multi_updater(cls, mapping):
         def updater(id_name, value):
+            if value is None:
+                value = ()
             return {id_name: [mapping[item.lower()] for item in value]}
         return updater
 
@@ -166,14 +168,27 @@ class Details(object):
         'sign_status': maps.importance[value]
     })
 
-    ethnicities = Detail(
-        presenter=Detail.comma_separated_presenter,
-        updater=Detail.mapping_multi_updater(maps.ethnicities)
-    )
-
     height = Detail(updater=lambda id_name, value: {
         'centimeters': int(round(magicnumbers.parse_height_string(value)))
     })
+
+    class ethnicities(DeclarativeDetail):
+
+        @staticmethod
+        def presenter(text):
+            return [ethnicity
+                    for ethnicity in Detail.comma_separated_presenter(text)
+                    if any(char.isalpha() for char in ethnicity)]
+
+        @staticmethod
+        def updater(id_name, value):
+            if value is None:
+                value = ()
+            ethnicities = [maps.ethnicities[item.lower()] for item in value]
+            if len(ethnicities) < 1:
+                ethnicities = 10
+            return {id_name: ethnicities}
+
 
     class income(DeclarativeDetail):
 
@@ -233,6 +248,7 @@ class Details(object):
         @classmethod
         def updater(cls, id_name, languages):
             data = {}
+            number = 0
             for number, (language, level) in enumerate(languages, 1):
                 language_number = cls.language_to_number[language.lower()]
                 level_number = cls.level[level.lower()]

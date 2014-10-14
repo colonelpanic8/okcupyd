@@ -201,9 +201,12 @@ def get_height_filter(height_min=None, height_max=None):
 
 
 def parse_height_string(height_string):
+    if not height_string:
+        return 0
     match = imperial_re.search(height_string)
     if match:
-        return int(round(inches_to_centimeters(int(match.group(1)) * 12 + int(match.group(2)))))
+        return int(round(inches_to_centimeters(int(match.group(1)) * 12 +
+                                               int(match.group(2)))))
     match = metric_re.search(height_string)
     if match:
         meters = float(match.group(1))

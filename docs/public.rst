@@ -171,6 +171,8 @@ or another from instances of :class:`~okcupyd.user.User`.
 :class:`~okcupyd.profile_copy.Copy`
 ========================================
 .. autoclass:: okcupyd.profile_copy.Copy
+    :members:
+    :special-members: __init__
     
 :class:`~okcupyd.statistics.Statistics`
 =======================================

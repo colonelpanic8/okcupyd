@@ -226,3 +226,31 @@ def test_access_details_on_other_profile():
     details.orientation
     details.pets
     details.status
+
+
+@util.use_cassette
+def test_nulling_of_details(vcr_live_sleep):
+    details = User().profile.details
+    details.ethnicities = ['white']
+    vcr_live_sleep(sleep_time)
+    assert 'white' in [ethnicity.lower() for ethnicity in details.ethnicities]
+    vcr_live_sleep(sleep_time)
+    details.ethnicities = []
+    vcr_live_sleep(sleep_time)
+    assert details.ethnicities == []
+
+    details.bodytype = 'jacked'
+    vcr_live_sleep(sleep_time)
+    assert 'jacked' in details.bodytype.lower()
+    details.bodytype = None
+    vcr_live_sleep(sleep_time)
+    assert not details.bodytype
+    vcr_live_sleep(sleep_time)
+
+    details.languages = [('spanish', 'fluently'), ('english', 'fluently')]
+    vcr_live_sleep(sleep_time)
+    assert 'spanish' in [language[0] for language in details.languages]
+    # It appears that it's impossible to remove all languages.
+    details.languages = [('spanish', 'fluently')]
+    vcr_live_sleep(sleep_time)
+    assert details.languages == [('spanish', 'fluently')]
