@@ -10,7 +10,7 @@ Core Objects
    :members:
    :special-members: __init__
 
-:class:`~okcupyd.util.currying.Curry`
+:class:`~okcupyd.util.currying.curry`
 =====================================
 .. autoclass:: okcupyd.util.currying.curry
    :members:
