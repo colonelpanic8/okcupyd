@@ -2,7 +2,7 @@ import time
 
 from invoke import task
 
-from okcupd import User
+from okcupyd import User
 
 
 @task

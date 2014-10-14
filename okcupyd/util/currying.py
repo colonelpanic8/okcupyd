@@ -14,10 +14,11 @@ class curry(object):
         def greater_than(x, y):
            return x > y
 
-        less_than_40 = func(40)
-
-        less_than_40(39) # This will evaluate to True
-        less_than_40(50) # This will evaluate to False
+        >>> less_than_40 = greater_than(40)
+        >>> less_than_40(39)
+        True
+        >>> less_than_40(50)
+        False
 
     :class:`~.curry` allows functions to be partially invoked an arbitary number
     of times:
@@ -29,11 +30,16 @@ class curry(object):
             return a + b + c + d + e
 
         # All of the following invocations of add_5_things
-        add_5_things(1)(1)(1)(1)(1) # 5
+        >>> add_5_things(1)(1)(1)(1)(1)
+        5
+
         one_left = add_5_things(1, 1)(3)(4) # A one place function that will
         # add 1 + 1 + 3 + 4 = 9 to whatever is provided as its argument.
-        one_left(5) # 14
-        one_left(6) # 15
+
+        >>>> one_left(5)
+        14
+        >>> one_left(6)
+        15
 
     A particular compelling use case for :class:`~.curry` is the creation of
     decorators that take optional arguments:
@@ -54,6 +60,11 @@ class curry(object):
         def multiply_plus_one(x, y):
             return x * y
 
+        >>> multiply_plus_one(1, 1)
+        2
+        >>> multiply_plus_twelve(1, 1)
+        13
+
     Notice that we were able to apply `add_n` regardless of whether or not an
     optional argument had been supplied earlier.
 
@@ -65,6 +76,13 @@ class curry(object):
         @curry(evaluation_checker=lambda *args, **kwargs: len(args) > 2)
         def args_taking_function(*args):
             return reduce(lambda x, y: x*y, args)
+
+        >>> args_taking_function(1, 2)
+        2
+        >>> args_taking_function(2)(3)
+        6
+        >>> args_taking_function(2, 2, 2, 2)
+        16
     """
 
     @staticmethod
@@ -141,7 +159,7 @@ class curry(object):
         return bound
 
     def __repr__(self):
-        return '<{0}.{1} of {2}>'.format(__name__, type(self).__name__, 
+        return '<{0}.{1} of {2}>'.format(__name__, type(self).__name__,
                                   repr(self.function))
 
 

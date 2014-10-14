@@ -11,10 +11,8 @@ from .compose import compose
 from .currying import curry
 from .misc import *
 
-_pyflakes_ignore = (compose, curry, Fetchable, FetchMarshall,
-                    GETFetcher, PaginationProcessor)
-log = logging.getLogger(__name__)
 
+log = logging.getLogger(__name__)
 
 
 def makelist(value):
