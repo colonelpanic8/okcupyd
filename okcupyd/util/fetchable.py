@@ -156,8 +156,6 @@ class Fetchable(object):
 
 class FetchMarshall(object):
 
-    STOP = object()
-
     def __init__(self, fetcher, processor, terminator=None, start_at=1):
         self._fetcher = fetcher
         self._start_at = start_at
