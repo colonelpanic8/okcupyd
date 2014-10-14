@@ -36,7 +36,7 @@ class Profile(object):
 
     def __init__(self, session, username):
         """
-        :param session: A logged in :class:`okcupyd.session.Session`
+        :param session: A logged in :class:`~okcupyd.session.Session`
         :param username: The username associated with the profile.
         """
         self._session = session
@@ -105,7 +105,7 @@ class Profile(object):
     @util.cached_property
     def photo_infos(self):
         """
-        :returns: list of :class:`okcupyd.photo.Info` instances for each photo
+        :returns: list of :class:`~okcupyd.photo.Info` instances for each photo
                   displayed on okcupid.
         """
         pics_request = self._session.okc_get(
@@ -120,7 +120,7 @@ class Profile(object):
     @util.cached_property
     def looking_for(self):
         """
-        :returns: A :class:`okcupyd.looking_for.LookingFor` instance associated
+        :returns: A :class:`~okcupyd.looking_for.LookingFor` instance associated
                   with this profile.
         """
         return looking_for.LookingFor(self)
@@ -186,7 +186,7 @@ class Profile(object):
     @util.cached_property
     def essays(self):
         """
-        :returns: An :class:`okcupyd.essay.Essays` instance that is associated with
+        :returns: An :class:`~okcupyd.essay.Essays` instance that is associated with
                   this profile.
         """
         return essay.Essays(self)
@@ -297,7 +297,7 @@ class Profile(object):
 
     def question_fetchable(self, **kwargs):
         """
-        :returns: A :class:`okcupyd.util.fetchable.Fetchable` instance that
+        :returns: A :class:`~okcupyd.util.fetchable.Fetchable` instance that
                   contains objects representing the answers that the user
                   associated with this profile has given to okcupid.com match
                   questions.
