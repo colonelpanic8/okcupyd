@@ -26,12 +26,16 @@ def build_copy(source_credentials_or_username, dest_credentials):
     return Copy(source, dest_user)
 
 
-for method in Copy.copy_methods:
+def build_copy_task(method):
     @task
     def copy_task(source_credentials, dest_credentials):
         copy = build_copy(source_credentials, dest_credentials)
         getattr(copy, method)()
     ns.add_task(copy_task, name=method)
+
+
+for method in Copy.copy_methods:
+    build_copy_task(method)
 
 
 @ns.add_task

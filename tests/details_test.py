@@ -254,3 +254,15 @@ def test_nulling_of_details(vcr_live_sleep):
     details.languages = [('spanish', 'fluently')]
     vcr_live_sleep(sleep_time)
     assert details.languages == [('spanish', 'fluently')]
+
+
+@util.use_cassette
+def test_handle_no_fluency_lanaguages(vcr_live_sleep):
+    details = User().profile.details
+    details.languages = [('english', None)]
+    vcr_live_sleep(sleep_time)
+    assert details.languages == [('English', None)]
+
+    details.languages = [('spanish', None)]
+    vcr_live_sleep(sleep_time)
+    assert details.languages == [('Spanish', None)]

@@ -241,8 +241,11 @@ class Details(object):
             languages = []
             for language_string in language_strings:
                 match = cls.language_matcher.match(language_string.strip())
-                languages.append((match.group(1).lower(),
-                                  match.group(2).lower()))
+                if match:
+                    languages.append((match.group(1).lower(),
+                                      match.group(2).lower()))
+                else:
+                    languages.append((language_string.strip(), None))
             return languages
 
         @classmethod
@@ -251,6 +254,7 @@ class Details(object):
             number = 0
             for number, (language, level) in enumerate(languages, 1):
                 language_number = cls.language_to_number[language.lower()]
+                level = level or ''
                 level_number = cls.level[level.lower()]
                 data['cont_lang_{0}'.format(number)] = language_number
                 data['language{0}status'.format(number)] = level_number
