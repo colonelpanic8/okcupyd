@@ -4,6 +4,7 @@ from .attractiveness_finder import AttractivenessFinder
 from .messaging import ThreadFetcher
 from .photo import PhotoUploader
 from .profile import Profile
+from .profile_copy import Copy
 from .question import Questions
 from .search import SearchFetchable, search
 from .session import Session
@@ -147,6 +148,16 @@ class User(object):
         """
         response = self._session.okc_get('quickmatch', params={'okc_api': 1})
         return Profile(self._session, response.json()['sn'])
+
+    def copy(self, profile_or_user):
+        """Create a :class:`~okcupyd.profile_copy.Copy` instance with the
+        provided object as the source and this :class:`~okcupyd.user.User`
+        as the destination.
+
+        :param profile_or_user: A :class:`~okcupyd.user.User` or
+                                :class:`~okcupyd.profile.Profile` object.
+        """
+        return Copy(profile_or_user, self)
 
     def __repr__(self):
         return 'User("{0}")'.format(self.profile.username)

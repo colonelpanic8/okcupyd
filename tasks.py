@@ -49,7 +49,7 @@ def rerecord_failing():
 linux_dependencies = ('zlib1g-dev', 'libxml2-dev', 'libxslt1-dev', 'python-dev',
                       'libncurses5-dev')
 @ns.add_task
-@task(aliases='linux_dep')
+@task(aliases=('linux_dep',))
 def install_linux_dependencies():
     install_command = 'sudo apt-get install -y'
     for package in linux_dependencies:

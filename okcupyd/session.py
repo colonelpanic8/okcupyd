@@ -67,10 +67,8 @@ class Session(requests.Session):
         return response
 
     def post(self, *args, **kwargs):
-        log.debug(kwargs)
         response = super(Session, self).post(*args, **kwargs)
         response.raise_for_status()
-        log.debug(response.content)
         return response
 
     def okc_get(self, path, secure=None, **kwargs):

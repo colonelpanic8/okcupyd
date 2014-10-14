@@ -272,10 +272,18 @@ class Questions(object):
         return self.respond(user_question.id, user_response_ids, match_response_ids,
                             importance, note=user_question.explanation or '')
 
-    def respond_from_question(self, question, question_id_to_user_question,
-                              importance, switch_acceptable_answer=False):
-        user_question = question_id_to_user_question.get(question.id, None)
-        if not user_question: return
+    def respond_from_question(self, question, user_question, importance):
+        """Copy the answer given in `question` to the logged in user's
+        profile.
+
+        :param question: A :class:`~.Question` instance to copy.
+        :param user_question: An instance of :class:`~.UserQuestion` that
+                              corresponds to the same question as `question`.
+                              This is needed to retrieve the answer id from
+                              the question text answer on question.
+        :param importance: The importance to assign to the response to the
+                           answered question.
+        """
         option_index = user_question.answer_text_to_option[question.their_answer].id
         self.respond(question.id, [option_index], [option_index], importance)
 
@@ -314,6 +322,9 @@ class Questions(object):
         )
 
     def clear(self):
+        """USE WITH CAUTION. Delete the answer to every question that the
+        logged in user has responded to.
+        """
         return self._session.okc_post(
             'questions', data={'clear_all': 1}, headers=self.headers
         )

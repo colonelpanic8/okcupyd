@@ -39,7 +39,7 @@ def credentials(module_name):
 
 
 @ns.add_task
-@task(login, aliases=('eal'))
+@task(aliases=('eal',))
 def enable_all_loggers():
     for logger_name in ('okcupyd', 'requests', __name__):
         util.enable_logger(logger_name)

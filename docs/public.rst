@@ -167,6 +167,10 @@ or another from instances of :class:`~okcupyd.user.User`.
 =============================================================
 .. autoclass:: okcupyd.attractiveness_finder._AttractivenessFinder
     :members:
+
+:class:`~okcupyd.profile_copy.Copy`
+========================================
+.. autoclass:: okcupyd.profile_copy.Copy
     
 :class:`~okcupyd.statistics.Statistics`
 =======================================

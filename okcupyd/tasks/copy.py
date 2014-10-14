@@ -11,15 +11,19 @@ log = logging.getLogger(__name__)
 ns = Collection()
 
 
-def build_copy(source_credentials, dest_credentials):
-    source_module = importlib.import_module(source_credentials)
+def build_copy(source_credentials_or_username, dest_credentials):
     dest_module = importlib.import_module(dest_credentials)
-    source_user = User.from_credentials(source_module.USERNAME,
-                                        source_module.PASSWORD)
     dest_user = User.from_credentials(dest_module.USERNAME,
                                       dest_module.PASSWORD)
+    try:
+        source_module = importlib.import_module(source_credentials_or_username)
+    except ImportError:
+        source = dest_user.get_profile(source_credentials_or_username)
+    else:
+        source = User.from_credentials(source_module.USERNAME,
+                                       source_module.PASSWORD)
 
-    return Copy(source_user, dest_user)
+    return Copy(source, dest_user)
 
 
 for method in Copy.copy_methods:
