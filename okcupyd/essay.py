@@ -4,7 +4,7 @@ from .xpath import xpb
 
 
 class Essays(object):
-    """Interface to reading and writing a users essays."""
+    """Interface to reading and writing essays."""
 
     @staticmethod
     def build_essay_property(essay_index, essay_name):
