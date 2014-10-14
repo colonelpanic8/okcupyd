@@ -56,6 +56,7 @@ class cached_property(object):
         """Remove the value that is being stored on `obj` for this
         :class:`.cached_property`
         object.
+
         :param obj: The instance on which to bust the cache.
         """
         if self.func.__name__ in obj.__dict__:
@@ -64,6 +65,7 @@ class cached_property(object):
     @classmethod
     def bust_caches(cls, obj):
         """Bust the cache for all :class:`.cached_property` objects on `obj`
+
         :param obj: The instance on which to bust the caches.
         """
         for name, _ in cls.get_cached_properties(obj):

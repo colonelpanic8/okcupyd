@@ -19,6 +19,22 @@ class curry(object):
         less_than_40(39) # This will evaluate to True
         less_than_40(50) # This will evaluate to False
 
+    :class:`~.curry` allows functions to be partially invoked an arbitary number
+    of times:
+
+    .. code-block:: python
+
+        @curry
+        def add_5_things(a, b, c, d, e):
+            return a + b + c + d + e
+
+        # All of the following invocations of add_5_things
+        add_5_things(1)(1)(1)(1)(1) # 5
+        one_left = add_5_things(1, 1)(3)(4) # A one place function that will
+        # add 1 + 1 + 3 + 4 = 9 to whatever is provided as its argument.
+        one_left(5) # 14
+        one_left(6) # 15
+
     A particular compelling use case for :class:`~.curry` is the creation of
     decorators that take optional arguments:
 
@@ -38,8 +54,8 @@ class curry(object):
         def multiply_plus_one(x, y):
             return x * y
 
-    Notice that we were able to use `add_n` with its default without supplying
-    an argument, but also by supplying argument without any special syntax.
+    Notice that we were able to apply `add_n` regardless of whether or not an
+    optional argument had been supplied earlier.
 
     The version of curry that is available for import has been curried itself.
     That is, its constructor can be invoked partially:
