@@ -112,8 +112,3 @@ def test_looking_for_write_on_user_profile(vcr_live_sleep):
                                                                    new_ages_max)
     assert set(profile.looking_for.kinds) == set(new_kinds)
     assert profile.looking_for.gentation == new_gentation
-
-
-@util.use_cassette
-def test_details():
-    pass

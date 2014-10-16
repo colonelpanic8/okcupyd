@@ -109,12 +109,12 @@ class Profile(object):
                   displayed on okcupid.
         """
         pics_request = self._session.okc_get(
-            u'profile/{0}/photos#0'.format(self.username)
+            u'profile/{0}/album/0'.format(self.username),
         )
-        pics_tree = html.fromstring(pics_request.content.decode('utf8'))
+        pics_tree = html.fromstring(pics_request.json()['fulls'])
         from . import photo
         return map(photo.Info.from_cdn_uri,
-                   xpb.div(id='album_0').img.select_attribute_('src',
+                   xpb.div.with_class('photo').img.select_attribute_('src',
                                                                pics_tree))
 
     @util.cached_property

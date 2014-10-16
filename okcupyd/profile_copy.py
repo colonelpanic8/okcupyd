@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 class Copy(object):
     """Copy photos, essays and other attributes from one profile to another."""
 
-    copy_methods = ['questions', 'photos', 'essays', 'looking_for', 'details']
+    copy_methods = ['photos', 'essays', 'looking_for', 'details', 'questions']
 
     def __init__(self, source_profile_or_user, dest_user):
         """

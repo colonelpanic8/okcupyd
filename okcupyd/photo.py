@@ -39,28 +39,21 @@ class PhotoUploader(object):
     def _user_id(self):
         return helpers.get_current_user_id(self._photo_tree)
 
-    @property
-    def pic_id(self):
-        return self._response_dict['id']
-
-    @property
-    def height(self):
-        return self._response_dict['height']
-
-    @property
-    def width(self):
-        return self._response_dict['width']
-
     def upload(self, incoming):
         if isinstance(incoming, Info):
-            return self.upload_from_info(incoming)
-        if hasattr(incoming, 'read'):
-            return self.upload_file(incoming)
-        return self.upload_by_filename(incoming)
+            response = self.upload_from_info(incoming)
+        elif hasattr(incoming, 'read'):
+            response = self.upload_file(incoming)
+        else:
+            response =  self.upload_by_filename(incoming)
+        response_script_text = xpb.script.get_text_(
+            html.fromstring(response.content)
+        )
+        return self._get_response_json(response_script_text)
 
     def upload_from_info(self, info):
         response = self._session.get(info.jpg_uri, stream=True)
-        self.upload_file(response.raw)
+        return self.upload_file(response.raw)
 
     def upload_by_filename(self, filename):
         with open(filename, 'rb') as file_object:
@@ -70,14 +63,9 @@ class PhotoUploader(object):
     def upload_file(self, file_object, image_type='jpeg'):
         files = {'file': ('my_photo', file_object,
                           'image/{0}'.format(image_type), {'Expires': '0'})}
-        response = self._session.okc_post(self._uri, files=files, headers={
+        return self._session.okc_post(self._uri, files=files, headers={
             'content-type': 'application/json, text/javascript, */*; q=0.01'
         })
-        response_script_text = xpb.script.get_text_(
-            html.fromstring(response.content)
-        )
-        self._response_dict = self._get_response_json(response_script_text)
-        return self._response_dict
 
     def _get_response_json(self, response_text):
         start = response_text.find('res =') + 5
@@ -86,29 +74,30 @@ class PhotoUploader(object):
         log.info(simplejson.dumps({'photo_upload_response': response_text}))
         return simplejson.loads(response_text)
 
-    def _confirm_parameters(self, thumb_nail_left=None, thumb_nail_top=None,
+    def _confirm_parameters(self, pic_id, thumb_nail_left=None, thumb_nail_top=None,
                             thumb_nail_right=None, thumb_nail_bottom=None,
-                            caption=''):
+                            caption='', height=None, width=None):
         return {
             'userid': self._user_id,
             'albumid': 0,
             'authcode': self._authcode,
             'okc_api': 1,
-            'picid': self.pic_id,
+            'picid': pic_id,
             'picture.add_ajax': 1,
             'use_new_upload': 1,
             'caption': caption,
-            'height': self.height,
-            'width': self.width,
+            'height': height,
+            'width': width,
             'tn_upper_left_x': thumb_nail_left or 0,
             'tn_upper_left_y': thumb_nail_top or 0,
-            'tn_lower_right_x': thumb_nail_right or self.width,
-            'tn_lower_right_y': thumb_nail_bottom or self.height
+            'tn_lower_right_x': thumb_nail_right or width,
+            'tn_lower_right_y': thumb_nail_bottom or height
         }
 
-    def confirm(self, **kwargs):
-        return self._session.okc_get('photoupload',
-                                     params=self._confirm_parameters(**kwargs))
+    def confirm(self, pic_id, **kwargs):
+        return self._session.okc_get(
+            'photoupload', params=self._confirm_parameters(pic_id, **kwargs)
+        )
 
     def upload_and_confirm(self, incoming, **kwargs):
         """Upload the file to okcupid and confirm, among other things, its
@@ -124,14 +113,28 @@ class PhotoUploader(object):
         :param thumb_nail_right: For thumb nail positioning.
         :param thumb_nail_bottom: For thumb nail positioning.
         """
-        self.upload(incoming)
+        response_dict = self.upload(incoming)
         if isinstance(incoming, Info):
             kwargs.setdefault('thumb_nail_left', incoming.thumb_nail_left)
             kwargs.setdefault('thumb_nail_top', incoming.thumb_nail_top)
             kwargs.setdefault('thumb_nail_right', incoming.thumb_nail_right)
             kwargs.setdefault('thumb_nail_bottom', incoming.thumb_nail_bottom)
-        self.confirm(**kwargs)
-        return self._response_dict
+        kwargs['height'] = response_dict['height']
+        kwargs['width'] = response_dict['width']
+        self.confirm(response_dict['id'], **kwargs)
+        return response_dict
+
+    def delete(self, photo_id, album_id=0):
+        """Delete a photo from
+        """
+        if isinstance(photo_id, Info):
+            photo_id = photo_id.id
+        return self._session.okc_post('photoupload', data={
+            'albumid': album_id,
+            'picid': photo_id,
+            'authcode': self._authcode,
+            'picture.delete_ajax': 1
+        })
 
 
 class Info(object):
@@ -139,7 +142,7 @@ class Info(object):
 
     base_uri = "http://k0.okccdn.com/php/load_okc_image.php/images/"
 
-    cdn_re = re.compile("http://.*okccdn.com.*images/"
+    cdn_re = re.compile("https?://.*okccdn.com.*images/"
                         "[0-9]*x[0-9]*/[0-9]*x[0-9]*/"
                         "(?P<tnl>[0-9]*?)x(?P<tnt>[0-9]*?)/"
                         "(?P<tnr>[0-9]*)x(?P<tnb>[0-9]*)/0/"
@@ -149,10 +152,10 @@ class Info(object):
     def from_cdn_uri(cls, cdn_uri):
         match = cls.cdn_re.match(cdn_uri)
         return cls(match.group('id'), match.group('tnl'), match.group('tnt'),
-            match.group('tnr'), match.group('tnb'))
+                   match.group('tnr'), match.group('tnb'))
 
     def __init__(self, photo_id, tnl, tnt, tnr, tnb):
-        self.id = photo_id
+        self.id = int(photo_id)
         #: The horizontal position of the left side of this photo's thumbnail.
         self.thumb_nail_left = int(tnl)
         #: The vertical position of the top side of this photo's thumbnail.

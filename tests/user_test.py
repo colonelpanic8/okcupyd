@@ -91,3 +91,9 @@ def test_user_profile_attributes():
     user_profile = User().profile
     assert user_profile.id > 0
     assert user_profile.rating == 0
+
+
+@util.use_cassette
+def test_logged_in_users_photos():
+    user = User()
+    assert len(user.profile.photo_infos) > 0
