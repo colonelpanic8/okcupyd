@@ -1,5 +1,12 @@
 from . import util
+<<<<<<< HEAD
 from okcupyd import User, photo
+||||||| merged common ancestors
+from okcupyd import photo
+=======
+from okcupyd import photo
+from okcupyd import User
+>>>>>>> Wrote passing test in old version.
 
 
 @util.use_cassette(cassette_name='photo_upload',
@@ -28,3 +35,10 @@ def test_make_photo_uri_from_https_link():
     )
     assert photo_info.id == 2254475731855279447
     assert photo_info.thumb_nail_top == 21
+
+
+@util.use_cassette
+def test_photo_info_upload():
+    user = User()
+    response = user.photo.upload_and_confirm(user.quickmatch().photo_infos[0])
+    # assert int(response['id']) in [pi.id for pi in user.profile.photo_infos]
