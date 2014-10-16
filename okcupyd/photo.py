@@ -64,12 +64,15 @@ class PhotoUploader(object):
 
     def upload_by_filename(self, filename):
         with open(filename, 'rb') as file_object:
-            self.upload(file_object)
+            _, extension = filename.rsplit('.')
+            self.upload_file(file_object, image_type=extension)
 
-    def upload_file(self, file_object):
-        files = {'file': ('my_photo.jpg', file_object,
-                          'image/jpeg', {'Expires': '0'})}
-        response = self._session.okc_post(self._uri, files=files)
+    def upload_file(self, file_object, image_type='jpeg'):
+        files = {'file': ('my_photo', file_object,
+                          'image/{0}'.format(image_type), {'Expires': '0'})}
+        response = self._session.okc_post(self._uri, files=files, headers={
+            'content-type': 'application/json, text/javascript, */*; q=0.01'
+        })
         response_script_text = xpb.script.get_text_(
             html.fromstring(response.content)
         )

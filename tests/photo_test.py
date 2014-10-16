@@ -6,5 +6,5 @@ from okcupyd import photo
                    match_on=util.match_on_no_body)
 def test_photo_upload():
     uploader = photo.PhotoUploader()
-    upload_response_dict = uploader.upload_and_confirm('fixtures/image.jpg')
+    upload_response_dict = uploader.upload_and_confirm('fixtures/image.png')
     assert int(upload_response_dict['id']) > 0
