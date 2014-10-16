@@ -144,12 +144,15 @@ def _match_search_query(left, right):
     right_rest = set([(param_name, value) for param_name, value in right
                       if 'filter' not in param_name])
 
-    log.info(simplejson.dumps(
-        {
-            'filter_differences': list(left_filter.symmetric_difference(right_filter)),
-            'rest_differences': list(left_rest.symmetric_difference(right_rest)),
-        }
-    ))
+    try:
+        log.info(simplejson.dumps(
+            {
+                'filter_differences': list(left_filter.symmetric_difference(right_filter)),
+                'rest_differences': list(left_rest.symmetric_difference(right_rest)),
+            }, encoding='utf-8'
+        ))
+    except Exception as e:
+        log.warning(e)
 
     return left_filter == right_filter and left_rest == right_rest
 

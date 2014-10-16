@@ -1,12 +1,5 @@
 from . import util
-<<<<<<< HEAD
 from okcupyd import User, photo
-||||||| merged common ancestors
-from okcupyd import photo
-=======
-from okcupyd import photo
-from okcupyd import User
->>>>>>> Wrote passing test in old version.
 
 
 @util.use_cassette(cassette_name='photo_upload',

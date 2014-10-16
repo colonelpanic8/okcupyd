@@ -111,7 +111,9 @@ class Profile(object):
         pics_request = self._session.okc_get(
             u'profile/{0}/album/0'.format(self.username),
         )
-        pics_tree = html.fromstring(pics_request.json()['fulls'])
+        pics_tree = html.fromstring('{0}{1}{2}'.format(
+            '<div>', pics_request.json()['fulls'], '</div>'
+        ))
         from . import photo
         return map(photo.Info.from_cdn_uri,
                    xpb.div.with_class('photo').img.select_attribute_('src',

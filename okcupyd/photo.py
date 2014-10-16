@@ -41,15 +41,10 @@ class PhotoUploader(object):
 
     def upload(self, incoming):
         if isinstance(incoming, Info):
-            response = self.upload_from_info(incoming)
+            return self.upload_from_info(incoming)
         elif hasattr(incoming, 'read'):
-            response = self.upload_file(incoming)
-        else:
-            response =  self.upload_by_filename(incoming)
-        response_script_text = xpb.script.get_text_(
-            html.fromstring(response.content)
-        )
-        return self._get_response_json(response_script_text)
+            return self.upload_file(incoming)
+        return self.upload_by_filename(incoming)
 
     def upload_from_info(self, info):
         response = self._session.get(info.jpg_uri, stream=True)
@@ -63,9 +58,11 @@ class PhotoUploader(object):
     def upload_file(self, file_object, image_type='jpeg'):
         files = {'file': ('my_photo.jpg', file_object,
                           'image/{0}'.format(image_type), {'Expires': '0'})}
-        return self._session.okc_post(self._uri, files=files, headers={
-            'content-type': 'application/json, text/javascript, */*; q=0.01'
-        })
+        response = self._session.okc_post(self._uri, files=files)
+        response_script_text = xpb.script.get_text_(
+            html.fromstring(response.content)
+        )
+        return self._get_response_json(response_script_text)
 
     def _get_response_json(self, response_text):
         start = response_text.find('res =') + 5
