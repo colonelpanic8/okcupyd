@@ -61,7 +61,7 @@ class PhotoUploader(object):
             self.upload_file(file_object, image_type=extension)
 
     def upload_file(self, file_object, image_type='jpeg'):
-        files = {'file': ('my_photo', file_object,
+        files = {'file': ('my_photo.jpg', file_object,
                           'image/{0}'.format(image_type), {'Expires': '0'})}
         return self._session.okc_post(self._uri, files=files, headers={
             'content-type': 'application/json, text/javascript, */*; q=0.01'
@@ -140,9 +140,9 @@ class PhotoUploader(object):
 class Info(object):
     """Represent a photo that appears on a okcupid.com user's profile."""
 
-    base_uri = "http://k0.okccdn.com/php/load_okc_image.php/images/"
+    base_uri = "https://k0.okccdn.com/php/load_okc_image.php/images/"
 
-    cdn_re = re.compile("https?://.*okccdn.com.*images/"
+    cdn_re = re.compile("http(?P<was_secure>s?)://.*okccdn.com.*images/"
                         "[0-9]*x[0-9]*/[0-9]*x[0-9]*/"
                         "(?P<tnl>[0-9]*?)x(?P<tnt>[0-9]*?)/"
                         "(?P<tnr>[0-9]*)x(?P<tnb>[0-9]*)/0/"
@@ -167,7 +167,9 @@ class Info(object):
 
     @property
     def jpg_uri(self):
-        """The jpg uri where this photo can be located."""
+        """
+        :returns: A uri from which this photo can be downloaded in jpg format.
+        """
         return '{0}{1}.jpg'.format(self.base_uri, self.id)
 
     def __repr__(self):
