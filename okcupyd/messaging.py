@@ -162,7 +162,13 @@ class MessageThread(object):
         """
         :returns: The id assigned to the correspondent of this message.
         """
-        return self._thread_element['data-personid']
+        try:
+            return int(self._thread_element.attrib['data-personid'])
+        except (ValueError, KeyError):
+            try:
+                return int(self.correspondent_profile.id)
+            except:
+                pass
 
     _correspondent_xpb = xpb.div.with_class('inner').a.with_class('photo').\
                              img.select_attribute_('alt')
@@ -262,8 +268,7 @@ class MessageThread(object):
 
     def delete(self):
         """Delete this thread for the logged in user."""
-        return self._session.post('https://www.okcupid.com/mailbox',
-                                  params=self.delete_params)
+        return self._session.okc_post('mailbox', data=self.delete_params)
 
     @property
     def delete_params(self):
@@ -275,7 +280,6 @@ class MessageThread(object):
             'threadid': self.id,
             'receiverid': self.correspondent_id,
             'folderid': 1,
-            'body_to_forward': self.messages[-1].content
         }
 
     def __hash__(self):

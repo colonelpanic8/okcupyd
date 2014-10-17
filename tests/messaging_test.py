@@ -23,6 +23,7 @@ def test_initiator_and_respondent():
 
     assert message_thread.initiator.username == user.profile.username
     assert message_thread.respondent.username == their_profile.username
+    assert message_thread.correspondent_id == their_profile.id
 
 
 @util.use_cassette
@@ -46,3 +47,18 @@ def test_reply():
     message_info = user.inbox[0].reply('reply')
     assert message_info.thread_id is not None
     assert int(message_info.message_id) > 0
+
+
+@util.use_cassette
+def test_delete(vcr_live_sleep):
+    user = User()
+    their_profile = user.quickmatch()
+    message_info = their_profile.message('text')
+    assert message_info.thread_id != None
+    thread_id = user.outbox[0].id
+    user.outbox[0].delete()
+    user.outbox()
+    try:
+        assert user.outbox[0].id != thread_id
+    except IndexError:
+        pass

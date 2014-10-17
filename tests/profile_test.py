@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 
 from . import util
@@ -116,4 +117,4 @@ def test_looking_for_write_on_user_profile(vcr_live_sleep):
 
 @util.use_cassette
 def test_profile_with_unicode_characters():
-    profile = User().get_profile(u'Dimmahlé')
+    User().get_profile(u'Dimmahlé').age
