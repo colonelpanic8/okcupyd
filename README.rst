@@ -150,7 +150,7 @@ is consistent with the user's preferences for that question:
             their_question.their_answer, their_question.question.text
         ))
 
-The search functionality can be accessed without a ~.okcupyd.user.User
+The search functionality can be accessed without a :class:`~.okcupyd.user.User`
 instance:
 
 .. code:: python
@@ -162,7 +162,7 @@ instance:
 
 For more details about what filter arguments can be used with these
 search functions, see the doucmentation for
-~.okcupyd.search.SearchFetchable
+:class:`~.okcupyd.search.SearchFetchable`
 
 Messaging another user
 ~~~~~~~~~~~~~~~~~~~~~~
