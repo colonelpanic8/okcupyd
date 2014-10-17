@@ -6,14 +6,14 @@ from okcupyd import User, photo
                    match_on=util.match_on_no_body)
 def test_photo_upload():
     uploader = photo.PhotoUploader()
-    upload_response_dict = uploader.upload_and_confirm('fixtures/image.png')
+    upload_response_dict = uploader.upload_and_confirm('fixtures/image.jpg')
     assert int(upload_response_dict['id']) > 0
 
 
 @util.use_cassette(cassette_name='test_photo_delete', match_on=util.match_on_no_body)
 def test_photo_delete():
     user = User()
-    response_dict = user.photo.upload_and_confirm('fixtures/image.jpg')
+    response_dict = user.photo.upload_and_confirm(user.quickmatch().photo_infos[0])
     before_delete_photos = user.profile.photo_infos
     user.photo.delete(response_dict['id'])
     user.profile.refresh()

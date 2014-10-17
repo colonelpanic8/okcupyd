@@ -53,7 +53,7 @@ class PhotoUploader(object):
     def upload_by_filename(self, filename):
         with open(filename, 'rb') as file_object:
             _, extension = filename.rsplit('.')
-            self.upload_file(file_object, image_type=extension)
+            return self.upload_file(file_object, image_type=extension)
 
     def upload_file(self, file_object, image_type='jpeg'):
         files = {'file': ('my_photo.jpg', file_object,
@@ -116,8 +116,8 @@ class PhotoUploader(object):
             kwargs.setdefault('thumb_nail_top', incoming.thumb_nail_top)
             kwargs.setdefault('thumb_nail_right', incoming.thumb_nail_right)
             kwargs.setdefault('thumb_nail_bottom', incoming.thumb_nail_bottom)
-        kwargs['height'] = response_dict['height']
-        kwargs['width'] = response_dict['width']
+        kwargs['height'] = response_dict.get('height')
+        kwargs['width'] = response_dict.get('width')
         self.confirm(response_dict['id'], **kwargs)
         return response_dict
 
