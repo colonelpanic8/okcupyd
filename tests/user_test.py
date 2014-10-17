@@ -97,3 +97,12 @@ def test_user_profile_attributes():
 def test_logged_in_users_photos():
     user = User()
     assert len(user.profile.photo_infos) > 0
+
+
+@util.use_cassette
+def test_user_message():
+    user = User()
+    message_info = user.message(user.quickmatch().username,
+                                'abcdefghijklmnopqrstuvwxyz')
+    assert message_info.thread_id != None
+    assert message_info.message_id > 0

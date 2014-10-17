@@ -1,3 +1,5 @@
+import six
+
 from . import helpers
 from . import util
 from .attractiveness_finder import AttractivenessFinder
@@ -108,7 +110,7 @@ class User(object):
 
         """
         # Try to reply to an existing thread.
-        if not isinstance(username, str):
+        if not isinstance(username, six.string_types):
             username = username.username
         for thread in sorted(set(self.inbox + self.outbox),
                              key=lambda t: t.datetime, reverse=True):

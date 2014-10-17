@@ -38,10 +38,8 @@ class Messager(object):
         self._session = session
 
     def _get_authcode(self, username):
-        response = self._session.get(
-            'https://www.okcupid.com/profile/{0}'.format(username)
-        ).content.decode('utf8')
-        return get_authcode(response)
+        response = self._session.okc_get('profile/{0}'.format(username))
+        return get_authcode(html.fromstring(response.content))
 
     def message_request_parameters(self, username, message, thread_id, authcode):
         return {
@@ -59,7 +57,7 @@ class Messager(object):
         authcode = authcode or self._get_authcode(username)
         params = self.message_request_parameters(username, message,
                                                  thread_id or 0, authcode)
-        response = self._session.get('https://www.okcupid.com/mailbox', params=params)
+        response = self._session.okc_get('mailbox', params=params)
         response_dict = response.json()
         log.info(simplejson.dumps({'message_send_response': response_dict}))
         return MessageInfo(response_dict.get('threadid'), response_dict['msgid'])
