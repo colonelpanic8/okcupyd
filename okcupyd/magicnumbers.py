@@ -162,6 +162,8 @@ gentation_to_number = {
     'guys who like girls': '17',
     'girls who like girls': '40',
     'guys who like guys': '20',
+    'guys and girls who like bi guys': '54',
+    'guys and girls who like bi girls': '57',
     'both who like bi guys': '54',
     'both who like bi girls': '57',
     'straight girls only': '2',
