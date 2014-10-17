@@ -111,6 +111,9 @@ class PhotoUploader(object):
         :param thumb_nail_bottom: For thumb nail positioning.
         """
         response_dict = self.upload(incoming)
+        if 'error' in response_dict:
+            log.warning('Failed to upload photo')
+            return response_dict
         if isinstance(incoming, Info):
             kwargs.setdefault('thumb_nail_left', incoming.thumb_nail_left)
             kwargs.setdefault('thumb_nail_top', incoming.thumb_nail_top)

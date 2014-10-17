@@ -105,4 +105,4 @@ def test_user_message():
     message_info = user.message(user.quickmatch().username,
                                 'abcdefghijklmnopqrstuvwxyz')
     assert message_info.thread_id != None
-    assert message_info.message_id > 0
+    assert int(message_info.message_id) > 0
