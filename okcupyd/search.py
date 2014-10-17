@@ -77,6 +77,15 @@ def attractiveness_filter(attractiveness_min, attractiveness_max):
     return '25,{0},{1}'.format(attractiveness_min, attractiveness_max)
 
 
+@search_filters.register_filter_builder(
+    types=int,
+    descriptions=("The minimum number of questions answered by returned search "
+                  "results."),
+)
+def question_count_filter(question_count_min):
+    return '33,{0}'.format(question_count_min)
+
+
 search_filters.register_filter_builder(
     magicnumbers.get_height_filter,
     descriptions=["The minimum height of returned search results.",

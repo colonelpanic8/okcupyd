@@ -172,3 +172,10 @@ def test_question_filter_with_custom_answers():
                                question_answers=unacceptable_answers)[:5]:
         question = profile.find_question(user_question.id)
         assert not question.their_answer_matches
+
+
+@util.use_cassette
+def test_question_count_filter():
+    user = User()
+    for profile in user.search(question_count_min=250)[:5]:
+        assert profile.questions[249]
