@@ -162,6 +162,9 @@ def match_search_query(left, right):
 
 
 def body_as_query_string(left, right):
+    if left.path == right.path and 'ajaxuploader' in left.path:
+        return True # We can't seem to handle matching photo uploads likely
+        # because of requests internals.
     try:
         left_qs_items = list(urllib.parse.parse_qs(left.body).items())
         right_qs_items = list(urllib.parse.parse_qs(right.body).items())
