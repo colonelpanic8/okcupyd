@@ -31,7 +31,8 @@ def test_make_photo_uri_from_https_link():
 
 
 @util.use_cassette
-def test_photo_info_upload():
+def test_photo_info_upload(vcr_live_sleep):
     user = User()
     response = user.photo.upload_and_confirm(user.quickmatch().photo_infos[0])
-    # assert int(response['id']) in [pi.id for pi in user.profile.photo_infos]
+    vcr_live_sleep(2)
+    assert int(response['id']) in [pi.id for pi in user.profile.photo_infos]

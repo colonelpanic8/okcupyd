@@ -193,7 +193,9 @@ class cassette(object):
                             'vcr_cassettes', '{0}.yaml'.format(cassette_name))
 
 
-@util.curry
+@util.curry(evaluation_checker=lambda *args, **kwargs: (len(args) > 0 or
+                                                   'function' in kwargs or
+                                                   'cassette_name' in kwargs))
 def use_cassette(function=None, cassette_name=None, *args, **kwargs):
     if cassette_name is None:
         assert function, 'Must supply function if no cassette name given'

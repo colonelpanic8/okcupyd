@@ -102,22 +102,24 @@ class Profile(object):
     def authcode(self):
         return helpers.get_authcode(self.profile_tree)
 
+
+    _photo_info_xpb = xpb.div.with_class('photo').img.select_attribute_('src')
     @util.cached_property
     def photo_infos(self):
         """
         :returns: list of :class:`~okcupyd.photo.Info` instances for each photo
                   displayed on okcupid.
         """
+        from . import photo
         pics_request = self._session.okc_get(
             u'profile/{0}/album/0'.format(self.username),
         )
         pics_tree = html.fromstring('{0}{1}{2}'.format(
             '<div>', pics_request.json()['fulls'], '</div>'
         ))
-        from . import photo
-        return map(photo.Info.from_cdn_uri,
-                   xpb.div.with_class('photo').img.select_attribute_('src',
-                                                               pics_tree))
+        return [photo.Info.from_cdn_uri(uri)
+                for uri in self._photo_info_xpb.apply_(pics_tree)]
+
 
     @util.cached_property
     def looking_for(self):

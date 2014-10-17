@@ -106,6 +106,8 @@ class Copy(object):
     def photos(self):
         """Copy photos to the destination user."""
         # Reverse because pictures appear in inverse chronological order.
+        for photo_info in self.dest_user.profile.photo_infos:
+            self.dest_user.photo.delete(photo_info)
         return [self.dest_user.photo.upload_and_confirm(info)
                 for info in reversed(self.source_profile.photo_infos)]
 
