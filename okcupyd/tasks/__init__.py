@@ -33,7 +33,7 @@ def enable_logger(logger_name):
 
 
 @ns.add_task
-@task(login, aliases=('c',))
+@task(aliases=('c',))
 def credentials(module_name):
     util.update_settings_with_module(module_name)
 

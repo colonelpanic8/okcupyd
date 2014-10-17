@@ -37,3 +37,12 @@ def test_load_messages_on_message_thread():
 
     assert len(user.outbox[0].messages) == 1
     assert user.outbox[0].messages[0].content == content
+
+
+@util.use_cassette
+def test_reply():
+    user = User()
+    user.quickmatch().message('test')
+    message_info = user.inbox[0].reply('reply')
+    assert message_info.thread_id is not None
+    assert int(message_info.message_id) > 0
