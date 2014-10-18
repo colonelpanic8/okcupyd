@@ -58,10 +58,8 @@ class ThreadAdapter(object):
                               sender=sender,
                               recipient=recipient)
             new_message_models.append(new_message_model)
-            thread_model.messages.append(
-                new_message_models
-            )
-        return thread_model
+            thread_model.messages.append(new_message_model)
+        return new_message_models
 
     def add_messages(self):
         with txn() as session:
@@ -73,4 +71,4 @@ class ThreadAdapter(object):
     def get_thread(self):
         with txn() as session:
             thread_model = self._get_thread(session)
-            return self._add_messages(thread_model)
+            return thread_model, self._add_messages(thread_model)

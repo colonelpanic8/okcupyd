@@ -57,7 +57,7 @@ class Sync(object):
                 )
             )
             if inbox_last_updated:
-                okcupyd_user.inbox_last_updated
+                okcupyd_user.inbox_last_updated = inbox_last_updated
         return threads, new_messages
 
     def _sync_mailbox_until(self, mailbox, sync_until):
