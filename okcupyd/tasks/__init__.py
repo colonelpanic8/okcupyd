@@ -22,6 +22,7 @@ ns.add_task(login, 'login')
 @ns.add_task
 @task(login, default=True)
 def interactive():
+    from okcupyd.db import model
     u = user.User()
     IPython.embed()
 

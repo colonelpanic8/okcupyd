@@ -44,6 +44,7 @@ class ThreadAdapter(object):
         existing_message_ids = set([m.okc_id for m in thread_model.messages])
         new_messages = [message for message in self.thread.messages
                         if message.id not in existing_message_ids]
+        new_message_models = []
         for new_message in new_messages:
             from_initiator = thread_model.initiator.handle.lower() == \
                              new_message.sender.username.lower()
@@ -52,11 +53,13 @@ class ThreadAdapter(object):
                                 if from_initiator else \
                                 (thread_model.respondent,
                                  thread_model.initiator)
-            thread_model.messages.append(
-                model.Message(okc_id=new_message.id,
+            new_message_model = model.Message(okc_id=new_message.id,
                               text=new_message.content,
                               sender=sender,
                               recipient=recipient)
+            new_message_models.append(new_message_model)
+            thread_model.messages.append(
+                new_message_models
             )
         return thread_model
 

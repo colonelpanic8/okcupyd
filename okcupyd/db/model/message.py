@@ -20,10 +20,10 @@ class Message(OKCBase):
                                nullable=False)
 
     sender_id = Column(Integer, ForeignKey("user.id"))
-    sender = relationship("User", foreign_keys=[sender_id])
+    sender = relationship("User", foreign_keys=[sender_id], backref='sent_messages')
 
     recipient_id = Column(Integer, ForeignKey("user.id"))
-    recipient = relationship("User", foreign_keys=[recipient_id])
+    recipient = relationship("User", foreign_keys=[recipient_id], backref='received_messages')
 
     text = Column(String, nullable=False)
     thread_index = Column(Integer, nullable=False)
