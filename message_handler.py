@@ -3,7 +3,6 @@ import re
 from pytz import timezone
 import sqlalchemy
 
-from okcupyd import messaging
 from okcupyd.db import mailbox, model, txn
 import time
 
@@ -74,8 +73,6 @@ def handle(user, messages):
         return
     messages = messages[::-1]
 
-    messaging.MessageThread.delete_threads(u._session, [thread.id for thread in u.inbox[300:]])
-
     message_groups = []
     current = []
     projected_length = 0
@@ -108,6 +105,6 @@ def reset(user, ignore):
 
 def do_it():
     import okcupyd
-    MessageHandler(okcupyd.User(),
+    MessageHandler(okcupyd.User.from_credentials('pumpkinmania8', 'thisisforokc'),
                    reset, post_stats,
-                   let_other_users_respond('aspensilver', 'shrewddrew', 'nacunited')).handle_messages(sleep_time=20)
+                   let_other_users_respond('aspensilver', 'shrewddrew')).handle_messages(sleep_time=20)
