@@ -61,25 +61,6 @@ class Session(requests.Session):
         session.headers.update(cls.default_login_headers)
         return session
 
-    def get(self, *args, **kwargs):
-        response = super(Session, self).get(*args, **kwargs)
-        response.raise_for_status()
-        return response
-
-    def post(self, *args, **kwargs):
-        response = super(Session, self).post(*args, **kwargs)
-        response.raise_for_status()
-        return response
-
-    def okc_get(self, path, secure=None, **kwargs):
-        """Perform an HTTP GET to the www.okcupid.com at the provided path."""
-        response = self.get(self.build_path(path, secure), **kwargs)
-        return response
-
-    def okc_post(self, path, secure=None, **kwargs):
-        """Perform an HTTP POST to the www.okcupid.com at the provided path."""
-        return self.post(self.build_path(path, secure), **kwargs)
-
     def build_path(self, path, secure=None):
         if secure is None:
             secure = ('secure_login' in self.cookies and
@@ -99,3 +80,14 @@ class Session(requests.Session):
         :param username: The username of the profile to retrieve.
         """
         return self.get_profile(self.log_in_name)
+
+
+def build_okc_method(method_name):
+    def okc_method(self, path, secure=None, **kwargs):
+        super_method = getattr(super(Session, self), method_name)
+        response = super_method(self.build_path(path, secure), **kwargs)
+        response.raise_for_status()
+        return response
+    return okc_method
+for method_name in ('get', 'put', 'post', 'delete'):
+    setattr(Session, 'okc_{0}'.format(method_name), build_okc_method(method_name))

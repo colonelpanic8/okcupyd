@@ -2,6 +2,7 @@ import logging
 
 from lxml import html
 from requests import exceptions
+import simplejson
 
 from . import helpers
 from . import util
@@ -141,6 +142,14 @@ class Message(object):
 class MessageThread(object):
     """Represent a message thread between two users."""
 
+    @classmethod
+    def delete_threads(cls, session, thread_ids, authcode=None):
+        if not authcode:
+            authcode = helpers.get_authcode(html.fromstring(session.okc_get('messages').content))
+        data = {'access_token': authcode,
+                'threadids': simplejson.dumps(thread_ids)}
+        return session.okc_delete('apitun/messages/threads', params=data, data=data)
+
     def __init__(self, session, thread_element):
         self._session = session
         self._thread_element = thread_element
@@ -268,19 +277,7 @@ class MessageThread(object):
 
     def delete(self):
         """Delete this thread for the logged in user."""
-        return self._session.okc_post('mailbox', data=self.delete_params)
-
-    @property
-    def delete_params(self):
-        return {
-            'deletethread': 'DELETE',
-            'mailaction': 3,
-            'buddyname': self.correspondent,
-            'r1': self.correspondent,
-            'threadid': self.id,
-            'receiverid': self.correspondent_id,
-            'folderid': 1,
-        }
+        return self.delete_threads(self._session, [self.id])
 
     def __hash__(self):
         return hash(self.id)

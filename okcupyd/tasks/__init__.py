@@ -6,6 +6,7 @@ import IPython
 from . import copy
 from . import db as db_collection
 from okcupyd import user, db, util
+from okcupyd.db import model
 
 
 log = logging.getLogger(__name__)
@@ -22,9 +23,14 @@ ns.add_task(login, 'login')
 @ns.add_task
 @task(login, default=True)
 def interactive():
-    from okcupyd.db import model
     u = user.User()
     IPython.embed()
+
+@ns.add_task
+@task(aliases='s')
+def session():
+    with db.txn() as session:
+        IPython.embed()
 
 
 @ns.add_task
