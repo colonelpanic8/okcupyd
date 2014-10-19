@@ -169,7 +169,7 @@ def T(mock_profile_builder, mock_message_thread_builder, mock_message_builder):
 
     def build_message_thread():
         message_thread = testing.build_mock.thread()
-        return adapters.ThreadAdapter(message_thread).get_thread()
+        return adapters.ThreadAdapter(message_thread).get_thread()[0]
 
     def build_user(username):
         profile = testing.build_mock.profile(username)
@@ -210,13 +210,14 @@ def mock_message_builder():
     counter = itertools.count()
     next(counter)
     def _build_mock_message(id=None, sender='sender', recipient='recipient',
-                            content='content'):
+                            content='content', **kwargs):
+        kwargs.setdefault('time_sent', datetime.datetime(year=2014, day=2, month=4))
         if id == None: id = next(counter)
         assert isinstance(sender, str)
         assert isinstance(recipient, str)
         return mock.MagicMock(id=id, sender=mock.Mock(username=sender),
                               recipient=mock.Mock(username=recipient),
-                              content=content)
+                              content=content, **kwargs)
     return _build_mock_message
 
 

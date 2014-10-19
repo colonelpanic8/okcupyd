@@ -9,13 +9,13 @@ def test_thread_adapter_create_and_update(T):
     message_thread = T.build_mock.thread(initiator=initiator,
                                          respondent=respondent)
 
-    thread_model = ThreadAdapter(message_thread).get_thread()
+    thread_model, _ = ThreadAdapter(message_thread).get_thread()
     T.ensure.thread_model_resembles_okcupyd_thread(
         thread_model, message_thread
     )
 
     # Ensure that the operation is idempotent
-    other_thread_model = ThreadAdapter(message_thread).get_thread()
+    other_thread_model, _ = ThreadAdapter(message_thread).get_thread()
     T.ensure.thread_model_resembles_okcupyd_thread(
         thread_model, message_thread
     )
@@ -44,7 +44,7 @@ def test_thread_adapter_create_and_update(T):
     second_thread = T.build_mock.thread(initiator=initiator,
                                         respondent='new_respondent')
 
-    second_thread_model = ThreadAdapter(second_thread).get_thread()
+    second_thread_model, _ = ThreadAdapter(second_thread).get_thread()
     assert second_thread_model.initiator.id == thread_model.initiator.id
     assert second_thread_model.respondent != thread_model.initiator
 

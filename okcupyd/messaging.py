@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from lxml import html
@@ -136,8 +135,7 @@ class Message(object):
         fancydate_text = self._timestamp_xpb.select_attribute_(
             'id', self._message_element
         )[0]
-        _, timestamp = fancydate_text.split('_')
-        return datetime.datetime.from_timestamp(int(timestamp))
+        return helpers.parse_fancydate(fancydate_text)
 
     def __repr__(self):
         return '<{0}: {1} sent {2} "{3}{4}">'.format(
@@ -218,8 +216,7 @@ class MessageThread(object):
         fancydate_text = self._timestamp_xpb.select_attribute_(
             'id', self._thread_element
         )[0]
-        _, timestamp = fancydate_text.split('_')
-        return datetime.datetime.from_timestamp(int(timestamp))
+        return helpers.parse_fancydate(fancydate_text)
 
     @property
     def with_deleted_user(self):

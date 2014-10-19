@@ -1,6 +1,6 @@
 import logging
 
-from okcupyd.db import model, txn
+from okcupyd.db import model, txn, with_txn
 
 
 log = logging.getLogger(__name__)
@@ -25,6 +25,8 @@ class UserAdapter(object):
     def get_no_txn(self, session):
         return model.User.upsert_one_no_txn(session, self.build(session),
                                             id_key='okc_id')
+
+    get = with_txn(get_no_txn)
 
 
 class ThreadAdapter(object):

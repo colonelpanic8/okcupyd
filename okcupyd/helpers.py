@@ -89,6 +89,12 @@ weekday_to_ordinal = {
 }
 
 
+def parse_fancydate(fancydate_text):
+    _, timestamp = fancydate_text.split('_')
+    timestamp = '{0}.{1}'.format(timestamp[:10], timestamp[10:])
+    return datetime.fromtimestamp(float(timestamp))
+
+
 def parse_date_updated(date_updated_text):
     recognized = False
     for function in (parse_slashed_date, parse_abbreviated_date,
