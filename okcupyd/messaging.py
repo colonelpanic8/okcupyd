@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from lxml import html
@@ -129,6 +130,15 @@ class Message(object):
             content = message.text_content().replace(' \n \n', '\n').strip()
         return content
 
+    _timestamp_xpb = xpb.span.with_class('timestamp').span.with_class('fancydate')
+    @util.cached_property
+    def time_sent(self):
+        fancydate_text = self._timestamp_xpb.select_attribute_(
+            'id', self._message_element
+        )[0]
+        _, timestamp = fancydate_text.split('_')
+        return datetime.datetime.from_timestamp(int(timestamp))
+
     def __repr__(self):
         return '<{0}: {1} sent {2} "{3}{4}">'.format(
             type(self).__name__,
@@ -202,15 +212,14 @@ class MessageThread(object):
     def date(self):
         return self.datetime.date()
 
+    _timestamp_xpb = xpb.span.with_class('timestamp').span.with_class('fancydate')
     @util.cached_property
     def datetime(self):
-        """
-        :returns: The datetime at which this :class:`~.MessageThread`. was last
-                  updated.
-        """
-        timestamp_span = xpb.span.with_class('timestamp').apply_(self._thread_element)
-        date_updated_text = timestamp_span[0][0].text_content()
-        return helpers.parse_date_updated(date_updated_text)
+        fancydate_text = self._timestamp_xpb.select_attribute_(
+            'id', self._thread_element
+        )[0]
+        _, timestamp = fancydate_text.split('_')
+        return datetime.datetime.from_timestamp(int(timestamp))
 
     @property
     def with_deleted_user(self):

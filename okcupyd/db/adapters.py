@@ -12,7 +12,8 @@ class UserAdapter(object):
         self.profile = profile
 
     def build(self, session):
-        found = model.User.query_no_txn(session, model.User.handle == self.profile.username)
+        found = model.User.query_no_txn(session, model.User.handle ==
+                                        self.profile.username)
         if found:
             return found[0]
         else:
@@ -20,9 +21,6 @@ class UserAdapter(object):
                               handle=self.profile.username,
                               age=self.profile.age,
                               location=self.profile.location)
-
-    def get(self):
-        return model.User.upsert_okc(self.build(), id_key='okc_id')
 
     def get_no_txn(self, session):
         return model.User.upsert_one_no_txn(session, self.build(session),
@@ -58,9 +56,10 @@ class ThreadAdapter(object):
                                 (thread_model.respondent,
                                  thread_model.initiator)
             new_message_model = model.Message(okc_id=new_message.id,
-                              text=new_message.content,
-                              sender=sender,
-                              recipient=recipient)
+                                              text=new_message.content,
+                                              sender=sender,
+                                              recipient=recipient,
+                                              time_sent=new_message.time_sent)
             new_message_models.append(new_message_model)
             thread_model.messages.append(new_message_model)
         return new_message_models
