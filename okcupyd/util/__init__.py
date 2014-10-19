@@ -61,13 +61,13 @@ class cached_property(object):
             delattr(obj, self.func.__name__)
 
     @classmethod
-    def bust_caches(cls, obj):
+    def bust_caches(cls, obj, excludes=()):
         """Bust the cache for all :class:`.cached_property` objects on `obj`
 
         :param obj: The instance on which to bust the caches.
         """
         for name, _ in cls.get_cached_properties(obj):
-            if name in obj.__dict__:
+            if name in obj.__dict__ and not name in excludes:
                 delattr(obj, name)
 
     @classmethod

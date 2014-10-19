@@ -1,3 +1,4 @@
+import functools
 import logging
 
 import requests
@@ -84,6 +85,8 @@ class Session(requests.Session):
 
 def build_okc_method(method_name):
     def okc_method(self, path, secure=None, **kwargs):
+        """
+        """
         super_method = getattr(super(Session, self), method_name)
         response = super_method(self.build_path(path, secure), **kwargs)
         response.raise_for_status()

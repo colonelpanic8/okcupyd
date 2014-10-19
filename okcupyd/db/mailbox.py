@@ -60,6 +60,28 @@ class Sync(object):
                 okcupyd_user.inbox_last_updated = inbox_last_updated
         return threads, new_messages
 
+    def outbox(self):
+        with txn() as session:
+            okcupyd_user = session.query(model.OKCupydUser).join(model.User).filter(
+                model.User.okc_id == self._user.profile.id
+            ).with_for_update().one()
+
+            log.info(simplejson.dumps({
+                'inbox_last_updated': helpers.datetime_to_string(
+                    okcupyd_user.inbox_last_updated
+                )
+            }))
+            res = self._sync_mailbox_until(
+                self._user.outbox(),
+                okcupyd_user.outbox_last_updated
+            )
+            if not res:
+                return
+            res = outbox_last_updated, threads, new_messages
+            if outbox_last_updated:
+                okcupyd_user.outbox_last_updated = outbox_last_updated
+        return threads, new_messages
+
     def _sync_mailbox_until(self, mailbox, sync_until):
         threads = []
         messages = []

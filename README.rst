@@ -137,7 +137,7 @@ To search through the user:
     for profile in profiles[:10]:
         profile.message("Pumpkins are just okay.")
 
-To search for users that have answer a particular question in a way that
+To search for users that have answered a particular question in a way that
 is consistent with the user's preferences for that question:
 
 .. code:: python

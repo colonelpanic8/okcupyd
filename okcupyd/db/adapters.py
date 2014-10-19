@@ -11,17 +11,21 @@ class UserAdapter(object):
     def __init__(self, profile):
         self.profile = profile
 
-    def build(self):
-        return model.User(okc_id=self.profile.id,
-                          handle=self.profile.username,
-                          age=self.profile.age,
-                          location=self.profile.location)
+    def build(self, session):
+        found = model.User.query_no_txn(session, model.User.handle == self.profile.username)
+        if found:
+            return found[0]
+        else:
+            return model.User(okc_id=self.profile.id,
+                              handle=self.profile.username,
+                              age=self.profile.age,
+                              location=self.profile.location)
 
     def get(self):
         return model.User.upsert_okc(self.build(), id_key='okc_id')
 
     def get_no_txn(self, session):
-        return model.User.upsert_one_no_txn(session, self.build(),
+        return model.User.upsert_one_no_txn(session, self.build(session),
                                             id_key='okc_id')
 
 

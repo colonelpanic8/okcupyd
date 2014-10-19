@@ -59,7 +59,7 @@ class Profile(object):
                        result in the caching of the profile_tree attribute. The
                        new profile_tree will be returned.
         """
-        util.cached_property.bust_caches(self)
+        util.cached_property.bust_caches(self, excludes=('authcode'))
         self.questions = self.question_fetchable()
         if reload:
             return self.profile_tree
@@ -101,7 +101,6 @@ class Profile(object):
     @util.cached_property
     def authcode(self):
         return helpers.get_authcode(self.profile_tree)
-
 
     _photo_info_xpb = xpb.div.with_class('photo').img.select_attribute_('src')
     @util.cached_property
