@@ -15,7 +15,7 @@ from .user import User
 from .util import save_file
 
 
-version = "0.8.9"
+version = "0.8.10"
 
 
 def interactive():
