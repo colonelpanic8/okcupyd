@@ -6,7 +6,7 @@ okcupyd
 .. toctree::
    :maxdepth: 4
 
-   includeREADME
+   getting_started
    public
    core
    modules

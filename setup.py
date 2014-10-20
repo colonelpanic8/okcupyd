@@ -3,7 +3,7 @@ import os
 from setuptools import setup, find_packages
 
 
-version = '0.8.8'
+version = '0.8.9'
 
 
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as file:
@@ -16,7 +16,8 @@ setup(
     packages=find_packages(exclude=('tests*', 'examples')),
     install_requires=['lxml', 'requests >= 2.4.1', 'simplejson',
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
-                      'wrapt', 'coloredlogs >= 0.8', 'invoke >= 0.9', 'six >= 1.8.0'],
+                      'wrapt', 'coloredlogs >= 0.8', 'invoke >= 0.9',
+                      'six >= 1.8.0'],
     tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy >= 1.1.2'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",
