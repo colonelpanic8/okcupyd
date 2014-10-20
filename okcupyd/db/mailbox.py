@@ -37,8 +37,8 @@ class Sync(object):
             }))
 
             res = self._sync_mailbox_until(
-                self._user.outbox(),
-                okcupyd_user.outbox_last_updated
+                getattr(self._user, mailbox_name)(),
+                getattr(okcupyd_user, last_updated_name)
             )
             if not res:
                 return None, None
