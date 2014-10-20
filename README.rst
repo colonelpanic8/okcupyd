@@ -1,4 +1,4 @@
-|PyPI Version|\ |Build Status|\ |Documentation Status|
+|Latest PyPI version|\ |Build Status|\ |Documentation Status|
 
 Getting Started
 ===============
@@ -137,8 +137,8 @@ To search through the user:
     for profile in profiles[:10]:
         profile.message("Pumpkins are just okay.")
 
-To search for users that have answered a particular question in a way that
-is consistent with the user's preferences for that question:
+To search for users that have answered a particular question in a way
+that is consistent with the user's preferences for that question:
 
 .. code:: python
 
@@ -150,7 +150,7 @@ is consistent with the user's preferences for that question:
             their_question.their_answer, their_question.question.text
         ))
 
-The search functionality can be accessed without a :class:`~.okcupyd.user.User`
+The search functionality can be accessed without a ~.okcupyd.user.User
 instance:
 
 .. code:: python
@@ -162,7 +162,7 @@ instance:
 
 For more details about what filter arguments can be used with these
 search functions, see the doucmentation for
-:class:`~.okcupyd.search.SearchFetchable`
+~.okcupyd.search.SearchFetchable
 
 Messaging another user
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -273,10 +273,9 @@ from the root directory of the repository.
 
 This is only important (at the moment) if you plan to edit README.rst.
 
+.. |Latest PyPI version| image:: https://pypip.in/v/okcupyd/badge.png
+   :target: https://pypi.python.org/pypi/okcupyd/
 .. |Build Status| image:: https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master
    :target: https://travis-ci.org/IvanMalison/okcupyd
 .. |Documentation Status| image:: https://readthedocs.org/projects/okcupyd/badge/?version=latest
    :target: http://okcupyd.readthedocs.org/en/latest/
-.. |PyPI Version| image:: https://pypip.in/v/okcupyd/badge.png
-    :target: https://pypi.python.org/pypi/okcupyd/
-    :alt: Latest PyPI version

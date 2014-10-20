@@ -1,14 +1,12 @@
 #!/bin/bash
 
-hash pandoc || echo "You do not have pandoc installed. This means that README.rst and Readme.md will not be automatically updated."
-hash pandoc || exit 0
+hash pandoc 2> /dev/null || echo "You do not have pandoc installed. This means that README.rst and Readme.md will not be automatically updated."
+hash pandoc 2> /dev/null || exit 0
 
 TOP_LEVEL="$(git rev-parse --show-toplevel)"
 
-cp "$TOP_LEVEL/bin/BADGES.md" "$TOP_LEVEL/README.md"
 echo "Writing to README.md and README.rst"
-pandoc -f rst -t markdown "$TOP_LEVEL/docs/getting_started.rst" >> "$TOP_LEVEL/README.md"
+pandoc -f rst -t markdown "$TOP_LEVEL/docs/getting_started.rst" > "$TOP_LEVEL/README.md"
 
 pandoc -f markdown -t rst "$TOP_LEVEL/README.md" > "$TOP_LEVEL/README.rst"
-rm "$TOP_LEVEL/README.md"
-git add "$TOP_LEVEL/README.rst"
+git add "$TOP_LEVEL/README.rst" "$TOP_LEVEL/README.md"
