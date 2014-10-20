@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 
 
 class Sync(object):
+    """Sync messages from a users inbox to the okc database."""
 
     def __init__(self, user):
         self._user = user
@@ -22,6 +23,8 @@ class Sync(object):
 
     @curry
     def update_mailbox(self, mailbox_name='inbox'):
+        """Update the mailbox associated with the given mailbox name.
+        """
         with txn() as session:
             last_updated_name = '{0}_last_updated'.format(mailbox_name)
             okcupyd_user = session.query(model.OKCupydUser).join(model.User).filter(
