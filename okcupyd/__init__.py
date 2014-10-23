@@ -15,7 +15,7 @@ from .user import User
 from .util import save_file
 
 
-version = "0.8.10"
+__version__ = pkg_resources.get_distribution('okcupyd').version
 
 
 def interactive():
@@ -25,7 +25,7 @@ def interactive():
     util.add_command_line_options(parser.add_argument)
     args = parser.parse_args()
     if args.version:
-        print(pkg_resources.get_distribution('okcupyd').version)
+        print(__version__)
         return sys.exit()
     util.handle_command_line_options(args)
     util.get_credentials()
@@ -45,4 +45,4 @@ def interactive():
 
 
 __all__ = ('User', 'AttractivenessFinder', 'Statistics',
-           'save_file', 'interactive', 'PhotoUploader', 'Session', version)
+           'save_file', 'interactive', 'PhotoUploader', 'Session', __version__)
