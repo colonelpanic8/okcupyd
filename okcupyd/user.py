@@ -3,7 +3,7 @@ import six
 from . import helpers
 from . import util
 from .attractiveness_finder import AttractivenessFinder
-from .messaging import ThreadFetcher
+from .messaging import ThreadFetcher, MessageThread
 from .photo import PhotoUploader
 from .profile import Profile
 from .profile_copy import Copy
@@ -87,8 +87,8 @@ class User(object):
         self.photo = PhotoUploader(self._session)
 
     def get_profile(self, username):
-        """Get the :class:`~okcupyd.profile.Profile` associated with the supplied
-        username.
+        """Get the :class:`~okcupyd.profile.Profile` associated with the
+        supplied username.
 
         :param username: The username of the profile to retrieve.
         """
@@ -112,11 +112,11 @@ class User(object):
         # Try to reply to an existing thread.
         if not isinstance(username, six.string_types):
             username = username.username
-        for thread in sorted(set(self.inbox + self.outbox),
-                             key=lambda t: t.datetime, reverse=True):
-            if thread.correspondent.lower() == username.lower():
-                thread.reply(message_text)
-                return
+        for mailbox in (self.inbox, self.outbox):
+            for thread in mailbox:
+                if thread.correspondent.lower() == username.lower():
+                    thread.reply(message_text)
+                    return
 
         return self._message_sender.send(username, message_text)
 
@@ -143,6 +143,15 @@ class User(object):
             count = kwargs.pop('count')
             return search(session=self._session, count=count, **kwargs)
         return SearchFetchable(self._session, **kwargs)
+
+    def delete_threads(self, thread_ids_or_threads):
+        """Call :meth:`~okcupyd.messaging.MessageThread.delete_threads`.
+        :param thread_ids_or_threads: A list whose members are either
+                                      :class:`~.MessageThread` instances
+                                      or okc_ids of message threads.
+        """
+        return MessageThread.delete_threads(self._session,
+                                            thread_ids_or_threads)
 
     def quickmatch(self):
         """Return a :class:`~okcupyd.profile.Profile` obtained by visiting the

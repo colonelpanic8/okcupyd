@@ -48,7 +48,9 @@ def test_user_essay_refresh():
     user.message_me_if = 'other stuff'
 
     user2.profile.essays.refresh()
-    assert user.profile.essays.message_me_if == user2.profile.essays.message_me_if
+    assert user.profile.essays.message_me_if == (
+        user2.profile.essays.message_me_if
+    )
 
 
 @util.use_cassette(cassette_name='visitors_test')
@@ -73,8 +75,12 @@ def test_profile_titles():
         'good_at': u'I\u2019m really good at',
         'message_me_if': 'You should message me if',
         'my_life': u'What I\u2019m doing with my life',
-        'people_first_notice': 'The first things people usually notice about me',
-        'private_admission': u'The most private thing I\u2019m willing to admit',
+        'people_first_notice': (
+            'The first things people usually notice about me'
+        ),
+        'private_admission': (
+            u'The most private thing I\u2019m willing to admit'
+        ),
         'self_summary': 'My self-summary',
         'six_things': 'The six things I could never do without',
         'think_about': 'I spend a lot of time thinking about'
@@ -106,3 +112,13 @@ def test_user_message():
                                 'abcdefghijklmnopqrstuvwxyz')
     assert message_info.thread_id != None
     assert int(message_info.message_id) > 0
+
+
+@util.use_cassette
+def test_user_delete_threads():
+    user = User()
+    message_info = user.message(user.quickmatch().username,
+                                'abcdefghijklmnopqrstuvwxyz')
+    assert message_info.thread_id != None
+    user.delete_threads(user.outbox())
+    assert user.outbox()[:] == []

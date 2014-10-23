@@ -1,3 +1,5 @@
+import datetime
+
 from . import util
 from okcupyd import User
 
@@ -62,3 +64,26 @@ def test_delete(vcr_live_sleep):
         assert user.outbox[0].id != thread_id
     except IndexError:
         pass
+
+@util.use_cassette
+def test_date_parsing_integration():
+    user = User()
+    # This test sucks, but I can't think of a better way to test this.
+    # I suppose that we could just make a message element without
+    # making an http request.
+    assert user.inbox[1].datetime == datetime.datetime(year=2014, day=19,
+                                                       month=10)
+    assert user.inbox[1].messages[-1].time_sent == datetime.datetime(
+        year=2014, day=19, month=10
+    )
+
+
+@util.use_cassette
+def test_date_parsing_smoke():
+    user = User()
+    for thread in user.inbox:
+        thread.datetime
+        for message in thread.messages:
+            message.time_sent
+    for thread in user.outbox:
+        thread.datetime

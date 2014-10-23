@@ -40,7 +40,8 @@ class Detail(object):
 
     @classmethod
     def mapping_updater(cls, mapping, id_name=None):
-        return cls(id_name=id_name, updater=magicnumbers.MappingUpdater(mapping))
+        return cls(id_name=id_name,
+                   updater=magicnumbers.MappingUpdater(mapping))
 
     @staticmethod
     def default_updater(id_name, value):

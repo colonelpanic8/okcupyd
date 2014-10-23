@@ -106,9 +106,12 @@ def parse_date_updated(date_updated_text):
     else:
         parsed_time = datetime.today()
     log_function = log.info if recognized else log.error
-    log_function(simplejson.dumps({"incoming_date": date_updated_text,
-                                   "outgoing_date": parsed_time.strftime("%Y.%m.%d %H:%M"),
-                                   "recognized": recognized}))
+    log_function(simplejson.dumps({
+        "matcher_function_name": function.__name__,
+        "incoming_date": date_updated_text,
+        "outgoing_date": parsed_time.strftime("%Y.%m.%d %H:%M"),
+        "recognized": recognized
+    }))
     return parsed_time
 
 
@@ -163,7 +166,8 @@ def date_from_weekday(weekday):
     difference = (today_ordinal - incoming_weekday_ordinal
                   if today_ordinal > incoming_weekday_ordinal else
                   7 - incoming_weekday_ordinal + today_ordinal)
-    return today - timedelta(days=difference)
+    return datetime.combine(today - timedelta(days=difference),
+                            datetime.min.time())
 
 
 def datetime_to_string(a_datetime):
@@ -185,7 +189,8 @@ def get_locid(session, location):
         'func': 'query',
         'query': location,
     }
-    loc_query = session.get('http://www.okcupid.com/locquery', params=query_parameters)
+    loc_query = session.get('http://www.okcupid.com/locquery',
+                            params=query_parameters)
     p = html.fromstring(loc_query.content.decode('utf8'))
     js = loads(p.text)
     if 'results' in js and len(js['results']):

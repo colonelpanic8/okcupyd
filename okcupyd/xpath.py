@@ -1,3 +1,5 @@
+from .util import cached_property
+
 class XPathBuilder(object):
 
     def __init__(self, nodes=(), relative=True, direct_child=False):
@@ -5,16 +7,14 @@ class XPathBuilder(object):
         self.relative = relative
         self.direct_child = direct_child
 
-    @property
+    @cached_property
     def xpath(self):
         return ('.' if self.relative else '') + ''.join(node.xpath
                                                         for node in self.nodes)
 
     @property
     def or_(self):
-        updated_final_node = self.nodes[-1].make_or
-        return type(self)(self.nodes[:-1] + (updated_final_node,),
-                          relative=self.relative, direct_child=self.direct_child)
+        return self.update_final_node(self.nodes[-1].make_or)
 
     @property
     def text_(self):
@@ -33,7 +33,8 @@ class XPathBuilder(object):
 
     def update_final_node(self, updated_final_node):
         return type(self)(self.nodes[:-1] + (updated_final_node,),
-                          relative=self.relative, direct_child=self.direct_child)
+                          relative=self.relative,
+                          direct_child=self.direct_child)
 
     def __call__(self, *predicates, **attributes):
         direct_child = attributes.pop('direct_child', None)
@@ -53,7 +54,8 @@ class XPathBuilder(object):
         return self.update_final_node(self.nodes[-1].with_classes(classes))
 
     def select_attribute_(self, attribute, elem=None):
-        builder = self.update_final_node(self.nodes[-1](selected_attribute=attribute))
+        update_final_node = self.nodes[-1](selected_attribute=attribute)
+        builder = self.update_final_node(update_final_node)
         if elem is not None:
             return builder.apply_(elem)
         else:
@@ -98,8 +100,8 @@ class XPathNode(object):
         self.element = element
         self.predicates = tuple(predicates) if predicates else ()
         if attributes:
-            self.predicates += tuple([self.attribute_equal(attribute, value)
-                                      for attribute, value in attributes.items()])
+            self.predicates += tuple([self.attribute_equal(key, value)
+                                      for key, value in attributes.items()])
         self.direct_child = direct_child
         self.use_or = use_or
         self.selected_attribute = selected_attribute
@@ -139,7 +141,9 @@ class XPathNode(object):
 
     def __call__(self, element=None, predicates=(), attributes=None,
                  direct_child=None, use_or=False, selected_attribute=None):
-        direct_child = self.direct_child if direct_child is None else direct_child
+        direct_child = (self.direct_child
+                        if direct_child is None
+                        else direct_child)
         element = self.element if element is None else element
         new_predicates = self.predicates + tuple(predicates)
         return type(self)(element, attributes, new_predicates,
