@@ -213,7 +213,7 @@ You can access the essays, looking for attributes and detail attributes
 of a profile very easily
 
 ``` {.sourceCode .python}
-profile = user..quickmatch()
+profile = user.quickmatch()
 print(profile.essays.self_summary)
 print(profile.looking_for.ages)
 print(profile.details.orientation)

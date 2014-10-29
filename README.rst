@@ -223,7 +223,7 @@ of a profile very easily
 
 .. code:: python
 
-    profile = user..quickmatch()
+    profile = user.quickmatch()
     print(profile.essays.self_summary)
     print(profile.looking_for.ages)
     print(profile.details.orientation)
