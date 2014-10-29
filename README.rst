@@ -52,10 +52,15 @@ Interactive
 ~~~~~~~~~~~
 
 Installing the okcupyd package should add an executable script to a
-directory in your $PATH that will allow you to type okcupyd to enter an
-interactive ipython shell that has been prepared for use with okcupyd.
-Before the shell starts, you will be prompted for your username and
-password.
+directory in your $PATH that will allow you to type okcupyd into your
+shell of choice to enter an interactive ipython shell that has been
+prepared for use with okcupyd. Before the shell starts, you will be
+prompted for your username and password. This executable script accepts
+the flags --enable-logger which enables a logger of the given name, and
+--credentials whose action is described below.
+
+It is highly recommended that you use the --enable-logger=requests and
+--enable-logger=okcupyd flags if you encounter any problems.
 
 Credentials
 ~~~~~~~~~~~
@@ -66,21 +71,30 @@ session you can do one of the following things:
 1. Create a python module (.py file) with your username and password set
    to the variables USERNAME and PASSWORD respectively. You can start an
    interactive session with the USERNAME and PASSWORD stored in
-   my\_credentials.py in the current working directory of the project by
-   running:
+   my\\\_credentials.py by running
 
 .. code:: bash
 
     PYTHONPATH=. okcupyd --credentials my_credentials
 
+from the directory that my\_credentials.py is stored in
+
 The PYTHONPATH=. at the front of this command is necessary to ensure
 that the current directory is searched for modules.
 
-2. Set the shell environment variables OKC\_USERNAME and OKC\_PASSWORD
-   to your username and password respectively. Make sure to export the
-   variables so they are visible in processes started from the shell.
-   You can make a credentials.sh file to do this using the following
-   template:
+If you wish to use a version of this library that you have cloned but
+not installed, you can use the tox environment venv to do the same thing
+with such a version of the code:
+
+.. code:: bash
+
+    PYTHONPATH=. tox -e venv -- okcupyd --credentials my_credentials
+
+2. Set the shell environment variables OKC\\\_USERNAME and
+   OKC\\\_PASSWORD to your username and password respectively. Make sure
+   to export the variables so they are visible in processes started from
+   the shell. You can make a credentials.sh file to do this using the
+   following template:
 
 .. code:: bash
 
