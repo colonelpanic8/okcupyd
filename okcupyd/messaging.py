@@ -14,7 +14,6 @@ log = logging.getLogger(__name__)
 thread_element_xpath = XPathBuilder(relative=False).li.with_classes('thread',
                                                                     'message')
 
-
 def ThreadFetcher(session, mailbox_number):
     return util.FetchMarshall(
         ThreadHTMLFetcher(session, mailbox_number),
