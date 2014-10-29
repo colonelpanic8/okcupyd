@@ -138,7 +138,7 @@ initialized as follows:
 .. code:: python
 
     import okcupyd
-    u = okcupyd.User()
+    user = okcupyd.User()
 
 Searching profiles
 ~~~~~~~~~~~~~~~~~~
@@ -147,7 +147,7 @@ To search through the user:
 
 .. code:: python
 
-    profiles = u.search(age_min=26, age_max=32)
+    profiles = user.search(age_min=26, age_max=32)
     for profile in profiles[:10]:
         profile.message("Pumpkins are just okay.")
 
@@ -157,7 +157,7 @@ that is consistent with the user's preferences for that question:
 .. code:: python
 
     user_question = user.questions.very_important[0]
-    profiles = u.search(question=user_question)
+    profiles = user.search(question=user_question)
     for profile in profiles[:10]:
         their_question = profile.find_question(user_question.id)
         profile.message("I'm really glad that you answered {0} to {1}".format(
@@ -195,24 +195,24 @@ Messaging another user
 
 .. code:: python
 
-    u.message('foxylady899', 'Do you have a map?')
+    user.message('foxylady899', 'Do you have a map?')
     # This has slightly different semantics; it will not look through the user's
     # inbox for an existing thread.
-    u.get_profile('foxylady889').message('Do you have a map?')
+    user.get_profile('foxylady889').message('Do you have a map?')
 
 Rating a profile
 ~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    u.get_profile('foxylady899').rate(5)
+    user.get_profile('foxylady899').rate(5)
 
 Mailbox
 ~~~~~~~
 
 .. code:: python
 
-    first_thread = u.inbox[0]
+    first_thread = user.inbox[0]
     print(first_thread.messages)
 
 Quickmatch, Essays, Looking For, Details
@@ -223,7 +223,7 @@ of a profile very easily
 
 .. code:: python
 
-    profile = u.quickmatch()
+    profile = user..quickmatch()
     print(profile.essays.self_summary)
     print(profile.looking_for.ages)
     print(profile.details.orientation)
