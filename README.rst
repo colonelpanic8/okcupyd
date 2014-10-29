@@ -262,16 +262,14 @@ following command:
 git hooks
 ~~~~~~~~~
 
-It is recommended that you install the git hooks that are included in
-this repository by running
+If you plan on editing this file (getting\_started.rst) you must install
+the provided git hooks that are included in this repository by running:
 
 .. code:: bash
 
     bin/create-githook-symlinks.sh
 
 from the root directory of the repository.
-
-This is only important (at the moment) if you plan to edit README.rst.
 
 .. |Latest PyPI version| image:: https://pypip.in/v/okcupyd/badge.png
    :target: https://pypi.python.org/pypi/okcupyd/
