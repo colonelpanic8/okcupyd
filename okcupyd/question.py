@@ -34,7 +34,6 @@ class BaseQuestion(object):
         return '<{1}: {0}>'.format(self.text, type(self).__name__)
 
 
-
 class Question(BaseQuestion):
     """Represent a question answered by a user other than the logged in user."""
 
@@ -120,6 +119,17 @@ class UserQuestion(BaseQuestion):
 
     _answer_option_xpb = xpb.ul.with_class('self_answers').li
     _explanation_xpb = xpb.div.with_class('your_explanation').p.with_class('value')
+
+    def get_answer_id_for_question(self, question):
+        for answer_option in self.answer_options:
+            if answer_option.text == question.their_answer:
+                return answer_option.id
+
+    @util.cached_property
+    def answer_id(self):
+        for answer_option in self.answer_options:
+            if answer_option.is_users:
+                return answer_option.id
 
     @util.cached_property
     def answer_options(self):

@@ -33,6 +33,7 @@ MessageInfo = namedtuple('MessageInfo', ('thread_id', 'message_id'))
 
 
 class Messager(object):
+    """Send Messages to an okcupid user."""
 
     def __init__(self, session):
         self._session = session

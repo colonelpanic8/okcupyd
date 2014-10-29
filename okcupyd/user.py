@@ -1,3 +1,5 @@
+import time
+
 import six
 
 from . import helpers
@@ -152,6 +154,45 @@ class User(object):
         """
         return MessageThread.delete_threads(self._session,
                                             thread_ids_or_threads)
+
+    def get_question_answer_id(self, question, fast=False):
+        """Get the okcupid id of the answer that was given to `question`
+        HUGE CAVEAT: If the logged in user has not answered the relevant
+        question, it will automatically be answered with whatever the first
+        answer to the question is.
+
+        :param question: The question whose answer_id should be retrieved
+                         if a :class:`~okcupyd.question.UserQuestion` instance
+                         is provided its answer_id attribute will be returned.
+        :type question: :class:`~okcupyd.question.BaseQuestion`
+        """
+        if hasattr(question, 'answer_id'):
+            # Guard to handle incoming user_question.
+            return question.answer_id
+
+        user_question = None if fast else self.profile.find_question(question.id)
+        self.questions.respond(question.id, [1], [1], 3)
+        if not user_question:
+            # Give okcupid some time to update. I wish there was a better
+            # way...
+            for i in range(10):
+                if user_question is None:
+                    user_question = self.profile.find_question(
+                        question.id,
+                        self.profile.question_fetchable(recent=1)
+                    )
+                if user_question is None:
+                    log.debug(
+                        "Could not find question with id {0} in questions.".format(
+                            question.id
+                        )
+                    )
+                    time.sleep(1)
+                else:
+                    break
+
+        # Look at recently answered questions
+        return user_question.get_answer_id_for_question(question)
 
     def quickmatch(self):
         """Return a :class:`~okcupyd.profile.Profile` obtained by visiting the

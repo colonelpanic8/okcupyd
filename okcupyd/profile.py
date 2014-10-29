@@ -293,8 +293,15 @@ class Profile(object):
                                        'headers': dict(self._session.headers)}))
         self.refresh(reload=False)
 
-    def find_question(self, question_id):
-        for question in self.questions:
+    def find_question(self, question_id, question_fetchable=None):
+        """
+        :param question_id: The id of the question to search for
+        :param question_fetchable: The question fetchable to iterate through
+                                   if none is provided `self.questions`
+                                   will be used.
+        """
+        question_fetchable = question_fetchable or self.questions
+        for question in question_fetchable:
             if int(question.id) == int(question_id):
                 return question
 
