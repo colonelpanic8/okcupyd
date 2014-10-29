@@ -1,5 +1,5 @@
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 |PyPI Version|\ |Build Status|\ |Documentation Status|
 
 Getting Started
@@ -316,7 +316,7 @@ to okcupid.com.
 
 
 Another subtlety of the :class:`~okcupyd.util.fetchable.Fetchable`
-class is that its instances cache its contained results. This means that for
+class is that its instances cache its contained results. This means that
 the second iteration over :attr:`okcupyd.profile.Profile.questions` in the
 example below does not result in any http requests:
 
@@ -330,7 +330,7 @@ example below does not result in any http requests:
 
 It is important to understand that this means that the contents of a
 :class:`~okcupyd.util.fetchable.Fetchable`
-can become stale i.e. they can get in a state where their contents are out
+i.e their contents may be out
 of sync with the current state of okcupid.com. Simply calling the
 :class:`~okcupyd.util.fetchable.Fetchable`
 will cause it to request new data from okcupid.com when its contents are

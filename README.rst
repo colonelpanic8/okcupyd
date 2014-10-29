@@ -288,9 +288,9 @@ should be avoided, as they are likely to generate a massive number of
 requests to okcupid.com.
 
 Another subtlety of the ~okcupyd.util.fetchable.Fetchable class is that
-its instances cache its contained results. This means that for the
-second iteration over okcupyd.profile.Profile.questions in the example
-below does not result in any http requests:
+its instances cache its contained results. This means that the second
+iteration over okcupyd.profile.Profile.questions in the example below
+does not result in any http requests:
 
 .. code:: python
 
@@ -301,13 +301,13 @@ below does not result in any http requests:
         print(question.answer)
 
 It is important to understand that this means that the contents of a
-~okcupyd.util.fetchable.Fetchable can become stale i.e. they can get in
-a state where their contents are out of sync with the current state of
-okcupid.com. Simply calling the ~okcupyd.util.fetchable.Fetchable will
-cause it to request new data from okcupid.com when its contents are
-requested. The code snippet that follows prints out all the questions
-that the logged in user has answered roughly once per hour, including
-ones that are answered while the program is running.
+~okcupyd.util.fetchable.Fetchable i.e their contents may be out of sync
+with the current state of okcupid.com. Simply calling the
+~okcupyd.util.fetchable.Fetchable will cause it to request new data from
+okcupid.com when its contents are requested. The code snippet that
+follows prints out all the questions that the logged in user has
+answered roughly once per hour, including ones that are answered while
+the program is running.
 
 .. code:: python
 
