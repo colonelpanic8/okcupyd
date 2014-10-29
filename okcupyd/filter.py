@@ -113,7 +113,7 @@ class Filters(object):
                         `(function, incoming_keys, accepted_keys)` that returns
                         True if the filter function should be called and False
                         otherwise. Defaults to
-                        :meth:`~.Filter.all_not_none_decider`
+                        :meth:`~.all_not_none_decider`
         :param acceptable_values: A list of acceptable values for the parameter
                                   of the filter function (or a list of lists if
                                   the filter function takes multiple parameters)

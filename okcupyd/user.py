@@ -156,24 +156,40 @@ class User(object):
         return MessageThread.delete_threads(self._session,
                                             thread_ids_or_threads)
 
-    def get_question_answer_id(self, question, fast=False):
-        """Get the okcupid id of the answer that was given to `question`
+    def get_user_question(self, question, fast=False, bust_questions_cache=False):
+        """Get a :class:`~okcupyd.question.UserQuestion` corresponding to the
+        given :class:`~okcupyd.question.Question`.
 
         HUGE CAVEAT: If the logged in user has not answered the relevant
         question, it will automatically be answered with whatever the first
         answer to the question is.
 
-        :param question: The question whose okcupid answer id should be retrieved
-                         if a :class:`~okcupyd.question.UserQuestion` instance
-                         is provided its
-                         :ref:`~okcupyd.question.UserQuestion.answer_id`
-                         attribute will be returned.
-        :type question: :class:`~okcupyd.question.BaseQuestion`
-        """
-        if hasattr(question, 'answer_id'):
-            # Guard to handle incoming user_question.
-            return question.answer_id
+        For the sake of reducing the number of requests made when
+        this function is called repeatedly this function does not
+        bust the cache of
+        :attr:`~okcupyd.profile.Profile.questions`. That means that
+        a question that HAS been answered could still get answered
+        by this function if said questions fetchable was populated
+        previously (This population happens automatically) --
+        See :class:`~okcupyd.util.fetchable.Fetchable` for details
+        about when this happens.
 
+        :param question: The question for which a
+                         :class:`~okcupyd.question.UserQuestion` should
+                         be retrieved.
+        :type question: :class:`~okcupyd.question.BaseQuestion`
+        :param fast: Don't try to look through the users existing questions to
+                     see if arbitrarily answering the question can be avoided.
+        :type fast: bool
+        :param bust_questions_cache:
+        clear the :attr:`~okcupyd.profile.Profile.questions` attribute of
+        this users :class:`~okcupyd.profile.Profile` before looking for an
+        existing answerbe aware that even this does not eliminate all race
+        conditions.
+        :type bust_questions_cache: bool
+        """
+        if bust_questions_cache:
+            self.profile.questions()
         user_question = None if fast else self.profile.find_question(question.id)
         self.questions.respond(question.id, [1], [1], 3)
         if not user_question:
@@ -194,7 +210,32 @@ class User(object):
                     time.sleep(1)
                 else:
                     break
+        return user_question
 
+    def get_question_answer_id(self, question, fast=False,
+                               bust_questions_cache=False):
+        """Get the index of the answer that was given to `question`
+
+        See the documentation for :meth:`~.get_user_question` for important
+        caveats about the use of this function.
+
+        :param question: The question whose `answer_id` should be retrieved.
+        :type question: :class:`~okcupyd.question.BaseQuestion`
+        :param fast: Don't try to look through the users existing questions to
+                     see if arbitrarily answering the question can be avoided.
+        :type fast: bool
+        :param bust_questions_cache:
+        clear the :attr:`~okcupyd.profile.Profile.questions` attribute of
+        this users :class:`~okcupyd.profile.Profile` before looking for an
+        existing answerbe aware that even this does not eliminate all race
+        conditions.
+        :type bust_questions_cache: bool
+        """
+        if hasattr(question, 'answer_id'):
+            # Guard to handle incoming user_question.
+            return question.answer_id
+
+        user_question = None if fast else self.profile.find_question(question.id)
         # Look at recently answered questions
         return user_question.get_answer_id_for_question(question)
 

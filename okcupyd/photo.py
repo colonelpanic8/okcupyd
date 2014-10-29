@@ -125,7 +125,10 @@ class PhotoUploader(object):
         return response_dict
 
     def delete(self, photo_id, album_id=0):
-        """Delete a photo from
+        """Delete a photo from the logged in users account.
+
+        :param photo_id: The okcupid id of the photo to delete.
+        :param album_id: The album from which to delete the photo.
         """
         if isinstance(photo_id, Info):
             photo_id = photo_id.id
