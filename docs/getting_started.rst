@@ -166,7 +166,7 @@ is consistent with the user's preferences for that question:
             their_question.their_answer, their_question.question.text
         ))
 
-The search functionality can be accessed without a :class:`~.okcupyd.user.User`
+The search functionality can be accessed without a :class:`~okcupyd.user.User`
 instance:
 
 .. code:: python
@@ -176,9 +176,21 @@ instance:
     for profile in SearchFetchable(attractiveness_min=8000)[:5]:
         profile.message("hawt...")
 
+This is particularly useful if you want to explicitly provide the
+session that should be used to search:
+
+.. code:: python
+
+    from okcupyd.session import Session
+    from okcupyd.search import SearchFetchable
+
+    session = Session.login('username', 'password')
+    for profile in SearchFetchable(session=session, attractiveness_min=8000)[:5]:
+        profile.message("hawt...")
+
 For more details about what filter arguments can be used with these
 search functions, see the doucmentation for
-:class:`~.okcupyd.search.SearchFetchable`
+:func:`~okcupyd.search.SearchFetchable`
 
 Messaging another user
 ~~~~~~~~~~~~~~~~~~~~~~

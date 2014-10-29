@@ -159,7 +159,7 @@ for profile in profiles[:10]:
     ))
 ```
 
-The search functionality can be accessed without a \~.okcupyd.user.User
+The search functionality can be accessed without a \~okcupyd.user.User
 instance:
 
 ``` {.sourceCode .python}
@@ -169,9 +169,21 @@ for profile in SearchFetchable(attractiveness_min=8000)[:5]:
     profile.message("hawt...")
 ```
 
+This is particularly useful if you want to explicitly provide the
+session that should be used to search:
+
+``` {.sourceCode .python}
+from okcupyd.session import Session
+from okcupyd.search import SearchFetchable
+
+session = Session.login('username', 'password')
+for profile in SearchFetchable(session=session, attractiveness_min=8000)[:5]:
+    profile.message("hawt...")
+```
+
 For more details about what filter arguments can be used with these
 search functions, see the doucmentation for
-\~.okcupyd.search.SearchFetchable
+\~okcupyd.search.SearchFetchable
 
 ### Messaging another user
 
