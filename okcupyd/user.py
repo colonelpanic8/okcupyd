@@ -79,7 +79,7 @@ class User(object):
         #: with the owning :class:`~.User` instance's session.
         self.questions = Questions(self._session)
 
-        #: An :class:`~okcupyd.attractiveness_finder.AttractivenessFinder`
+        #: An :class:`~okcupyd.attractiveness_finder._AttractivenessFinder`
         #: object that is instantiated with the owning :class:`~.User`
         #: instance's session.
         self.attractiveness_finder = AttractivenessFinder(self._session)
@@ -148,6 +148,7 @@ class User(object):
 
     def delete_threads(self, thread_ids_or_threads):
         """Call :meth:`~okcupyd.messaging.MessageThread.delete_threads`.
+
         :param thread_ids_or_threads: A list whose members are either
                                       :class:`~.MessageThread` instances
                                       or okc_ids of message threads.
@@ -157,13 +158,16 @@ class User(object):
 
     def get_question_answer_id(self, question, fast=False):
         """Get the okcupid id of the answer that was given to `question`
+
         HUGE CAVEAT: If the logged in user has not answered the relevant
         question, it will automatically be answered with whatever the first
         answer to the question is.
 
-        :param question: The question whose answer_id should be retrieved
+        :param question: The question whose okcupid answer id should be retrieved
                          if a :class:`~okcupyd.question.UserQuestion` instance
-                         is provided its answer_id attribute will be returned.
+                         is provided its
+                         :ref:`~okcupyd.question.UserQuestion.answer_id`
+                         attribute will be returned.
         :type question: :class:`~okcupyd.question.BaseQuestion`
         """
         if hasattr(question, 'answer_id'):
@@ -175,7 +179,7 @@ class User(object):
         if not user_question:
             # Give okcupid some time to update. I wish there was a better
             # way...
-            for i in range(10):
+            for _ in range(10):
                 if user_question is None:
                     user_question = self.profile.find_question(
                         question.id,
