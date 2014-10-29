@@ -51,7 +51,6 @@ class txn(object):
 
             if isinstance(exc_val, Exception):
                 raise
-                #raise exc_val
             else:
                 raise exc_type(exc_val)
         else:
@@ -81,7 +80,8 @@ class Base(object):
     @classmethod
     def upsert_no_txn(cls, session, models, id_key='id'):
         ids_to_look_for = [getattr(model, id_key) for model in models]
-        found_models = cls.find_all_no_txn(session, ids_to_look_for, id_key=id_key)
+        found_models = cls.find_all_no_txn(session, ids_to_look_for,
+                                           id_key=id_key)
         id_to_model = {getattr(model, id_key): model for model in found_models}
         try:
             key_type = type(next(iter(id_to_model.keys())))

@@ -86,8 +86,9 @@ class MessageFetcher(object):
         return self._message_elements_xpb.apply_(self.messages_tree)
 
 
-_base_timestamp_xpb = xpb.span.with_class('timestamp').\
-                      span.with_class('fancydate')
+_base_timestamp_xpb = (
+    xpb.span.with_class('timestamp').span.with_class('fancydate')
+)
 _timestamp_xpb = _base_timestamp_xpb.text_
 _em_timestamp_xpb = _base_timestamp_xpb.em.text_
 
@@ -127,6 +128,7 @@ class Message(object):
                 else self._message_thread.user_profile)
 
     _content_xpb = xpb.div.with_class('message_body').text_
+
     @util.cached_property
     def content(self):
         """
