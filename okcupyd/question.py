@@ -9,6 +9,12 @@ log = logging.getLogger(__name__)
 
 
 class BaseQuestion(object):
+    """The abstract abse class of :class:`~.Question` and
+    :class:`~.UserQuestion`. Contains all the shared functinality of the
+    aforementined classes. The two are quite different in some ways and can
+    not always be used interchangably. See their respective docstrings for more
+    details.
+    """
 
     def __init__(self, question_element):
         self._question_element = question_element
@@ -35,7 +41,17 @@ class BaseQuestion(object):
 
 
 class Question(BaseQuestion):
-    """Represent a question answered by a user other than the logged in user."""
+    """Represent a question answered by a user other than the logged in user.
+
+    Note: Because of the way that okcupid presents questiond data it is actually
+    not very easy to get the index of the answer to a question that was answered
+    by a user other than the logged in user. It is possible to retrieve
+    this value (see :meth:`okcupyd.user.User.get_question_answer_id` and
+    :meth:`~.UserQuestion.get_answer_id_for_question`), but it
+    can take quite a few requests to do so. For this reason, the answer_id is
+    NOT included as an attribute on this object, despite its inclusion in
+    :class:`~.UserQuestion`.
+    """
 
     def return_none_if_unanswered(function):
         @functools.wraps(function)

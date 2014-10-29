@@ -160,7 +160,7 @@ class User(object):
         """Get a :class:`~okcupyd.question.UserQuestion` corresponding to the
         given :class:`~okcupyd.question.Question`.
 
-        HUGE CAVEAT: If the logged in user has not answered the relevant
+        HUGE CAVEATS: If the logged in user has not answered the relevant
         question, it will automatically be answered with whatever the first
         answer to the question is.
 
@@ -181,11 +181,12 @@ class User(object):
         :param fast: Don't try to look through the users existing questions to
                      see if arbitrarily answering the question can be avoided.
         :type fast: bool
-        :param bust_questions_cache:
-        clear the :attr:`~okcupyd.profile.Profile.questions` attribute of
-        this users :class:`~okcupyd.profile.Profile` before looking for an
-        existing answerbe aware that even this does not eliminate all race
-        conditions.
+        :param bust_questions_cache: clear the
+                                     :attr:`~okcupyd.profile.Profile.questions` attribute of
+                                     this users :class:`~okcupyd.profile.Profile` before looking for an
+                                     existing answerbe aware that even this does not eliminate all race
+                                     conditions.
+                                     :type bust_questions_cache: bool
         :type bust_questions_cache: bool
         """
         if bust_questions_cache:
@@ -224,12 +225,12 @@ class User(object):
         :param fast: Don't try to look through the users existing questions to
                      see if arbitrarily answering the question can be avoided.
         :type fast: bool
-        :param bust_questions_cache:
-        clear the :attr:`~okcupyd.profile.Profile.questions` attribute of
-        this users :class:`~okcupyd.profile.Profile` before looking for an
-        existing answerbe aware that even this does not eliminate all race
-        conditions.
-        :type bust_questions_cache: bool
+        :param bust_questions_cache: clear the
+                                     :attr:`~okcupyd.profile.Profile.questions` attribute of
+                                     this users :class:`~okcupyd.profile.Profile` before looking for an
+                                     existing answerbe aware that even this does not eliminate all race
+                                     conditions.
+                                     :type bust_questions_cache: bool
         """
         if hasattr(question, 'answer_id'):
             # Guard to handle incoming user_question.
