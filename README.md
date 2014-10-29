@@ -17,7 +17,7 @@ simply run:
 pip install okcupyd
 ```
 
-to make okcupyd available from import in python.
+to make okcupyd available for import in python.
 
 ### From Source
 
@@ -234,6 +234,106 @@ user.profile.details.ethnicities = ['asian', 'black', 'hispanic']
 These assignments will result in updates to the okcupid website. When
 these updates happen, subsequent access to any profile attribute will
 result in a new http request to reload the profile page.
+
+### Fetchable
+
+Most of the collection objects that are returned from functions that
+make http requests to okcupid.com library are instances of
+\~okcupyd.util.fetchable.Fetchable. In most cases, it is fine to treat
+these objects as though they are lists. It is possible to iterate over
+them, slice them and access them by index:
+
+``` {.sourceCode .python}
+for question in user.profile.questions:
+    print(question.answer.text)
+
+a_random_question = user.profile.questions[2]
+for question in questions[2:4]:
+    print(question.answer_options[0])
+```
+
+However, in some cases, it is important to understand that objects are
+not, in fact, lists. \~okcupyd.util.fetchable.Fetchable instances make
+the http requests that are needed to construct its contents as its
+contents are requested. The \~okcupyd.profile.Profile.questions
+\~okcupyd.util.fetchable.Fetchable that is used in the example above
+fetches the pages that are used to construct its contents in batches of
+10 questions on an as needed basis. This means that the actual call to
+retrieve data is made when iteration starts. If you enable the request
+logger when you run this code snippet, you get output that illustrates
+this fact:
+
+``` {.sourceCode .}
+2014-10-29 04:25:04 Livien-MacbookAir requests.packages.urllib3.connectionpool[82461] DEBUG "GET /profile/ShrewdDrew/questions?leanmode=1&low=11 HTTP/1.1" 200 None
+ Yes
+ Yes
+ Kiss someone.
+ Yes.
+ Yes
+ Sex.
+ Both equally
+ No, I wouldn't give it as a gift.
+ Maybe, I want to know all the important stuff.
+ Once or twice a week
+ 2014-10-29 04:25:04 Livien-MacbookAir requests.packages.urllib3.connectionpool[82461] DEBUG "GET /profile/ShrewdDrew/questions?leanmode=1&low=21 HTTP/1.1" 200 None
+ No.
+ No
+ No
+ Yes
+ Rarely / never
+ Always.
+ Discovering your shared interests
+ The sun
+ Acceptable.
+ No.
+```
+
+Some fetchables will continue fetching content for quite a long time.
+The search fetchable, for example, will fetch content until okcupid runs
+out of search results. As such, things like:
+
+``` {.sourceCode .python}
+for profile in user.search():
+    profile.message("hey!")
+```
+
+should be avoided, as they are likely to generate a massive number of
+requests to okcupid.com.
+
+Another subtlety of the \~okcupyd.util.fetchable.Fetchable class is that
+its instances cache its contained results. This means that for the
+second iteration over okcupyd.profile.Profile.questions in the example
+below does not result in any http requests:
+
+``` {.sourceCode .python}
+for question in user.profile.questions:
+    print(question.text)
+
+for question in user.profile.questions:
+    print(question.answer)
+```
+
+It is important to understand that this means that the contents of a
+\~okcupyd.util.fetchable.Fetchable can become stale i.e. they can get in
+a state where their contents are out of sync with the current state of
+okcupid.com. Simply calling the \~okcupyd.util.fetchable.Fetchable will
+cause it to request new data from okcupid.com when its contents are
+requested. The code snippet that follows prints out all the questions
+that the logged in user has answered roughly once per hour, including
+ones that are answered while the program is running.
+
+``` {.sourceCode .python}
+import time
+
+while True:
+    for question in user.profile.questions:
+        print(question.text)
+    user.profile.questions()
+    time.sleep(3600)
+```
+
+If the user.profile.questions() call were not there, this program would
+print the same thing over and over again.
 
 Development
 -----------

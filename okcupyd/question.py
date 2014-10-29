@@ -43,9 +43,9 @@ class BaseQuestion(object):
 class Question(BaseQuestion):
     """Represent a question answered by a user other than the logged in user.
 
-    Note: Because of the way that okcupid presents questiond data it is actually
-    not very easy to get the index of the answer to a question that was answered
-    by a user other than the logged in user. It is possible to retrieve
+    Note: Because of the way that okcupid presents question data it is actually
+    not very easy to get the index of the answer to a question that belongs
+    to a user other than the logged in user. It is possible to retrieve
     this value (see :meth:`okcupyd.user.User.get_question_answer_id` and
     :meth:`~.UserQuestion.get_answer_id_for_question`), but it
     can take quite a few requests to do so. For this reason, the answer_id is
