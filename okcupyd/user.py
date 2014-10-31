@@ -39,7 +39,12 @@ class User(object):
 
     def __init__(self, session=None):
         """
-        :param session: A logged in :class:`~okcupyd.session.Session`
+        :param session: The session which will be used for interacting
+                        with okcupid.com
+                        If none is provided, one will be instantiated
+                        automatically with the credentials in
+                        :mod:`~okcupyd.settings`
+        :type session: :class:`~okcupyd.session.Session`
         """
         self._session = session or Session.login()
         self._message_sender = helpers.Messager(self._session)
