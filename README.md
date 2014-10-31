@@ -237,11 +237,11 @@ result in a new http request to reload the profile page.
 
 ### Fetchable
 
-Most of the collection objects that are returned from functions that
-make http requests to okcupid.com library are instances of
+Most of the collection objects that are returned from function
+invocations in the okcupyd library are instances of
 \~okcupyd.util.fetchable.Fetchable. In most cases, it is fine to treat
-these objects as though they are lists. It is possible to iterate over
-them, slice them and access them by index:
+these objects as though they are lists because they can be iterated
+over, sliced and accessed by index, just like lists:
 
 ``` {.sourceCode .python}
 for question in user.profile.questions:
@@ -252,16 +252,20 @@ for question in questions[2:4]:
     print(question.answer_options[0])
 ```
 
-However, in some cases, it is important to understand that objects are
-not, in fact, lists. \~okcupyd.util.fetchable.Fetchable instances make
-the http requests that are needed to construct its contents as its
-contents are requested. The \~okcupyd.profile.Profile.questions
+However, in some cases, it is important to be aware of the subtle
+differences between \~okcupyd.util.fetchable.Fetchable objects and
+python lists. \~okcupyd.util.fetchable.Fetchable construct the elements
+that they "contain" lazily. In most of its uses in the okcupyd library,
+this means that http requests can be made to populate
+\~okcupyd.util.fetchable.Fetchable instances as its elments are
+requested.
+
+The \~okcupyd.profile.Profile.questions
 \~okcupyd.util.fetchable.Fetchable that is used in the example above
 fetches the pages that are used to construct its contents in batches of
-10 questions on an as needed basis. This means that the actual call to
-retrieve data is made when iteration starts. If you enable the request
-logger when you run this code snippet, you get output that illustrates
-this fact:
+10 questions. This means that the actual call to retrieve data is made
+when iteration starts. If you enable the request logger when you run
+this code snippet, you get output that illustrates this fact:
 
 ``` {.sourceCode .}
 2014-10-29 04:25:04 Livien-MacbookAir requests.packages.urllib3.connectionpool[82461] DEBUG "GET /profile/ShrewdDrew/questions?leanmode=1&low=11 HTTP/1.1" 200 None
@@ -314,13 +318,13 @@ for question in user.profile.questions:
 ```
 
 It is important to understand that this means that the contents of a
-\~okcupyd.util.fetchable.Fetchable i.e their contents may be out of sync
-with the current state of okcupid.com. Simply calling the
-\~okcupyd.util.fetchable.Fetchable will cause it to request new data
-from okcupid.com when its contents are requested. The code snippet that
-follows prints out all the questions that the logged in user has
-answered roughly once per hour, including ones that are answered while
-the program is running.
+\~okcupyd.util.fetchable.Fetchable are not guarenteed to be in sync with
+okcupid.com the second time they are requested. Calling
+\~okcupyd.util.fetchable.Fetchable.refresh will cause the
+\~okcupyd.util.fetchable.Fetchable to request new data from okcupid.com
+when its contents are requested. The code snippet that follows prints
+out all the questions that the logged in user has answered roughly once
+per hour, including ones that are answered while the program is running.
 
 ``` {.sourceCode .python}
 import time
@@ -328,12 +332,13 @@ import time
 while True:
     for question in user.profile.questions:
         print(question.text)
-    user.profile.questions()
+    user.profile.questions.refresh()
     time.sleep(3600)
 ```
 
-If the user.profile.questions() call were not there, this program would
-print the same thing over and over again.
+Without the call to user.profile.questions.refresh(), this program would
+never update the user.profile.questions instance, and thus what would be
+printed to the screen with each iteration of the for loop.
 
 Development
 -----------
