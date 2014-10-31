@@ -166,13 +166,14 @@ class User(object):
 
         For the sake of reducing the number of requests made when
         this function is called repeatedly this function does not
-        bust the cache of
-        :attr:`~okcupyd.profile.Profile.questions`. That means that
-        a question that HAS been answered could still get answered
-        by this function if said questions fetchable was populated
-        previously (This population happens automatically) --
-        See :class:`~okcupyd.util.fetchable.Fetchable` for details
-        about when this happens.
+        bust the cache of this :class:`~.User`'s
+        :attr:`okcupyd.profile.Profile.questions` attribute. That means that
+        a question that HAS been answered could still be answered by
+        this function if this :class:`~.User`'s
+        :attr:`~okcupyd.profile.P:attr:`okcupyd.profile.Profile.questions` was populated
+        previously (This population happens automatically --
+        See :class:`~okcupyd.util.fetchable.Fetchable` for details about when
+        and how this happens).
 
         :param question: The question for which a
                          :class:`~okcupyd.question.UserQuestion` should
@@ -186,7 +187,6 @@ class User(object):
                                      this users :class:`~okcupyd.profile.Profile` before looking for an
                                      existing answerbe aware that even this does not eliminate all race
                                      conditions.
-                                     :type bust_questions_cache: bool
         :type bust_questions_cache: bool
         """
         if bust_questions_cache:
