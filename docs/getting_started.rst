@@ -1,5 +1,5 @@
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 |PyPI Version|\ |Build Status|\ |Documentation Status|
 
 Getting Started
@@ -18,7 +18,7 @@ simply run:
 
     pip install okcupyd
 
-to make okcupyd available from import in python.
+to make okcupyd available for import in python.
 
 From Source
 ~~~~~~~~~~~
@@ -54,10 +54,15 @@ Interactive
 ~~~~~~~~~~~
 
 Installing the okcupyd package should add an executable script to a
-directory in your $PATH that will allow you to type okcupyd to enter an
-interactive ipython shell that has been prepared for use with okcupyd.
-Before the shell starts, you will be prompted for your username and
-password.
+directory in your $PATH that will allow you to type `okcupyd` into
+your shell of choice to enter an interactive ipython shell that has
+been prepared for use with okcupyd. Before the shell starts, you will
+be prompted for your username and password. This executable script
+accepts the flags `--enable-logger` which enables a logger of the
+given name, and `--credentials` whose action is described below.
+
+It is highly recommended that you use the `--enable-logger=requests`
+and `--enable-logger=okcupyd` flags if you encounter any problems.
 
 Credentials
 ~~~~~~~~~~~
@@ -68,17 +73,26 @@ session you can do one of the following things:
 1. Create a python module (.py file) with your username and password set
    to the variables USERNAME and PASSWORD respectively. You can start an
    interactive session with the USERNAME and PASSWORD stored in
-   my\_credentials.py in the current working directory of the project by
-   running:
+   `my\_credentials.py` by running
 
 .. code:: bash
 
     PYTHONPATH=. okcupyd --credentials my_credentials
 
-The PYTHONPATH=. at the front of this command is necessary to ensure
+from the directory that `my_credentials.py` is stored in
+
+The `PYTHONPATH=.` at the front of this command is necessary to ensure
 that the current directory is searched for modules.
 
-2. Set the shell environment variables OKC\_USERNAME and OKC\_PASSWORD
+If you wish to use a version of this library that you have cloned
+but not installed, you can use the tox environment `venv` to
+do the same thing with such a version of the code:
+
+.. code:: bash
+
+    PYTHONPATH=. tox -e venv -- okcupyd --credentials my_credentials
+
+2. Set the shell environment variables `OKC\_USERNAME` and `OKC\_PASSWORD`
    to your username and password respectively. Make sure to export the
    variables so they are visible in processes started from the shell.
    You can make a credentials.sh file to do this using the following
@@ -126,7 +140,7 @@ initialized as follows:
 .. code:: python
 
     import okcupyd
-    u = okcupyd.User()
+    user = okcupyd.User()
 
 Searching profiles
 ~~~~~~~~~~~~~~~~~~
@@ -135,7 +149,7 @@ To search through the user:
 
 .. code:: python
 
-    profiles = u.search(age_min=26, age_max=32)
+    profiles = user.search(age_min=26, age_max=32)
     for profile in profiles[:10]:
         profile.message("Pumpkins are just okay.")
 
@@ -145,14 +159,14 @@ is consistent with the user's preferences for that question:
 .. code:: python
 
     user_question = user.questions.very_important[0]
-    profiles = u.search(question=user_question)
+    profiles = user.search(question=user_question)
     for profile in profiles[:10]:
         their_question = profile.find_question(user_question.id)
         profile.message("I'm really glad that you answered {0} to {1}".format(
             their_question.their_answer, their_question.question.text
         ))
 
-The search functionality can be accessed without a :class:`~.okcupyd.user.User`
+The search functionality can be accessed without a :class:`~okcupyd.user.User`
 instance:
 
 .. code:: python
@@ -162,33 +176,45 @@ instance:
     for profile in SearchFetchable(attractiveness_min=8000)[:5]:
         profile.message("hawt...")
 
+This is particularly useful if you want to explicitly provide the
+session that should be used to search:
+
+.. code:: python
+
+    from okcupyd.session import Session
+    from okcupyd.search import SearchFetchable
+
+    session = Session.login('username', 'password')
+    for profile in SearchFetchable(session=session, attractiveness_min=8000)[:5]:
+        profile.message("hawt...")
+
 For more details about what filter arguments can be used with these
 search functions, see the doucmentation for
-:class:`~.okcupyd.search.SearchFetchable`
+:func:`~okcupyd.search.SearchFetchable`
 
 Messaging another user
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    u.message('foxylady899', 'Do you have a map?')
+    user.message('foxylady899', 'Do you have a map?')
     # This has slightly different semantics; it will not look through the user's
     # inbox for an existing thread.
-    u.get_profile('foxylady889').message('Do you have a map?')
+    user.get_profile('foxylady889').message('Do you have a map?')
 
 Rating a profile
 ~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    u.get_profile('foxylady899').rate(5)
+    user.get_profile('foxylady899').rate(5)
 
 Mailbox
 ~~~~~~~
 
 .. code:: python
 
-    first_thread = u.inbox[0]
+    first_thread = user.inbox[0]
     print(first_thread.messages)
 
 Quickmatch, Essays, Looking For, Details
@@ -199,7 +225,7 @@ of a profile very easily
 
 .. code:: python
 
-    profile = u.quickmatch()
+    profile = user.quickmatch()
     print(profile.essays.self_summary)
     print(profile.looking_for.ages)
     print(profile.details.orientation)
@@ -219,6 +245,111 @@ A logged in user can update their own details using these objects:
 These assignments will result in updates to the okcupid website. When
 these updates happen, subsequent access to any profile attribute will
 result in a new http request to reload the profile page.
+
+Fetchable
+~~~~~~~~~
+
+Most of the collection objects that are returned from functions that
+make http requests to okcupid.com library are instances of
+:class:`~okcupyd.util.fetchable.Fetchable`. In most cases, it is fine
+to treat these objects as though they are lists. It is possible to
+iterate over them, slice them and access them by index:
+
+.. code:: python
+
+   for question in user.profile.questions:
+       print(question.answer.text)
+
+   a_random_question = user.profile.questions[2]
+   for question in questions[2:4]:
+       print(question.answer_options[0])
+
+However, in some cases, it is important to understand that 
+objects are not, in fact, lists.
+:class:`~okcupyd.util.fetchable.Fetchable` instances make the http
+requests that are needed to construct its contents as its contents are
+requested. The :attr:`~okcupyd.profile.Profile.questions`
+:class:`~okcupyd.util.fetchable.Fetchable` that is used in the example
+above fetches the pages that are used to construct its contents in
+batches of 10 questions on an as needed basis. This means that the
+actual call to retrieve data is made when iteration starts. If you
+enable the request logger when you run this code snippet, you get
+output that illustrates this fact:
+
+.. code::
+
+   2014-10-29 04:25:04 Livien-MacbookAir requests.packages.urllib3.connectionpool[82461] DEBUG "GET /profile/ShrewdDrew/questions?leanmode=1&low=11 HTTP/1.1" 200 None
+    Yes
+    Yes
+    Kiss someone.
+    Yes.
+    Yes
+    Sex.
+    Both equally
+    No, I wouldn't give it as a gift.
+    Maybe, I want to know all the important stuff.
+    Once or twice a week
+    2014-10-29 04:25:04 Livien-MacbookAir requests.packages.urllib3.connectionpool[82461] DEBUG "GET /profile/ShrewdDrew/questions?leanmode=1&low=21 HTTP/1.1" 200 None
+    No.
+    No
+    No
+    Yes
+    Rarely / never
+    Always.
+    Discovering your shared interests
+    The sun
+    Acceptable.
+    No.
+
+Some fetchables will continue fetching content for quite a long time.
+The search fetchable, for example, will fetch content until okcupid runs
+out of search results. As such, things like:
+
+.. code:: python
+
+    for profile in user.search():
+        profile.message("hey!")
+
+should be avoided, as they are likely to generate a massive number of requests
+to okcupid.com.
+
+
+
+Another subtlety of the :class:`~okcupyd.util.fetchable.Fetchable`
+class is that its instances cache its contained results. This means that
+the second iteration over :attr:`okcupyd.profile.Profile.questions` in the
+example below does not result in any http requests:
+
+.. code:: python
+
+    for question in user.profile.questions:
+        print(question.text)
+
+    for question in user.profile.questions:
+        print(question.answer)
+
+It is important to understand that this means that the contents of a
+:class:`~okcupyd.util.fetchable.Fetchable`
+i.e their contents may be out
+of sync with the current state of okcupid.com. Simply calling the
+:class:`~okcupyd.util.fetchable.Fetchable`
+will cause it to request new data from okcupid.com when its contents are
+requested. The code snippet that follows prints out all the questions that
+the logged in user has answered roughly once per hour, including ones that
+are answered while the program is running.
+
+.. code:: python
+
+    import time
+
+    while True:
+        for question in user.profile.questions:
+            print(question.text)
+        user.profile.questions()
+        time.sleep(3600)
+
+If the `user.profile.questions()` call were not there, this program would print
+the same thing over and over again.
 
 Development
 -----------
@@ -264,16 +395,15 @@ following command:
 git hooks
 ~~~~~~~~~
 
-It is recommended that you install the git hooks that are included in
-this repository by running
+If you plan on editing this file (getting_started.rst) you must
+install the provided git hooks that are included in this repository by
+running:
 
 .. code:: bash
 
     bin/create-githook-symlinks.sh
 
 from the root directory of the repository.
-
-This is only important (at the moment) if you plan to edit README.rst.
 
 .. |Build Status| image:: https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master
    :target: https://travis-ci.org/IvanMalison/okcupyd

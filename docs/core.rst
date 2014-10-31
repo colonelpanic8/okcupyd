@@ -16,7 +16,7 @@ Core Objects
    :members:
    :special-members: __init__
 
-:class:`~okcupyd.util.fetchable.Fetchable`
+:mod:`~okcupyd.util.fetchable`
 ==========================================
 .. automodule:: okcupyd.util.fetchable
    :members:

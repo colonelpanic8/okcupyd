@@ -1,3 +1,5 @@
+import time
+
 import six
 
 from . import helpers
@@ -77,7 +79,7 @@ class User(object):
         #: with the owning :class:`~.User` instance's session.
         self.questions = Questions(self._session)
 
-        #: An :class:`~okcupyd.attractiveness_finder.AttractivenessFinder`
+        #: An :class:`~okcupyd.attractiveness_finder._AttractivenessFinder`
         #: object that is instantiated with the owning :class:`~.User`
         #: instance's session.
         self.attractiveness_finder = AttractivenessFinder(self._session)
@@ -146,12 +148,97 @@ class User(object):
 
     def delete_threads(self, thread_ids_or_threads):
         """Call :meth:`~okcupyd.messaging.MessageThread.delete_threads`.
+
         :param thread_ids_or_threads: A list whose members are either
                                       :class:`~.MessageThread` instances
                                       or okc_ids of message threads.
         """
         return MessageThread.delete_threads(self._session,
                                             thread_ids_or_threads)
+
+    def get_user_question(self, question, fast=False, bust_questions_cache=False):
+        """Get a :class:`~okcupyd.question.UserQuestion` corresponding to the
+        given :class:`~okcupyd.question.Question`.
+
+        HUGE CAVEATS: If the logged in user has not answered the relevant
+        question, it will automatically be answered with whatever the first
+        answer to the question is.
+
+        For the sake of reducing the number of requests made when
+        this function is called repeatedly this function does not
+        bust the cache of
+        :attr:`~okcupyd.profile.Profile.questions`. That means that
+        a question that HAS been answered could still get answered
+        by this function if said questions fetchable was populated
+        previously (This population happens automatically) --
+        See :class:`~okcupyd.util.fetchable.Fetchable` for details
+        about when this happens.
+
+        :param question: The question for which a
+                         :class:`~okcupyd.question.UserQuestion` should
+                         be retrieved.
+        :type question: :class:`~okcupyd.question.BaseQuestion`
+        :param fast: Don't try to look through the users existing questions to
+                     see if arbitrarily answering the question can be avoided.
+        :type fast: bool
+        :param bust_questions_cache: clear the
+                                     :attr:`~okcupyd.profile.Profile.questions` attribute of
+                                     this users :class:`~okcupyd.profile.Profile` before looking for an
+                                     existing answerbe aware that even this does not eliminate all race
+                                     conditions.
+                                     :type bust_questions_cache: bool
+        :type bust_questions_cache: bool
+        """
+        if bust_questions_cache:
+            self.profile.questions()
+        user_question = None if fast else self.profile.find_question(question.id)
+        self.questions.respond(question.id, [1], [1], 3)
+        if not user_question:
+            # Give okcupid some time to update. I wish there was a better
+            # way...
+            for _ in range(10):
+                if user_question is None:
+                    user_question = self.profile.find_question(
+                        question.id,
+                        self.profile.question_fetchable(recent=1)
+                    )
+                if user_question is None:
+                    log.debug(
+                        "Could not find question with id {0} in questions.".format(
+                            question.id
+                        )
+                    )
+                    time.sleep(1)
+                else:
+                    break
+        return user_question
+
+    def get_question_answer_id(self, question, fast=False,
+                               bust_questions_cache=False):
+        """Get the index of the answer that was given to `question`
+
+        See the documentation for :meth:`~.get_user_question` for important
+        caveats about the use of this function.
+
+        :param question: The question whose `answer_id` should be retrieved.
+        :type question: :class:`~okcupyd.question.BaseQuestion`
+        :param fast: Don't try to look through the users existing questions to
+                     see if arbitrarily answering the question can be avoided.
+        :type fast: bool
+        :param bust_questions_cache: clear the
+                                     :attr:`~okcupyd.profile.Profile.questions` attribute of
+                                     this users :class:`~okcupyd.profile.Profile` before looking for an
+                                     existing answerbe aware that even this does not eliminate all race
+                                     conditions.
+                                     :type bust_questions_cache: bool
+        """
+        if hasattr(question, 'answer_id'):
+            # Guard to handle incoming user_question.
+            return question.answer_id
+
+        user_question = None if fast else self.profile.find_question(question.id)
+        # Look at recently answered questions
+        return user_question.get_answer_id_for_question(question)
 
     def quickmatch(self):
         """Return a :class:`~okcupyd.profile.Profile` obtained by visiting the

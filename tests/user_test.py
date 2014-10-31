@@ -122,3 +122,15 @@ def test_user_delete_threads():
     assert message_info.thread_id != None
     user.delete_threads(user.outbox())
     assert user.outbox()[:] == []
+
+
+@util.use_cassette
+def test_user_get_user_question():
+    user = User()
+    profile = user.quickmatch()
+    question = profile.questions[0]
+    user_question = user.get_user_question(question)
+    assert question.id == user_question.id
+    assert question.text == user_question.text
+    assert 0 < user_question.answer_id < 5
+    assert 0 < user_question.get_answer_id_for_question(question) < 5

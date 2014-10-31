@@ -4,7 +4,7 @@ import inspect
 class curry(object):
     """Curry a function or method.
 
-    Applying :class:`~.curry` to a function creates a callable with the same
+    Applying :class:`~okcupyd.util.currying.curry` to a function creates a callable with the same
     functionality that can be invoked with an incomplete argument list to
     create a partial application of the original function.
 
@@ -20,7 +20,7 @@ class curry(object):
         >>> less_than_40(50)
         False
 
-    :class:`~.curry` allows functions to be partially invoked an arbitary number
+    :class:`~okcupyd.util.currying.curry` allows functions to be partially invoked an arbitary number
     of times:
 
     .. code-block:: python
@@ -41,7 +41,7 @@ class curry(object):
         >>> one_left(6)
         15
 
-    A particular compelling use case for :class:`~.curry` is the creation of
+    A particular compelling use case for :class:`~okcupyd.util.currying.curry` is the creation of
     decorators that take optional arguments:
 
     .. code-block:: python

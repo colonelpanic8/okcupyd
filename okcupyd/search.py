@@ -14,7 +14,8 @@ from .xpath import xpb
 
 log = logging.getLogger(__name__)
 
-
+#: A :class:`~okcupyd.filter.Filters` object that stores all of the
+#: filters that are accepted by :func:`.SearchFetchable`.
 search_filters = filter.Filters()
 search_filters.register_filter_builder(
     filter.gentation_filter,
@@ -141,7 +142,8 @@ _username_xpb = xpb.div.with_classes('match_card').\
 # yourself.
 def SearchFetchable(session=None, **kwargs):
     """Search okcupid.com with the given parameters. Parameters are registered
-    to this function through :meth:`.search_filters.register_filter_builder`.
+    to this function through :meth:`~okcupyd.filter.Filters.register_filter_builder`
+    of :data:`~okcupyd.search.search_filters`.
 
     :returns: A :class:`~okcupyd.util.fetchable.Fetchable` of
               :class:`~okcupyd.profile.Profile` instances.

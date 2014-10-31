@@ -9,6 +9,12 @@ log = logging.getLogger(__name__)
 
 
 class BaseQuestion(object):
+    """The abstract abse class of :class:`~.Question` and
+    :class:`~.UserQuestion`. Contains all the shared functinality of the
+    aforementined classes. The two are quite different in some ways and can
+    not always be used interchangably. See their respective docstrings for more
+    details.
+    """
 
     def __init__(self, question_element):
         self._question_element = question_element
@@ -34,9 +40,18 @@ class BaseQuestion(object):
         return '<{1}: {0}>'.format(self.text, type(self).__name__)
 
 
-
 class Question(BaseQuestion):
-    """Represent a question answered by a user other than the logged in user."""
+    """Represent a question answered by a user other than the logged in user.
+
+    Note: Because of the way that okcupid presents question data it is actually
+    not very easy to get the index of the answer to a question that belongs
+    to a user other than the logged in user. It is possible to retrieve
+    this value (see :meth:`okcupyd.user.User.get_question_answer_id` and
+    :meth:`~.UserQuestion.get_answer_id_for_question`), but it
+    can take quite a few requests to do so. For this reason, the answer_id is
+    NOT included as an attribute on this object, despite its inclusion in
+    :class:`~.UserQuestion`.
+    """
 
     def return_none_if_unanswered(function):
         @functools.wraps(function)
@@ -79,8 +94,9 @@ class Question(BaseQuestion):
     @return_none_if_unanswered
     def their_answer_matches(self):
         """
-        :returns: bool indicating whether or not the answer provided by the user
+        :returns: whether or not the answer provided by the user
                   answering the question is acceptable to the logged in user.
+        :rtype: rbool
         """
         return 'not_accepted' not in self._their_answer_span.attrib['class']
 
@@ -107,7 +123,7 @@ class Question(BaseQuestion):
     @return_none_if_unanswered
     def my_note(self):
         """
-        :returns: The note the logged inuser provided as an explanation for their
+        :returns: The note the logged in user provided as an explanation for their
                   answer to this question.
         """
         return self._my_note_span.text_content().strip()
@@ -119,7 +135,28 @@ class UserQuestion(BaseQuestion):
     """Represent a question answered by the logged in user."""
 
     _answer_option_xpb = xpb.ul.with_class('self_answers').li
-    _explanation_xpb = xpb.div.with_class('your_explanation').p.with_class('value')
+    _explanation_xpb = xpb.div.with_class('your_explanation').\
+                       p.with_class('value')
+
+    def get_answer_id_for_question(self, question):
+        """Get the answer_id corresponding to the answer given for question
+        by looking at this :class:`~.UserQuestion`'s answer_options.
+        The given :class:`~.Question` instance must have the same id as this
+        :class:`~.UserQuestion`.
+
+        That this method exists is admittedly somewhat weird. Unfortunately, it
+        seems to be the only way to retrieve this information.
+        """
+        assert question.id == self.id
+        for answer_option in self.answer_options:
+            if answer_option.text == question.their_answer:
+                return answer_option.id
+
+    @util.cached_property
+    def answer_id(self):
+        for answer_option in self.answer_options:
+            if answer_option.is_users:
+                return answer_option.id
 
     @util.cached_property
     def answer_options(self):
@@ -259,7 +296,7 @@ class Questions(object):
         :type user_question: :class:`.UserQuestion`
         :param importance: The importance that should be used in responding to
                            the question.
-        :type importance: int see :attr:`importance_name_to_number`
+        :type importance: int see :attr:`.importance_name_to_number`
         """
         user_response_ids = [option.id
                              for option in user_question.answer_options
@@ -296,7 +333,7 @@ class Questions(object):
         :param match_response_ids: The answer id(s) that the user considers
                                    acceptable.
         :param importance: The importance to attribute to this question. See
-                           :attr:`importance_name_to_number` for details.
+                           :attr:`.importance_name_to_number` for details.
         :param note: The explanation note to add to this question.
         :param is_public: Whether or not the question answer should be made
                           public.
