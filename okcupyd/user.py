@@ -161,7 +161,8 @@ class User(object):
         return MessageThread.delete_threads(self._session,
                                             thread_ids_or_threads)
 
-    def get_user_question(self, question, fast=False, bust_questions_cache=False):
+    def get_user_question(self, question, fast=False,
+                          bust_questions_cache=False):
         """Get a :class:`~okcupyd.question.UserQuestion` corresponding to the
         given :class:`~okcupyd.question.Question`.
 
@@ -175,8 +176,8 @@ class User(object):
         :attr:`okcupyd.profile.Profile.questions` attribute. That means that
         a question that HAS been answered could still be answered by
         this function if this :class:`~.User`'s
-        :attr:`~okcupyd.profile.P:attr:`okcupyd.profile.Profile.questions` was populated
-        previously (This population happens automatically --
+        :attr:`~okcupyd.profile.P:attr:`okcupyd.profile.Profile.questions`
+        was populated previously (This population happens automatically --
         See :class:`~okcupyd.util.fetchable.Fetchable` for details about when
         and how this happens).
 
@@ -188,15 +189,19 @@ class User(object):
                      see if arbitrarily answering the question can be avoided.
         :type fast: bool
         :param bust_questions_cache: clear the
-                                     :attr:`~okcupyd.profile.Profile.questions` attribute of
-                                     this users :class:`~okcupyd.profile.Profile` before looking for an
-                                     existing answerbe aware that even this does not eliminate all race
-                                     conditions.
+                                     :attr:`~okcupyd.profile.Profile.questions`
+                                     attribute of this users
+                                     :class:`~okcupyd.profile.Profile`
+                                     before looking for an existing answer.
+                                     Be aware that even this does not eliminate
+                                     all race conditions.
         :type bust_questions_cache: bool
         """
         if bust_questions_cache:
             self.profile.questions()
-        user_question = None if fast else self.profile.find_question(question.id)
+        user_question = None if fast else self.profile.find_question(
+            question.id
+        )
         self.questions.respond(question.id, [1], [1], 3)
         if not user_question:
             # Give okcupid some time to update. I wish there was a better
@@ -209,9 +214,8 @@ class User(object):
                     )
                 if user_question is None:
                     log.debug(
-                        "Could not find question with id {0} in questions.".format(
-                            question.id
-                        )
+                        "Could not find question with id {0} in "
+                        "questions.".format(question.id)
                     )
                     time.sleep(1)
                 else:
@@ -219,7 +223,7 @@ class User(object):
         return user_question
 
     def get_question_answer_id(self, question, fast=False,
-                               bust_questions_cache=False):
+                            bust_questions_cache=False):
         """Get the index of the answer that was given to `question`
 
         See the documentation for :meth:`~.get_user_question` for important
