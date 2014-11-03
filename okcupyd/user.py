@@ -113,8 +113,9 @@ class User(object):
 
         :param username: The username of the user to which the message should
                          be sent.
+        :type username: str
         :param message_text: The body of the message.
-
+        :type message_text: str
         """
         # Try to reply to an existing thread.
         if not isinstance(username, six.string_types):
@@ -223,7 +224,7 @@ class User(object):
         return user_question
 
     def get_question_answer_id(self, question, fast=False,
-                            bust_questions_cache=False):
+                               bust_questions_cache=False):
         """Get the index of the answer that was given to `question`
 
         See the documentation for :meth:`~.get_user_question` for important
@@ -239,7 +240,7 @@ class User(object):
                                      this users :class:`~okcupyd.profile.Profile` before looking for an
                                      existing answerbe aware that even this does not eliminate all race
                                      conditions.
-                                     :type bust_questions_cache: bool
+        :type bust_questions_cache: bool
         """
         if hasattr(question, 'answer_id'):
             # Guard to handle incoming user_question.
