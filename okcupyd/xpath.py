@@ -1,5 +1,6 @@
 from .util import cached_property
 
+
 class XPathBuilder(object):
 
     def __init__(self, nodes=(), relative=True, direct_child=False):
@@ -61,11 +62,14 @@ class XPathBuilder(object):
         else:
             return builder
 
+    def text_contains_(self, contained_text):
+        updated_final_node = self.nodes[-1].text_contains(contained_text)
+        return self.update_final_node(updated_final_node)
+
     with_class = with_classes
 
     def apply_(self, tree):
         return tree.xpath(self.xpath)
-
 
     def one_(self, tree):
         return self.apply_(tree)[0]
@@ -83,9 +87,8 @@ class XPathNode(object):
 
     @staticmethod
     def contains_class(class_attribute, contained_class):
-        return "contains(concat(' ',normalize-space(@{0}),' '),' {1} ')".format(
-            class_attribute, contained_class
-        )
+        return "contains(concat(' ',normalize-space(@{0}),' '),' {1} ')".\
+            format(class_attribute, contained_class)
 
     @staticmethod
     def contains_attribute(attribute, contained_string):
@@ -127,7 +130,7 @@ class XPathNode(object):
     @property
     def predicate_string(self):
         if self.predicates:
-            predicate =  self.predicate_joiner.join(self.predicates)
+            predicate = self.predicate_joiner.join(self.predicates)
             return '[ {0} ]'.format(predicate)
         else:
             return ''
@@ -159,6 +162,10 @@ class XPathNode(object):
         predicates = tuple(self.contains_attribute(attribute, contains_string)
                            for attribute, contains_string in kv_pairs)
         return self(predicates=predicates)
+
+    def text_contains(self, contained_text):
+        return self(predicates=("contains(text(),'{0}')".
+                                format(contained_text),))
 
 
 xpb = XPathBuilder()
