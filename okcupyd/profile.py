@@ -30,8 +30,8 @@ class Profile(object):
     be taken to invalidate cached attributes on the object if an up to date view
     of the profile is needed. It is recommended that you call :meth:`.refresh` to
     accomplish this, but it is also possible to use
-    :meth:`~okcupyd.util.cached_property.bust_self` to bust individual propeties
-    if necessary.
+    :meth:`~okcupyd.util.cached_property.bust_self` to bust individual
+    properties if necessary.
     """
 
     def __init__(self, session, username):
@@ -128,21 +128,25 @@ class Profile(object):
         """
         return looking_for.LookingFor(self)
 
-    _rating_xpb = xpb.div(id='rating').ul(id='personality-rating').li.\
-                  with_class('current-rating')
+    _liked_xpb = xpb.div(id='actions').button(id='rate_user_profile')
 
-    @util.cached_property
+    @property
     def rating(self):
         """
+        Deprecated. Use :meth:`~.liked` instead.
         :returns: the rating that the logged in user has given this user or
                   0 if no rating has been given.
         """
-        if self.is_logged_in_user: return 0
-        rating_style = self._rating_xpb.select_attribute_('style').one_(
-            self.profile_tree
-        )
-        width_percentage = int(''.join(c for c in rating_style if c.isdigit()))
-        return width_percentage // 20
+        return 5 if self.liked else 0
+
+    @util.cached_property
+    def liked(self):
+        """
+        :returns: Whether or not the logged in user liked this profile
+        """
+        if self.is_logged_in_user: return False
+        classes = self._liked_xpb.one_(self.profile_tree).attrib['class'].split()
+        return 'liked' in classes
 
     _contacted_xpb = xpb.div(id='actions').div.with_classes('tooltip_text',
                                                                'hidden')
@@ -173,14 +177,15 @@ class Profile(object):
         if 'contacted' not in contacted_text:
             return contacted_text.strip().replace('replies ', '')
 
+    _id_xpb = xpb.div(id="action_bar").select_attribute_("data-userid")
+
     @util.cached_property
     def id(self):
         """
         :returns: The id that okcupid.com associates with this profile.
         """
         if self.is_logged_in_user: return self._current_user_id
-        return int(self._rating_xpb.select_attribute_('id').
-                   one_(self.profile_tree).split('-')[-2])
+        return int(self._id_xpb.one_(self.profile_tree))
 
     @util.cached_property
     def _current_user_id(self):
@@ -251,10 +256,9 @@ class Profile(object):
         :param message: The message to send to this user.
         :param thread_id: The id of the thread to respond to, if any.
         """
-        return_value =  helpers.Messager(
-            self._session
-        ).send(self.username, message,
-                       self.authcode, thread_id)
+        return_value = helpers.Messager(self._session).send(
+            self.username, message, self.authcode, thread_id
+        )
         self.refresh(reload=False)
         return return_value
 
@@ -267,6 +271,18 @@ class Profile(object):
         # This has to be here to avoid a circular import for now.
         from .attractiveness_finder import AttractivenessFinder
         return AttractivenessFinder(self._session)(self.username)
+
+    def toggle_like(self):
+        """Toggle whether or not the logged in user likes this profile."""
+        return self.rate(1 if self.liked else 5)
+
+    def like(self):
+        """Like this profile."""
+        return self.rate(5)
+
+    def unlike(self):
+        """Unlike this profile."""
+        return self.rate(1)
 
     def rate(self, rating):
         """Rate this profile as the user that was logged in with the session

@@ -26,9 +26,24 @@ def test_rate_profile():
 @util.use_cassette
 def test_rate_profile_1_stars():
     profile = User().quickmatch()
-    profile.rate(1)
+    profile.rate(0)
     assert User().get_profile(profile.username).rating == profile.rating
-    assert profile.rating == 1
+    assert profile.rating == 0
+
+
+@util.use_cassette
+def test_like_functions():
+    profile = User().quickmatch()
+    profile.like()
+    assert profile.liked
+    profile.toggle_like()
+    assert not profile.liked
+    profile.like()
+    profile.unlike()
+    assert not profile.liked
+    profile.unlike()
+    assert not profile.liked
+
 
 
 @util.use_cassette
@@ -118,3 +133,8 @@ def test_looking_for_write_on_user_profile(vcr_live_sleep):
 @util.use_cassette
 def test_profile_with_unicode_characters():
     User().get_profile(u'Dimmahlé').age
+
+
+@util.use_cassette
+def test_profile_id():
+    assert isinstance(User().quickmatch().id, int)

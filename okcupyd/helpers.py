@@ -42,7 +42,8 @@ class Messager(object):
         response = self._session.okc_get('profile/{0}'.format(username))
         return get_authcode(html.fromstring(response.content))
 
-    def message_request_parameters(self, username, message, thread_id, authcode):
+    def message_request_parameters(self, username, message,
+                                   thread_id, authcode):
         return {
             'ajax': 1,
             'sendmsg': 1,
@@ -56,8 +57,9 @@ class Messager(object):
 
     def send(self, username, message, authcode=None, thread_id=None):
         authcode = authcode or self._get_authcode(username)
-        params = self.message_request_parameters(username, message,
-                                                 thread_id or 0, authcode)
+        params = self.message_request_parameters(
+            username, message, thread_id or 0, authcode
+        )
         response = self._session.okc_get('mailbox', params=params)
         response_dict = response.json()
         log.info(simplejson.dumps({'message_send_response': response_dict}))
