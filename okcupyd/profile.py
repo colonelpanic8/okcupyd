@@ -133,7 +133,8 @@ class Profile(object):
     @property
     def rating(self):
         """
-        Deprecated. Use :meth:`~.liked` instead.
+        Deprecated. Use :meth:`.liked` instead.
+
         :returns: the rating that the logged in user has given this user or
                   0 if no rating has been given.
         """
