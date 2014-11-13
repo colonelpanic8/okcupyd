@@ -45,6 +45,11 @@ def test_like_functions():
     assert not profile.liked
 
 
+@util.use_cassette
+def test_profile_gender():
+    profile = User().quickmatch()
+    assert profile.gender in ('Man', 'Woman')
+
 
 @util.use_cassette
 def test_profile_properties():

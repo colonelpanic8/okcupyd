@@ -28,8 +28,8 @@ class Profile(object):
 
     Because of this caching behavior, care must
     be taken to invalidate cached attributes on the object if an up to date view
-    of the profile is needed. It is recommended that you call :meth:`.refresh` to
-    accomplish this, but it is also possible to use
+    of the profile is needed. It is recommended that you call :meth:`.refresh`
+    to accomplish this, but it is also possible to use
     :meth:`~okcupyd.util.cached_property.bust_self` to bust individual
     properties if necessary.
     """
@@ -149,8 +149,9 @@ class Profile(object):
         classes = self._liked_xpb.one_(self.profile_tree).attrib['class'].split()
         return 'liked' in classes
 
-    _contacted_xpb = xpb.div(id='actions').div.with_classes('tooltip_text',
-                                                               'hidden')
+    _contacted_xpb = xpb.div(id='actions').div.with_classes(
+        'tooltip_text', 'hidden'
+    )
 
     @util.cached_property
     def contacted(self):
@@ -195,8 +196,8 @@ class Profile(object):
     @util.cached_property
     def essays(self):
         """
-        :returns: An :class:`~okcupyd.essay.Essays` instance that is associated with
-                  this profile.
+        :returns: A :class:`~okcupyd.essay.Essays` instance that is
+                  associated with this profile.
         """
         return essay.Essays(self)
 
@@ -212,8 +213,8 @@ class Profile(object):
     @util.cached_property
     def match_percentage(self):
         """
-        :returns: The match percentage of the logged in user and the user associated
-                  with this object.
+        :returns: The match percentage of the logged in user and the user
+                  associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
                    div.with_class('match').
@@ -223,8 +224,8 @@ class Profile(object):
     @util.cached_property
     def enemy_percentage(self):
         """
-        :returns: The enemy percentage of the logged in user and the user associated
-                  with this object.
+        :returns: The enemy percentage of the logged in user and the user
+                  associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
                    div.with_class('enemy').
@@ -242,7 +243,7 @@ class Profile(object):
     @util.cached_property
     def gender(self):
         """The gender of the user associated with this profile."""
-        return xpb.span(id='ajax_gender').get_text_(self.profile_tree)
+        return xpb.span.with_class('ajax_gender').get_text_(self.profile_tree)
 
     @util.cached_property
     def orientation(self):
