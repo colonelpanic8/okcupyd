@@ -71,10 +71,19 @@ patch_save = patch('resave',
                    mock.patch.object(
                        Cassette, '_save',
                        okcupyd_util.curry(Cassette._save)(force=True)))
+
+
+def reraise_exception(obj, error_type, error, traceback):
+    if error is not None:
+        raise
+
+
 patch_use_cassette_enabled = patch(
     'skip_vcrpy',
-    mock.patch.object(CassetteContextDecorator, '__enter__'),
-    mock.patch.object(CassetteContextDecorator, '__exit__')
+    mock.patch.object(CassetteContextDecorator, '__enter__',
+                      lambda stuff: log.debug("Skipping vcrpy patching.")),
+    mock.patch.object(CassetteContextDecorator, '__exit__',
+                      reraise_exception)
 )
 patch_vcrpy_filters = patch(
     'scrub', mock.patch.object(util, 'SHOULD_SCRUB', True)
