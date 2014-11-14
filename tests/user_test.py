@@ -1,5 +1,6 @@
 import os
 
+import mock
 import pytest
 
 from . import util
@@ -134,3 +135,20 @@ def test_user_get_user_question():
     assert question.text == user_question.text
     assert 0 < user_question.answer_id < 5
     assert 0 < user_question.get_answer_id_for_question(question) < 5
+
+
+@mock.patch('okcupyd.user.time')
+def test_log_path_for_user_question_not_found(mock_time):
+    mock_time.time.return_value = 2
+    user = User(mock.Mock())
+    with mock.patch('okcupyd.profile.Profile.find_question',
+                    return_value=None):
+        user.get_user_question(mock.Mock())
+    assert mock_time.sleep.call_count
+
+
+@mock.patch('okcupyd.user.User.get_user_question')
+def test_get_question_answer_id_calls_get_user_question(mock_get_user_question):
+    user = User(mock.Mock())
+    user.get_question_answer_id(mock.Mock(spec=['id']))
+    assert mock_get_user_question.call_count

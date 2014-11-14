@@ -1,4 +1,5 @@
 import time
+import logging
 
 import six
 
@@ -13,6 +14,9 @@ from .question import Questions
 from .search import SearchFetchable, search
 from .session import Session
 from .xpath import xpb
+
+
+log = logging.getLogger(__name__)
 
 
 class User(object):
@@ -203,22 +207,23 @@ class User(object):
         user_question = None if fast else self.profile.find_question(
             question.id
         )
-        self.questions.respond(question.id, [1], [1], 3)
-        if not user_question:
-            # Give okcupid some time to update. I wish there was a better
+        if user_question is None:
+            self.questions.respond(question.id, [1], [1], 3)
+            # Give okcupid some time to update. I wish there were a better
             # way...
             for _ in range(10):
-                if user_question is None:
-                    user_question = self.profile.find_question(
-                        question.id,
-                        self.profile.question_fetchable(recent=1)
-                    )
+                start_time = time.time()
+                user_question = self.profile.find_question(
+                    question.id,
+                    self.profile.question_fetchable(recent=1)
+                )
                 if user_question is None:
                     log.debug(
                         "Could not find question with id {0} in "
                         "questions.".format(question.id)
                     )
-                    time.sleep(1)
+                    if time.time() - start_time < 1:
+                        time.sleep(1)
                 else:
                     break
         return user_question
@@ -235,18 +240,22 @@ class User(object):
         :param fast: Don't try to look through the users existing questions to
                      see if arbitrarily answering the question can be avoided.
         :type fast: bool
-        :param bust_questions_cache: clear the
-                                     :attr:`~okcupyd.profile.Profile.questions` attribute of
-                                     this users :class:`~okcupyd.profile.Profile` before looking for an
-                                     existing answerbe aware that even this does not eliminate all race
-                                     conditions.
+        :param bust_questions_cache: :param bust_questions_cache: clear the
+                                     :attr:`~okcupyd.profile.Profile.questions`
+                                     attribute of this users
+                                     :class:`~okcupyd.profile.Profile`
+                                     before looking for an existing answer.
+                                     Be aware that even this does not eliminate
+                                     all race conditions.
         :type bust_questions_cache: bool
         """
         if hasattr(question, 'answer_id'):
             # Guard to handle incoming user_question.
             return question.answer_id
 
-        user_question = None if fast else self.profile.find_question(question.id)
+        user_question = self.get_user_question(
+            question, fast=fast, bust_questions_cache=bust_questions_cache
+        )
         # Look at recently answered questions
         return user_question.get_answer_id_for_question(question)
 

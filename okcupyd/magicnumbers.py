@@ -157,6 +157,22 @@ sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
 
 
 gentation_to_number = {
+    'women who like men': '34',
+    'men who like women': '17',
+    'women who like women': '40',
+    'men who like men': '20',
+    'men and women who like bi men': '54',
+    'men and women who like bi women': '57',
+    'both who like bi men': '54',
+    'both who like bi women': '57',
+    'straight women only': '2',
+    'straight men only': '1',
+    'gay women only': '8',
+    'gay men only': '4',
+    'bi women only': '32',
+    'bi men only': '16',
+    'bi men and women': '48',
+    'everybody': '63',
     'girls who like guys': '34',
     'guys who like girls': '17',
     'girls who like girls': '40',

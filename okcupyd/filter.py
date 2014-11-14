@@ -154,7 +154,9 @@ class Filters(object):
 
 
 def gentation_filter(gentation):
-    return u'0,{0}'.format(magicnumbers.gentation_to_number[gentation.lower()])
+    return u'0,{0}'.format(
+        magicnumbers.gentation_to_number[gentation.strip().lower()]
+    )
 
 
 def age_filter(age_min=18, age_max=99):

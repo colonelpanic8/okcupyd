@@ -30,17 +30,17 @@ def rerecord(rest):
 
 @ns.add_task
 @task(aliases='r')
-def rerecord_one(test_name, rest=''):
+def rerecord_one(test_name, rest='', pty=False):
     run('tox -e py27 -- --record --credentials test_credentials -k {0} -s {1}'
-        .format(test_name, rest), pty=True)
+        .format(test_name, rest), pty=pty)
     run('tox -e py27 -- --resave --scrub --credentials test_credentials -k {0} -s {1}'
-        .format(test_name, rest), pty=True)
+        .format(test_name, rest), pty=pty)
 
 
 @ns.add_task
 @task
 def failing_test_names():
-    run("tox -e py27 | grep test_ | grep \u2015 | sed 's:\\\u2015::g'", pyt=True)
+    run("tox -e py27 | grep test_ | grep \u2015 | sed 's:\\\u2015::g'", pty=True)
 
 @ns.add_task
 @task
