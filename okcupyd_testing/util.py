@@ -213,14 +213,14 @@ class FunctionWithSignatureBuilder(object):
         defaults = self._argspec.defaults or ()
         positional_arg_count = (len(self._argspec.args) -
                                 len(defaults))
-        self._positional_pairs = zip(
+        self._positional_pairs = list(zip(
             list(arguments_to_add) + self._argspec.args[:positional_arg_count],
             [self.NO_ARGUMENT] * (positional_arg_count + len(arguments_to_add))
-        )
-        self._keyword_pairs = zip(
+        ))
+        self._keyword_pairs = list(zip(
             self._argspec.args[positional_arg_count:],
             defaults
-        ) + keyword_arguments_to_add.items()
+        )) + list(keyword_arguments_to_add.items())
         self._argument_pairs = self._positional_pairs + self._keyword_pairs
         if self._argspec.varargs:
             self._argument_pairs.append(
