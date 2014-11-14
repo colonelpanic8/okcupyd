@@ -244,7 +244,8 @@ class FunctionWithSignatureBuilder(object):
     def null_function(self):
         return eval(self.null_function_string)
 
-    def _build_argument_string(self, (argument_name, default)):
+    def _build_argument_string(self, incoming):
+        argument_name, default = incoming
         if default == self.NO_ARGUMENT: return argument_name
         return '{0}={1}'.format(argument_name, repr(default))
 
