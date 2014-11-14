@@ -9,6 +9,7 @@ from okcupyd import User
 from okcupyd.util import cached_property
 
 
+@util.skip_if_live
 @util.use_cassette
 def test_profile_essays():
     user_profile = profile.Profile(session.Session.login(), 'FriedLiverAttack')
@@ -24,7 +25,7 @@ def test_rate_profile():
 
 
 @util.use_cassette
-def test_rate_profile_1_stars():
+def test_rate_profile_0_stars():
     profile = User().quickmatch()
     profile.rate(0)
     assert User().get_profile(profile.username).rating == profile.rating
@@ -103,7 +104,8 @@ def test_looking_for_write_on_user_profile(vcr_live_sleep):
     new_kinds = (['long-term dating', 'casual sex']
                  if 'short-term dating' in profile.looking_for.kinds
                  else ['short-term dating', 'casual sex'])
-    new_gentation = ('bi girls only' if 'everybody' in profile.looking_for.gentation
+    new_gentation = ('bi girls only'
+                     if 'everybody' in profile.looking_for.gentation
                      else 'everybody')
 
     sleep_time = 4
@@ -121,16 +123,18 @@ def test_looking_for_write_on_user_profile(vcr_live_sleep):
     new_profile = profile._session.get_profile(profile.username)
     assert new_profile.looking_for.single == new_single
     assert new_profile.looking_for.near_me == new_near_me
-    assert new_profile.looking_for.ages == looking_for.LookingFor.Ages(new_ages_min,
-                                                                       new_ages_max)
+    assert new_profile.looking_for.ages == looking_for.LookingFor.Ages(
+        new_ages_min, new_ages_max
+    )
     assert set(new_profile.looking_for.kinds) == set(new_kinds)
     assert new_profile.looking_for.gentation == new_gentation
 
 
     assert profile.looking_for.single == new_single
     assert profile.looking_for.near_me == new_near_me
-    assert profile.looking_for.ages == looking_for.LookingFor.Ages(new_ages_min,
-                                                                   new_ages_max)
+    assert profile.looking_for.ages == looking_for.LookingFor.Ages(
+        new_ages_min, new_ages_max
+    )
     assert set(profile.looking_for.kinds) == set(new_kinds)
     assert profile.looking_for.gentation == new_gentation
 

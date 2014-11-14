@@ -55,6 +55,7 @@ def test_user_essay_refresh():
 
 
 @util.use_cassette(cassette_name='visitors_test')
+@util.skip_if_live
 def test_visitors():
     user = User()
     assert isinstance(user.visitors[0], Profile)

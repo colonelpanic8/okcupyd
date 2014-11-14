@@ -7,6 +7,7 @@ from okcupyd import User
 
 
 @pytest.mark.xfail # :/ Not really clear how to test this.
+@util.skip_if_live
 @util.use_cassette
 def test_message_thread_detect_deletion():
     message_thread = User().inbox[0]
@@ -49,7 +50,7 @@ def test_load_messages_on_message_thread():
 def test_reply():
     user = User()
     user.quickmatch().message('test')
-    message_info = user.inbox[0].reply('reply')
+    message_info = user.outbox[0].reply('reply')
     assert message_info.thread_id is not None
     assert int(message_info.message_id) > 0
 
@@ -68,6 +69,8 @@ def test_delete(vcr_live_sleep):
     except IndexError:
         pass
 
+
+@util.skip_if_live
 @util.use_cassette
 def test_date_parsing_integration():
     user = User()

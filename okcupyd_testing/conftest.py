@@ -22,24 +22,27 @@ BREAK_ON_EXCEPTION = False
 
 
 def pytest_addoption(parser):
-    okcupyd_util.add_command_line_options(parser.addoption, use_short_options=False)
-    parser.addoption('--live', dest='skip_vcrpy', action='store_true', default=False,
-                     help="Skip the patching of http requests in tests. "
-                     "USE WITH CAUTION. This will interact with the okcupid "
-                     "website and send messages with any provided user credentials.")
-    parser.addoption('--scrub', dest='scrub', action='store_true', default=False,
-                     help="Scrub PII from "
-                     "http requests/responses. This is useful for recording cassetes.")
+    okcupyd_util.add_command_line_options(parser.addoption,
+                                          use_short_options=False)
+    parser.addoption('--live', dest='skip_vcrpy', action='store_true',
+                     default=False, help="Skip the patching of http requests in"
+                     " tests. USE WITH CAUTION. This will interact with the "
+                     "okcupid website and send messages with any provided user "
+                     "credentials.")
+    parser.addoption('--scrub', dest='scrub', action='store_true',
+                     help="Scrub PII from http requests/responses. "
+                     "This is useful for recording cassetes.", default=False)
     parser.addoption('--resave', dest='resave',
                      action='store_true', default=False,
-                     help="Resave cassettes. Use to retoractively scrub cassettes.")
+                     help="Resave cassettes. Use to retoractively scrub "
+                     "cassettes.")
     parser.addoption('--cassette-mode', dest='cassette_mode', action='store',
                      default='once', help="Accept new requests in all tests.")
     parser.addoption('--record', dest='record', action='store_true',
                      default=False, help="Re-record cassettes for all tests.")
-    parser.addoption('--break-exc', dest='break_on_exception', action='store_true',
-                     default=False, help="Enter ipdb if an exception is "
-                     "encountered in a test.")
+    parser.addoption('--break-exc', dest='break_on_exception',
+                     default=False, action='store_true', help="Enter ipdb if an"
+                     " exception is encountered in a test.")
 
 
 def patch(option, *patches, **kwargs):
@@ -68,17 +71,19 @@ patch_save = patch('resave',
                    mock.patch.object(
                        Cassette, '_save',
                        okcupyd_util.curry(Cassette._save)(force=True)))
-patch_use_cassette_enabled = patch('skip_vcrpy',
-                                   mock.patch.object(CassetteContextDecorator,
-                                                     '__enter__'),
-                                   mock.patch.object(CassetteContextDecorator,
-                                                     '__exit__'))
-patch_vcrpy_filters = patch('scrub',
-                            mock.patch.object(util, 'SHOULD_SCRUB', True))
+patch_use_cassette_enabled = patch(
+    'skip_vcrpy',
+    mock.patch.object(CassetteContextDecorator, '__enter__'),
+    mock.patch.object(CassetteContextDecorator, '__exit__')
+)
+patch_vcrpy_filters = patch(
+    'scrub', mock.patch.object(util, 'SHOULD_SCRUB', True)
+)
 
-patch_break_on_exception = patch('break_on_exception',
-                                 mock.patch('okcupyd_testing.conftest.BREAK_ON_EXCEPTION',
-                                            True))
+patch_break_on_exception = patch(
+    'break_on_exception',
+    mock.patch('okcupyd_testing.conftest.BREAK_ON_EXCEPTION', True)
+)
 
 original_cassette_enter = CassetteContextDecorator.__enter__
 def new_cassette_enter(self):
@@ -211,7 +216,8 @@ def mock_message_builder():
     next(counter)
     def _build_mock_message(id=None, sender='sender', recipient='recipient',
                             content='content', **kwargs):
-        kwargs.setdefault('time_sent', datetime.datetime(year=2014, day=2, month=4))
+        kwargs.setdefault('time_sent',
+                          datetime.datetime(year=2014, day=2, month=4))
         if id == None: id = next(counter)
         assert isinstance(sender, str)
         assert isinstance(recipient, str)
@@ -235,7 +241,8 @@ def mock_message_thread_builder(mock_message_builder, mock_profile_builder):
                                          recipient=initiator
                                          if i % 2 else respondent)
                     for i in range(message_count)]
-        kwargs.setdefault('datetime', datetime.datetime(year=2014, day=2, month=4))
+        kwargs.setdefault('datetime',
+                          datetime.datetime(year=2014, day=2, month=4))
         message_thread = mock.MagicMock(id=id, messages=messages, **kwargs)
         message_thread.initiator = mock_profile_builder(initiator)
         message_thread.respondent = mock_profile_builder(respondent)

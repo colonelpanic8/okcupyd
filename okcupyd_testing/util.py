@@ -1,4 +1,5 @@
 import copy
+import inspect
 import logging
 import os
 import zlib
@@ -130,7 +131,8 @@ def scrub_response(response):
 
 
 before_record = check_should_scrub(util.compose(
-    scrub_request_body, remove_headers(headers_to_remove=('Set-Cookie', 'Cookie'))
+    scrub_request_body, remove_headers(headers_to_remove=('Set-Cookie',
+                                                          'Cookie'))
 ))
 
 
@@ -147,8 +149,12 @@ def _match_search_query(left, right):
     try:
         log.info(simplejson.dumps(
             {
-                'filter_differences': list(left_filter.symmetric_difference(right_filter)),
-                'rest_differences': list(left_rest.symmetric_difference(right_rest)),
+                'filter_differences': list(
+                    left_filter.symmetric_difference(right_filter)
+                ),
+                'rest_differences': list(
+                    left_rest.symmetric_difference(right_rest)
+                ),
             }, encoding='utf-8'
         ))
     except Exception as e:
@@ -195,13 +201,72 @@ class cassette(object):
         return os.path.join(cls.base_path,
                             'vcr_cassettes', '{0}.yaml'.format(cassette_name))
 
+class FunctionWithSignatureBuilder(object):
+
+    NO_ARGUMENT = object()
+
+    def __init__(self, function, *arguments_to_add, **keyword_arguments_to_add):
+        self._function = function
+        self._arguments_to_add = arguments_to_add
+        self._keyword_arguments_to_add = keyword_arguments_to_add
+        self._argspec = inspect.getargspec(function)
+        defaults = self._argspec.defaults or ()
+        positional_arg_count = (len(self._argspec.args) -
+                                len(defaults))
+        self._positional_pairs = zip(
+            list(arguments_to_add) + self._argspec.args[:positional_arg_count],
+            [self.NO_ARGUMENT] * (positional_arg_count + len(arguments_to_add))
+        )
+        self._keyword_pairs = zip(
+            self._argspec.args[positional_arg_count:],
+            defaults
+        ) + keyword_arguments_to_add.items()
+        self._argument_pairs = self._positional_pairs + self._keyword_pairs
+        if self._argspec.varargs:
+            self._argument_pairs.append(
+                ('*{0}'.format(self._argspec.varargs), self.NO_ARGUMENT)
+            )
+        if self._argspec.keywords:
+            self._argument_pairs.append(
+                ('**{0}'.format(self._argspec.keywords), self.NO_ARGUMENT)
+             )
+
+    @property
+    def argument_list_string(self):
+        return ', '.join(self._build_argument_string(argument_pair)
+                         for argument_pair in self._argument_pairs)
+
+    @property
+    def null_function_string(self):
+        return 'lambda {0}: None'.format(self.argument_list_string)
+
+    @property
+    def null_function(self):
+        return eval(self.null_function_string)
+
+    def _build_argument_string(self, (argument_name, default)):
+        if default == self.NO_ARGUMENT: return argument_name
+        return '{0}={1}'.format(argument_name, repr(default))
 
 
+def skip_if_live(function):
+    @decorator(
+        adapter=FunctionWithSignatureBuilder(function, 'request').null_function
+    )
+    def wrapped(function, instance, args, kwargs):
+        request = kwargs.pop('request')
+        if request.config.getoption('skip_vcrpy'):
+            log.debug("Skipping {0} because vcrpy is being skipped.".format(
+                function.__name__
+            ))
+        else:
+            return function(*args, **kwargs)
+    return wrapped(function)
 
 
-@util.curry(evaluation_checker=lambda *args, **kwargs: (len(args) > 0 or
-                                                   'function' in kwargs or
-                                                   'cassette_name' in kwargs))
+@util.curry(evaluation_checker=lambda *args, **kwargs: (
+    len(args) > 0 or 'function' in kwargs or 'cassette_name' in kwargs
+))
 def use_cassette(function=None, cassette_name=None, *args, **kwargs):
     if cassette_name is None:
         assert function, 'Must supply function if no cassette name given'
