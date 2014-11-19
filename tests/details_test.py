@@ -9,6 +9,7 @@ from tests import util
 sleep_time = 1
 
 
+@util.skip_if_live
 @util.use_cassette
 def test_job_detail(vcr_live_sleep):
     updater = details.Details.job.updater

@@ -5,14 +5,17 @@ from okcupyd import User
 from okcupyd.profile_copy import Copy
 
 
+@util.skip_if_live
 @util.use_cassette
 def test_profile_questions_copy(vcr_live_sleep):
     # This could be better...
     with mock.patch('okcupyd.profile_copy.time.sleep', vcr_live_sleep):
         user = User()
-        # Find a user that has answered fewer than 100 questions.
+        # Find a user that has answered fewer than 50 questions.
         # This is going to issue an insane number of requests if we don't do this
-        profile = get_profile_with_max_questions(user)
+        profile = get_profile_with_max_questions(
+            user, max_questions=50
+        )
         user.copy(profile).questions()
 
         for question in profile.questions():

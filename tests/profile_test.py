@@ -108,7 +108,7 @@ def test_looking_for_write_on_user_profile(vcr_live_sleep):
                      if 'everybody' in profile.looking_for.gentation
                      else 'everybody')
 
-    sleep_time = 4
+    sleep_time = 1
     profile.looking_for.ages = new_ages_min, new_ages_max
     vcr_live_sleep(sleep_time)
     profile.looking_for.near_me = new_near_me
