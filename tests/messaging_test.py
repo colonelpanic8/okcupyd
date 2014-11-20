@@ -63,6 +63,7 @@ def test_delete(vcr_live_sleep):
     assert message_info.thread_id != None
     thread_id = user.outbox[0].id
     user.outbox[0].delete()
+    vcr_live_sleep(2)
     user.outbox()
     try:
         assert user.outbox[0].id != thread_id

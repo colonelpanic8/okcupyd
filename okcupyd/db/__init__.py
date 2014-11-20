@@ -32,6 +32,7 @@ Session = sessionmaker(
 
 
 class txn(object):
+
     def __init__(self, session_class=None):
         self.session_class = session_class or Session
 

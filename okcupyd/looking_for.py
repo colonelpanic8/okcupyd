@@ -61,7 +61,7 @@ class LookingFor(object):
     @update_property
     def gentation(self):
         """The sex/orientation that the user is looking for."""
-        return self.raw_fields.get('gentation').lower()
+        return self.raw_fields.get('gentation').lower().strip()
 
     @update_property
     def ages(self):
@@ -80,7 +80,7 @@ class LookingFor(object):
     def near_me(self):
         """Whether the user is only interested in people that are close to them.
         """
-        return 'near' in self.raw_fields.get('near', '').lower()
+        return 'near' in self.raw_fields.get('near', '').lower().strip()
 
     @update_property
     def kinds(self):
@@ -97,8 +97,8 @@ class LookingFor(object):
         :param single: Whether or not the user is only interested in people that
                        are single.
         :type single: bool
-        :param near_me: Whether or not the user is only interested in people that
-                        are near them.
+        :param near_me: Whether or not the user is only interested in
+                        people that are near them.
         :type near_me: bool
         :param kinds: What kinds of relationships the user should be updated to
                       be interested in.
