@@ -34,7 +34,7 @@ class Profile(object):
     properties if necessary.
     """
 
-    def __init__(self, session, username):
+    def __init__(self, session, username, **kwargs):
         """
         :param session: A logged in :class:`~okcupyd.session.Session`
         :param username: The username associated with the profile.
@@ -52,6 +52,20 @@ class Profile(object):
         #: A :class:`~okcupyd.details.Details` instance belonging to the same
         #: user that this profile belongs to.
         self.details = details.Details(self)
+
+        if kwargs:
+            self._set_cached_properties(kwargs)
+
+    def _set_cached_properties(self, values):
+        property_names = set(
+            name for name, _ in util.cached_property.get_cached_properties(self)
+        )
+        for key, value in values.items():
+            if key in property_names:
+                self.__dict__[key] = value
+            else:
+                log.warning("Unrecognized kwarg {0} with value {1} "
+                            "passed to Profile constructor.")
 
     def refresh(self, reload=False):
         """

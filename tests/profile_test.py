@@ -147,3 +147,10 @@ def test_profile_with_unicode_characters():
 @util.use_cassette
 def test_profile_id():
     assert isinstance(User().quickmatch().id, int)
+
+
+def test_cached_properties_passed_upfront():
+    mock_session = mock.Mock()
+    a_profile = profile.Profile(mock.Mock(), mock_session, match_percentage=100)
+    assert a_profile.match_percentage == 100
+    assert mock_session.get.call_count == 0

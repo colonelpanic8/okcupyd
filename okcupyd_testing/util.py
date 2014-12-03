@@ -5,12 +5,13 @@ import os
 import zlib
 
 from six.moves import urllib
-from wrapt import decorator
 import simplejson
 import vcr
+import wrapt
 
 from okcupyd import settings
 from okcupyd import util
+
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ REPLACEMENTS = []
 REMOVE_OLD_CASSETTES = False
 
 
-@decorator
+@wrapt.decorator
 def check_should_scrub(function, instance, args, kwargs):
     if SHOULD_SCRUB:
         return function(*args)
@@ -201,68 +202,22 @@ class cassette(object):
         return os.path.join(cls.base_path,
                             'vcr_cassettes', '{0}.yaml'.format(cassette_name))
 
-class FunctionWithSignatureBuilder(object):
 
-    NO_ARGUMENT = object()
+@wrapt.adapter_factory
+def add_request_to_signature(function):
+    argspec = inspect.getargspec(function)
+    return inspect.ArgSpec(argspec.args + ['request'], argspec.varargs, argspec.keywords, argspec.defaults)
 
-    def __init__(self, function, *arguments_to_add, **keyword_arguments_to_add):
-        self._function = function
-        self._arguments_to_add = arguments_to_add
-        self._keyword_arguments_to_add = keyword_arguments_to_add
-        self._argspec = inspect.getargspec(function)
-        defaults = self._argspec.defaults or ()
-        positional_arg_count = (len(self._argspec.args) -
-                                len(defaults))
-        self._positional_pairs = list(zip(
-            list(arguments_to_add) + self._argspec.args[:positional_arg_count],
-            [self.NO_ARGUMENT] * (positional_arg_count + len(arguments_to_add))
+
+@wrapt.decorator(adapter=add_request_to_signature)
+def skip_if_live(function, instance, args, kwargs):
+    request = kwargs.pop('request')
+    if request.config.getoption('skip_vcrpy'):
+        log.debug("Skipping {0} because vcrpy is being skipped.".format(
+            function.__name__
         ))
-        self._keyword_pairs = list(zip(
-            self._argspec.args[positional_arg_count:],
-            defaults
-        )) + list(keyword_arguments_to_add.items())
-        self._argument_pairs = self._positional_pairs + self._keyword_pairs
-        if self._argspec.varargs:
-            self._argument_pairs.append(
-                ('*{0}'.format(self._argspec.varargs), self.NO_ARGUMENT)
-            )
-        if self._argspec.keywords:
-            self._argument_pairs.append(
-                ('**{0}'.format(self._argspec.keywords), self.NO_ARGUMENT)
-             )
-
-    @property
-    def argument_list_string(self):
-        return ', '.join(self._build_argument_string(argument_pair)
-                         for argument_pair in self._argument_pairs)
-
-    @property
-    def null_function_string(self):
-        return 'lambda {0}: None'.format(self.argument_list_string)
-
-    @property
-    def null_function(self):
-        return eval(self.null_function_string)
-
-    def _build_argument_string(self, incoming):
-        argument_name, default = incoming
-        if default == self.NO_ARGUMENT: return argument_name
-        return '{0}={1}'.format(argument_name, repr(default))
-
-
-def skip_if_live(function):
-    @decorator(
-        adapter=FunctionWithSignatureBuilder(function, 'request').null_function
-    )
-    def wrapped(function, instance, args, kwargs):
-        request = kwargs.pop('request')
-        if request.config.getoption('skip_vcrpy'):
-            log.debug("Skipping {0} because vcrpy is being skipped.".format(
-                function.__name__
-            ))
-        else:
-            return function(*args, **kwargs)
-    return wrapped(function)
+    else:
+        return function(*args, **kwargs)
 
 
 @util.curry(evaluation_checker=lambda *args, **kwargs: (

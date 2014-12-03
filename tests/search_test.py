@@ -179,3 +179,16 @@ def test_question_count_filter():
     user = User()
     for profile in user.search(question_count_min=250)[:5]:
         assert profile.questions[249]
+
+
+# @util.use_cassette
+# def test_search_populates_upfront
+
+
+
+
+
+
+
+
+

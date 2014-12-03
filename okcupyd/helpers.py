@@ -266,6 +266,11 @@ gender_to_orientation_to_gentation = {
         'gay': 'guys who like guys',
         'bisexual': 'both who like bi guys'
     },
+    'w': {
+        'straight': 'guys who like girls',
+        'gay': 'girls who like girls',
+        'bisexual': 'both who like bi girls'
+    },
     'f': {
         'straight': 'guys who like girls',
         'gay': 'girls who like girls',

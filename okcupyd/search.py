@@ -90,6 +90,7 @@ def question_count_filter(question_count_min):
 search_filters.register_filter_builder(
     magicnumbers.get_height_filter,
     descriptions=["The minimum height of returned search results.",
+
                   "The maximum height of returned search results."],
     acceptable_values=[["A height int in inches",
                        "An imperial height string e.g. 5'4\"",
@@ -135,8 +136,64 @@ for key in ['smokes', 'drinks', 'drugs', 'education_level', 'job',
     build_option_filter(key)
 
 
-_username_xpb = xpb.div.with_classes('match_card').\
-                div.with_class('username').a.text_
+class MatchCardExtractor(object):
+
+    def __init__(self, div):
+        self._div = div
+
+    @property
+    def username(self):
+        return xpb.div.with_class('username').get_text_(self._div).strip()
+
+    @property
+    def age(self):
+        return int(xpb.span.with_class('age').get_text_(self._div))
+
+    @property
+    def location(self):
+        return helpers.replace_chars(
+            xpb.span.with_class('location').get_text_(self._div)
+        )
+
+    _match_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'match').\
+                            span.with_classes('percentage')
+
+    @property
+    def match_percentage(self):
+        try:
+            return int(self._match_percentage_xpb.get_text_(self._div).strip('%'))
+        except:
+            return 0
+
+    _enemy_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'enemy').\
+                            span.with_classes('percentage')
+
+    @property
+    def enemy_percentage(self):
+        try:
+            return int(self._enemy_percentage_xpb.get_text_(self._div).strip('%'))
+        except ValueError:
+            return 0
+
+    @property
+    def contacted(self):
+        return bool(xpb.div.with_class('fancydate').apply_(self._div))
+
+    @property
+    def as_dict(self):
+        return {
+            'username': self.username,
+            'age': self.age,
+            'location': self.location,
+            'match_percentage': self.match_percentage,
+            'enemy_percentage': self.enemy_percentage,
+            'id': self.id,
+            'rating': self.rating,
+            'contacted': self.contacted
+        }
+
+
+_match_card_xpb = xpb.div.with_classes('match_card').div
 # The docstring below is extended automatically. Read it in its entirety at
 # http://okcupyd.readthedocs.org/en/latest/ or by generating the documentation
 # yourself.
@@ -161,8 +218,11 @@ def SearchFetchable(session=None, **kwargs):
         SearchHTMLFetcher(session, **kwargs),
         util.SimpleProcessor(
             session,
-            lambda username: Profile(session, username.strip()),
-            _username_xpb
+            lambda match_card_div: Profile(
+                session=session,
+                **MatchCardExtractor(match_card_div).as_dict
+            ),
+            _match_card_xpb
         )
     )
 
