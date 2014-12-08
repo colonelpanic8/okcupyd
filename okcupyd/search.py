@@ -141,6 +141,15 @@ class MatchCardExtractor(object):
     def __init__(self, div):
         self._div = div
 
+    _id_xpb = xpb.button.with_classes(
+        "match_card_rating",
+        "binary_rating_button"
+    ).select_attribute_('data-tuid')
+
+    @property
+    def id(self):
+        return int(self._id_xpb.one_(self._div))
+
     @property
     def username(self):
         return xpb.div.with_class('username').get_text_(self._div).strip()
@@ -166,14 +175,14 @@ class MatchCardExtractor(object):
             return 0
 
     _enemy_percentage_xpb = xpb.div.with_classes('percentage_wrapper', 'enemy').\
-                            span.with_classes('percentage')
+                            span.with_classes('percentage').text_
 
     @property
     def enemy_percentage(self):
         try:
-            return int(self._enemy_percentage_xpb.get_text_(self._div).strip('%'))
-        except ValueError:
-            return 0
+            return int(self._enemy_percentage_xpb.one_(self._div).strip('%'))
+        except:
+            return None
 
     @property
     def contacted(self):
@@ -182,18 +191,18 @@ class MatchCardExtractor(object):
     @property
     def as_dict(self):
         return {
+            # TODO(@IvanMalison): add rating.
             'username': self.username,
             'age': self.age,
             'location': self.location,
-            'match_percentage': self.match_percentage,
-            'enemy_percentage': self.enemy_percentage,
             'id': self.id,
-            'rating': self.rating,
-            'contacted': self.contacted
+            'contacted': self.contacted,
+            'match_percentage': self.match_percentage,
+            'enemy_percentage': self.enemy_percentage
         }
 
 
-_match_card_xpb = xpb.div.with_classes('match_card').div
+_match_card_xpb = xpb.div.with_classes('match_card')
 # The docstring below is extended automatically. Read it in its entirety at
 # http://okcupyd.readthedocs.org/en/latest/ or by generating the documentation
 # yourself.

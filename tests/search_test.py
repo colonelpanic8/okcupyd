@@ -1,5 +1,7 @@
 import operator
 
+import mock
+
 from okcupyd import User
 from okcupyd import magicnumbers
 from okcupyd.magicnumbers import maps
@@ -181,14 +183,16 @@ def test_question_count_filter():
         assert profile.questions[249]
 
 
-# @util.use_cassette
-# def test_search_populates_upfront
-
-
-
-
-
-
-
-
+@util.use_cassette
+def test_search_populates_upfront():
+    user = User()
+    search_fetchable = user.search()
+    for profile in search_fetchable[:4]:
+        profile_session = profile._session
+        with mock.patch.object(profile, '_session') as mock_session:
+            mock_session.okc_get.side_effect = profile_session.okc_get
+            assert profile.id > 0
+            assert mock_session.okc_get.call_count == 0
+            search_fetchable[0].essays.self_summary
+            assert mock_session.okc_get.call_count == 1
 

@@ -61,11 +61,10 @@ class Profile(object):
             name for name, _ in util.cached_property.get_cached_properties(self)
         )
         for key, value in values.items():
-            if key in property_names:
-                self.__dict__[key] = value
-            else:
+            if key not in property_names:
                 log.warning("Unrecognized kwarg {0} with value {1} "
                             "passed to Profile constructor.")
+            self.__dict__[key] = value
 
     def refresh(self, reload=False):
         """
