@@ -193,6 +193,6 @@ def test_search_populates_upfront():
             mock_session.okc_get.side_effect = profile_session.okc_get
             assert profile.id > 0
             assert mock_session.okc_get.call_count == 0
-            search_fetchable[0].essays.self_summary
+            profile.essays.self_summary
             assert mock_session.okc_get.call_count == 1
 
