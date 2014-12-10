@@ -296,6 +296,10 @@ class FetchMarshall(object):
 
 
 class SimpleProcessor(object):
+    """Applies object_factory to each element found with element_xpath
+
+    Accepts session merely to be consistent with the FetchMarshall interface.
+    """
 
     def __init__(self, session, object_factory, element_xpath):
         self._object_factory = object_factory
@@ -304,7 +308,6 @@ class SimpleProcessor(object):
     def process(self, text_response):
         if not text_response.strip():
             yield StopIteration
-            
             raise StopIteration()
         for element in self._element_xpath.apply_(
             html.fromstring(text_response)
