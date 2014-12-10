@@ -1,9 +1,9 @@
 import datetime
 import logging
 
-
 from lxml import html
 import simplejson
+import mock
 
 from . import details
 from . import essay

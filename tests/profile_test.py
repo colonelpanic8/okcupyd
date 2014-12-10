@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+import mock
+
 from . import util
 from okcupyd import looking_for
 from okcupyd import profile

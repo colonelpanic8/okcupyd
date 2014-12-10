@@ -60,6 +60,7 @@ def cached_attractiveness_finder():
         yield AttractivenessFinder()
 
 
+@pytest.mark.xfail
 @util.skip_if_live
 @util.use_cassette(cassette_name='attractiveness_finder_live')
 def test_attractiveness_finder_live(cached_attractiveness_finder):
