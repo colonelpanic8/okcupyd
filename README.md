@@ -390,4 +390,3 @@ bin/create-githook-symlinks.sh
 ```
 
 from the root directory of the repository.
-

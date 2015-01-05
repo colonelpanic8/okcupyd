@@ -18,7 +18,7 @@ setup(
                       'sqlalchemy >= 0.9.0', 'ipython >= 2.2.0',
                       'wrapt >= 1.10.0', 'coloredlogs >= 0.8', 'invoke >= 0.9',
                       'six >= 1.8.0'],
-    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy >= 1.1.2'],
+    tests_require=['tox', 'pytest', 'mock', 'contextlib2', 'vcrpy >= 1.1.4'],
     package_data={'': ['*.md', '*.rst']},
     author="Ivan Malison",
     author_email="ivanmalison@gmail.com",
