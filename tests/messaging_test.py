@@ -78,13 +78,14 @@ def test_date_parsing_integration():
     # This test sucks, but I can't think of a better way to test this.
     # I suppose that we could just make a message element without
     # making an http request.
-    assert user.inbox[0].datetime == datetime.datetime(year=2014, day=22,
+    this_year = datetime.date.today().year # This is a particularly awful concession...
+    assert user.inbox[0].datetime == datetime.datetime(year=this_year, day=22,
                                                        month=10)
     assert user.inbox[0].messages[-1].time_sent == datetime.datetime(
-        year=2014, day=22, month=10
+        year=this_year, day=22, month=10
     )
     assert user.inbox[1].messages[-1].time_sent == datetime.datetime(
-        year=2014, day=19, month=10
+        year=this_year, day=19, month=10
     )
 
 
