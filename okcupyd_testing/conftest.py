@@ -67,6 +67,7 @@ patch_settings = patch('credentials_modules',
                        mock.patch.object(settings, 'AF_USERNAME', 'username'),
                        mock.patch.object(settings, 'AF_PASSWORD', 'password'),
                        negate=True)
+
 patch_save = patch('resave',
                    mock.patch.object(
                        Cassette, '_save',
@@ -85,6 +86,7 @@ patch_use_cassette_enabled = patch(
     mock.patch.object(CassetteContextDecorator, '__exit__',
                       reraise_exception)
 )
+
 patch_vcrpy_filters = patch(
     'scrub', mock.patch.object(util, 'SHOULD_SCRUB', True)
 )

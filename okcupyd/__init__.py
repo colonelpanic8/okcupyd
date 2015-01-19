@@ -45,4 +45,5 @@ def interactive():
 
 
 __all__ = ('User', 'AttractivenessFinder', 'Statistics',
-           'save_file', 'interactive', 'PhotoUploader', 'Session', __version__)
+           'save_file', 'interactive', 'PhotoUploader', 'Session',
+           '__version__')
