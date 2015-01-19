@@ -142,7 +142,6 @@ class MatchCardExtractor(object):
         self._div = div
 
     _id_xpb = xpb.button.with_classes(
-        "match_card_rating",
         "binary_rating_button"
     ).select_attribute_('data-tuid')
 
