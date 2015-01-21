@@ -16,12 +16,14 @@ def install():
 @ns.add_task
 @task
 def pypi():
+    """Upload to pypi"""
     run("python setup.py sdist upload -r pypi")
 
 
 @ns.add_task
 @task
 def rerecord(rest):
+    """Rerecord tests."""
     run('tox -e py27 -- --record --credentials test_credentials {0} -s'
         .format(rest), pty=True)
     run('tox -e py27 -- --resave --scrub --credentials test_credentials {0} -s'
