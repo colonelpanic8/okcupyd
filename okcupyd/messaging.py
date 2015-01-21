@@ -126,7 +126,7 @@ class Message(object):
                 if 'from_me' in self._message_element.attrib['class']
                 else self._message_thread.user_profile)
 
-    _content_xpb = xpb.div.with_class('message_body').text_
+    _content_xpb = xpb.div.with_class('message_body')
 
     @util.cached_property
     def content(self):
@@ -135,10 +135,13 @@ class Message(object):
         """
         try:
             message = self._content_xpb.one_(self._message_element)
+            first_line = message.text[2:]
+            subsequent_lines = ''.join([html.tostring(i).replace('<br>', '\n')
+                                        for i in message.iterchildren()])
         except IndexError:
             pass
         else:
-            return message.strip()
+            return first_line + subsequent_lines
 
     @util.cached_property
     def time_sent(self):

@@ -90,6 +90,26 @@ def test_date_parsing_integration():
 
 
 @util.use_cassette
+def test_multi_line_messages(vcr_live_sleep):
+    user = User()
+    messages = [
+        """Multi-line message
+first
+second
+third""",
+        """   leading whitespace
+space at the end   
+   space at the beggining
+"""]
+    for message in messages:
+        user.quickmatch().message(message)
+        vcr_live_sleep(2)
+        print repr(user.outbox()[0].messages[0].content)
+        print repr(message)
+        # assert user.outbox()[0].messages[0].content == message
+
+
+@util.use_cassette
 def test_date_parsing_smoke():
     user = User()
     for thread in user.inbox:
