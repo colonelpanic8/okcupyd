@@ -3,7 +3,7 @@ import os
 from setuptools import setup, find_packages
 
 
-version = '0.8.16'
+version = '0.8.17'
 
 
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as file:
