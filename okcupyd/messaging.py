@@ -3,6 +3,7 @@ import logging
 from lxml import html
 from requests import exceptions
 import simplejson
+import six
 
 from . import errors
 from . import helpers
@@ -134,10 +135,23 @@ class Message(object):
         :returns: The text body of the message.
         """
         try:
+            # The code that follows is obviously pretty disgusting
+            # It seems like it might be impossible to completely replicate
+            # the text of the original message if it has trailing whitespace
             message = self._content_xpb.one_(self._message_element)
-            first_line = message.text[2:]
-            subsequent_lines = ''.join([html.tostring(i).replace('<br>', '\n')
-                                        for i in message.iterchildren()])
+            first_line = message.text
+            if message.text[:2] == '  ':
+                first_line = message.text[2:]
+            else:
+                log.debug("message did not have expected leading whitespace")
+            subsequent_lines = ''.join([
+                html.tostring(child, encoding='unicode').replace('<br>', '\n')
+                for child in message.iterchildren()
+            ])
+            if subsequent_lines[-1] == ' ':
+                subsequent_lines = subsequent_lines[:-1]
+            else:
+                log.debug("message did not have expected leading whitespace")
         except IndexError:
             pass
         else:

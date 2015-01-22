@@ -104,9 +104,7 @@ space at the end
     for message in messages:
         user.quickmatch().message(message)
         vcr_live_sleep(2)
-        print repr(user.outbox()[0].messages[0].content)
-        print repr(message)
-        # assert user.outbox()[0].messages[0].content == message
+        assert user.outbox()[0].messages[0].content.strip() == message.strip()
 
 
 @util.use_cassette
