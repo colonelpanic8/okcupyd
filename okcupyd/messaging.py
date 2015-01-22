@@ -134,28 +134,26 @@ class Message(object):
         """
         :returns: The text body of the message.
         """
-        try:
-            # The code that follows is obviously pretty disgusting
-            # It seems like it might be impossible to completely replicate
-            # the text of the original message if it has trailing whitespace
-            message = self._content_xpb.one_(self._message_element)
-            first_line = message.text
-            if message.text[:2] == '  ':
-                first_line = message.text[2:]
-            else:
-                log.debug("message did not have expected leading whitespace")
-            subsequent_lines = ''.join([
-                html.tostring(child, encoding='unicode').replace('<br>', '\n')
-                for child in message.iterchildren()
-            ])
-            if subsequent_lines[-1] == ' ':
-                subsequent_lines = subsequent_lines[:-1]
-            else:
-                log.debug("message did not have expected leading whitespace")
-        except IndexError:
-            pass
+        # The code that follows is obviously pretty disgusting
+        # It seems like it might be impossible to completely replicate
+        # the text of the original message if it has trailing whitespace
+        message = self._content_xpb.one_(self._message_element)
+        first_line = message.text
+        if message.text[:2] == '  ':
+            first_line = message.text[2:]
         else:
-            return first_line + subsequent_lines
+            log.debug("message did not have expected leading whitespace")
+        subsequent_lines = ''.join([
+            html.tostring(child, encoding='unicode').replace('<br>', '\n')
+            for child in message.iterchildren()
+        ])
+        message_text = first_line + subsequent_lines
+        if len(message_text) > 0 and message_text[-1] == ' ':
+            message_text = message_text[:-1]
+        else:
+            log.debug("message did not have expected leading whitespace")
+
+        return message_text
 
     @util.cached_property
     def time_sent(self):
