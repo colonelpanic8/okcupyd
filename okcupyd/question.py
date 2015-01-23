@@ -104,9 +104,9 @@ class Question(BaseQuestion):
     @return_none_if_unanswered
     def my_answer_matches(self):
         """
-        :returns: bool indicating whether or not the answer provided by the
-                  user answering the question is acceptable to the logged in
-                  user.
+        :returns: bool indicating whether or not the answer provided
+                  by the logged in user is acceptable to the user
+                  answering the question.
         """
         return 'not_accepted' not in self._my_answer_span.attrib['class']
 
