@@ -69,8 +69,8 @@ class Messager(object):
 @util.curry
 def get_js_variable(html_response, variable_name):
     script_elements = xpb.script.apply_(html_response)
-    html_response = '\n'.join(script_element.text_content()
-                              for script_element in script_elements)
+    html_response = u'\n'.join(script_element.text_content()
+                               for script_element in script_elements)
     return search('var {0} = "(.*?)";'.format(variable_name), html_response).group(1)
 
 
@@ -304,4 +304,4 @@ def add_newlines(tree):
     Add a newline character to the end of each <br> element.
     """
     for br in tree.xpath("*//br"):
-        br.tail = "\n" + br.tail if br.tail else "\n"
+        br.tail = u"\n" + br.tail if br.tail else u"\n"
