@@ -39,7 +39,7 @@ class Statistics(object):
         return self.with_filters(lambda mt: mt.initiator == self._user.profile)
 
     @util.cached_property
-    def recieved(self):
+    def received(self):
         return self.with_filters(lambda mt: mt.initiator != self._user.profile)
 
     @util.cached_property
@@ -110,5 +110,5 @@ class Statistics(object):
         return self.initiated.count/self.count
 
     @property
-    def portion_recieved(self):
+    def portion_received(self):
         return 1 - self.portion_initiated
