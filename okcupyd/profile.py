@@ -125,8 +125,8 @@ class Profile(object):
         pics_request = self._session.okc_get(
             u'profile/{0}/album/0'.format(self.username),
         )
-        pics_tree = html.fromstring('{0}{1}{2}'.format(
-            '<div>', pics_request.json()['fulls'], '</div>'
+        pics_tree = html.fromstring(u'{0}{1}{2}'.format(
+            u'<div>', pics_request.json()['fulls'], u'</div>'
         ))
         return [photo.Info.from_cdn_uri(uri)
                 for uri in self._photo_info_xpb.apply_(pics_tree)]
@@ -365,4 +365,4 @@ class Profile(object):
         self.username.lower() == other.username.lower()
 
     def __repr__(self):
-        return '{0}("{1}")'.format(type(self).__name__, self.username)
+        return u'{0}("{1}")'.format(type(self).__name__, self.username)

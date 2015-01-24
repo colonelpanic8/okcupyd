@@ -52,10 +52,10 @@ class Session(requests.Session):
                                           secure=True)
         log_in_name = login_response.json()['screenname']
         if log_in_name is None:
-            raise AuthenticationError('Could not log in as {0}'.format(username))
+            raise AuthenticationError(u'Could not log in as {0}'.format(username))
         if log_in_name.lower() != username.lower():
-            log.warning('Expected to log in as {0} but '
-                        'got {1}'.format(username, log_in_name))
+            log.warning(u'Expected to log in as {0} but '
+                        u'got {1}'.format(username, log_in_name))
         log.debug(login_response.content.decode('utf8'))
         session.log_in_name = log_in_name
         session.headers.update(cls.default_login_headers)

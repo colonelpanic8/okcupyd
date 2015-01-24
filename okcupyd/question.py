@@ -37,7 +37,7 @@ class BaseQuestion(object):
         return self._text_xpb.get_text_(self._question_element).strip()
 
     def __repr__(self):
-        return '<{1}: {0}>'.format(self.text, type(self).__name__)
+        return u'<{1}: {0}>'.format(self.text, type(self).__name__)
 
 
 class Question(BaseQuestion):
@@ -397,8 +397,7 @@ class QuestionHTMLFetcher(object):
     def fetch(self, start_at):
         response = self._session.okc_get(self._uri,
                                          params=self._query_params(start_at))
-        return response.content.decode('utf8')
-
+        return response.content.decode('utf8', 'replace')
 
 def QuestionFetcher(session, username, question_class=Question,
                     is_user=False, **kwargs):

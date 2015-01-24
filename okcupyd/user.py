@@ -277,4 +277,4 @@ class User(object):
         return Copy(profile_or_user, self)
 
     def __repr__(self):
-        return 'User("{0}")'.format(self.profile.username)
+        return u'User("{0}")'.format(self.profile.username)
