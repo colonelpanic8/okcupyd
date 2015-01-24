@@ -158,6 +158,7 @@ sep_replacements = ('\\', '/', '.', '-', ' ', '$', ',', '(', ')')
 
 gentation_to_number = {
     'women who like men': '34',
+    'women': '34',
     'men who like women': '17',
     'women who like women': '40',
     'men who like men': '20',
