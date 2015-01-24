@@ -149,7 +149,7 @@ class Info(object):
                         "[0-9]*x[0-9]*/[0-9]*x[0-9]*/"
                         "(?P<tnl>[0-9]*?)x(?P<tnt>[0-9]*?)/"
                         "(?P<tnr>[0-9]*)x(?P<tnb>[0-9]*)/0/"
-                        "(?P<id>[0-9]*).webp\?v=2")
+                        "(?P<id>[0-9]*).(:?webp|jpeg)\?v=\d+")
 
     @classmethod
     def from_cdn_uri(cls, cdn_uri):
