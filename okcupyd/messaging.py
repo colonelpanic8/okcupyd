@@ -3,7 +3,6 @@ import logging
 from lxml import html
 from requests import exceptions
 import simplejson
-import six
 
 from . import errors
 from . import helpers
@@ -302,8 +301,8 @@ class MessageThread(object):
     @util.cached_property
     def user_profile(self):
         """
-        :returns: A :class:`~okcupyd.profile.Profile` belonging to the logged in
-                  user.
+        :returns: A :class:`~okcupyd.profile.Profile` belonging to the logged
+                  in user.
         """
         return self._session.get_current_user_profile()
 
