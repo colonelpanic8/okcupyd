@@ -11,7 +11,7 @@ from . import profile
 log = logging.getLogger(__name__)
 
 
-class Session(requests.Session):
+class Session(object):
     """A `requests.Session` with convenience methods for interacting with
     okcupid.com
     """
@@ -24,7 +24,7 @@ class Session(requests.Session):
     }
 
     @classmethod
-    def login(cls, username=None, password=None):
+    def login(cls, username=None, password=None, requests_session=None):
         """Get a session that has authenticated with okcupid.com.
         If no username and password is supplied, the ones stored in
         :class:`okcupyd.settings` will be used.
@@ -38,9 +38,10 @@ class Session(requests.Session):
         # the defaults to their respective arguments because doing so
         # would prevent this function from picking up any changes made
         # to those values after import time.
+        requests_session = requests_session or requests.Session()
         username = username or settings.USERNAME
         password = password or settings.PASSWORD
-        session = cls()
+        session = cls(requests_session)
         credentials = {
             'username': username,
             'password': password,
@@ -60,6 +61,13 @@ class Session(requests.Session):
         session.log_in_name = log_in_name
         session.headers.update(cls.default_login_headers)
         return session
+
+    def __init__(self, requests_session):
+        self._requests_session = requests_session
+        self.log_in_name = None
+
+    def __getattr__(self, name):
+        return getattr(self._requests_session, name)
 
     def build_path(self, path, secure=None):
         if secure is None:
@@ -84,8 +92,6 @@ class Session(requests.Session):
 
 def build_okc_method(method_name):
     def okc_method(self, path, secure=None, **kwargs):
-        """
-        """
         base_method = getattr(self, method_name)
         response = base_method(self.build_path(path, secure), **kwargs)
         response.raise_for_status()
