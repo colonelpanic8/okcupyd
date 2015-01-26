@@ -34,32 +34,15 @@ class Session(object):
         :param password: The password to log in with.
         :type password: str
         """
+        requests_session = requests_session or requests.Session()
+        session = cls(requests_session)
         # settings.USERNAME and settings.PASSWORD should not be made
         # the defaults to their respective arguments because doing so
         # would prevent this function from picking up any changes made
         # to those values after import time.
-        requests_session = requests_session or requests.Session()
         username = username or settings.USERNAME
         password = password or settings.PASSWORD
-        session = cls(requests_session)
-        credentials = {
-            'username': username,
-            'password': password,
-            'okc_api': 1
-        }
-        login_response = session.okc_post('login',
-                                          data=credentials,
-                                          headers=cls.default_login_headers,
-                                          secure=True)
-        log_in_name = login_response.json()['screenname']
-        if log_in_name is None:
-            raise AuthenticationError(u'Could not log in as {0}'.format(username))
-        if log_in_name.lower() != username.lower():
-            log.warning(u'Expected to log in as {0} but '
-                        u'got {1}'.format(username, log_in_name))
-        log.debug(login_response.content.decode('utf8'))
-        session.log_in_name = log_in_name
-        session.headers.update(cls.default_login_headers)
+        session.do_login(username, password)
         return session
 
     def __init__(self, requests_session):
@@ -68,6 +51,26 @@ class Session(object):
 
     def __getattr__(self, name):
         return getattr(self._requests_session, name)
+
+    def do_login(self, username, password):
+        credentials = {
+            'username': username,
+            'password': password,
+            'okc_api': 1
+        }
+        login_response = self.okc_post('login',
+                                          data=credentials,
+                                          headers=self.default_login_headers,
+                                          secure=True)
+        log_in_name = login_response.json()['screenname']
+        if log_in_name is None:
+            raise AuthenticationError(u'Could not log in as {0}'.format(username))
+        if log_in_name.lower() != username.lower():
+            log.warning(u'Expected to log in as {0} but '
+                        u'got {1}'.format(username, log_in_name))
+        log.debug(login_response.content.decode('utf8'))
+        self.log_in_name = log_in_name
+        self.headers.update(self.default_login_headers)
 
     def build_path(self, path, secure=None):
         if secure is None:
