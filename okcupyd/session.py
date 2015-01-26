@@ -86,8 +86,8 @@ def build_okc_method(method_name):
     def okc_method(self, path, secure=None, **kwargs):
         """
         """
-        super_method = getattr(super(Session, self), method_name)
-        response = super_method(self.build_path(path, secure), **kwargs)
+        base_method = getattr(self, method_name)
+        response = base_method(self.build_path(path, secure), **kwargs)
         response.raise_for_status()
         return response
     return okc_method
