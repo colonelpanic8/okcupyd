@@ -180,7 +180,7 @@ _no_profile = xpb.div.with_class('blank_state')
 
 def no_profile(tree):
     try:
-        node = _no_profile.one_(tree)
+        node = _no_profile.apply_(tree)[0]
     except IndexError:
         return False
     return True
