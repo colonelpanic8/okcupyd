@@ -151,6 +151,13 @@ def test_profile_id():
     assert isinstance(User().quickmatch().id, int)
 
 
+@util.use_cassette
+def test_stalk():
+    response = User().quickmatch().stalk()
+    assert response.status_code == 200
+    assert response.json()
+
+
 def test_cached_properties_passed_upfront():
     mock_session = mock.Mock()
     a_profile = profile.Profile(mock.Mock(), mock_session, match_percentage=100)

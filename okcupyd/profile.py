@@ -76,6 +76,16 @@ class Profile(object):
         if reload:
             return self.profile_tree
 
+    def stalk(self):
+        """
+        Let the user to which this profile belong know that the logged in user
+        visited their profile.
+        """
+        return self._session.okc_post(
+            'profile',
+            data={'ajax': 1, 'username': self.username, 'tuid': self.id, 'stalk': 1}
+        )
+
     @property
     def is_logged_in_user(self):
         """
