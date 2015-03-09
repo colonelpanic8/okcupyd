@@ -59,9 +59,9 @@ class Session(object):
             'okc_api': 1
         }
         login_response = self.okc_post('login',
-                                          data=credentials,
-                                          headers=self.default_login_headers,
-                                          secure=True)
+                                       data=credentials,
+                                       headers=self.default_login_headers,
+                                       secure=True)
         log_in_name = login_response.json()['screenname']
         if log_in_name is None:
             raise AuthenticationError(u'Could not log in as {0}'.format(username))

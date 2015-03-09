@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pytest
 
 from okcupyd import settings
@@ -15,3 +16,8 @@ def test_session_success():
 def test_session_auth_failure():
     with pytest.raises(AuthenticationError):
         Session.login(password='wrong_password')
+
+
+@util.use_cassette
+def test_session_unicode():
+    Session.login(username='éÅunicodeË', password='unicode')
