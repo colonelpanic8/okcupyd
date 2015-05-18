@@ -66,10 +66,16 @@ class Question(BaseQuestion):
     def __init__(self, question_element):
         super(Question, self).__init__(question_element)
         try:
-            self._their_answer_span, self._my_answer_span = \
-            self._answers_xpb.span.with_class('text').apply_(self._question_element)
-            self._their_note_span, self._my_note_span = \
-            self._answers_xpb.span.with_class('note').apply_(self._question_element)
+            self._their_answer_span, self._my_answer_span = (
+                self._answers_xpb.span.with_class('text').apply_(
+                    self._question_element
+                )
+            )
+            self._their_note_span, self._my_note_span = (
+                self._answers_xpb.span.with_class('note').apply_(
+                    self._question_element
+                )
+            )
         except:
             pass
 
@@ -123,8 +129,8 @@ class Question(BaseQuestion):
     @return_none_if_unanswered
     def my_note(self):
         """
-        :returns: The note the logged in user provided as an explanation for their
-                  answer to this question.
+        :returns: The note the logged in user provided as an explanation for
+                  their answer to this question.
         """
         return self._my_note_span.text_content().strip()
 
@@ -306,8 +312,9 @@ class Questions(object):
                               if option.is_match]
         if len(match_response_ids) == len(user_question.answer_options):
             match_response_ids = 'irrelevant'
-        return self.respond(user_question.id, user_response_ids, match_response_ids,
-                            importance, note=user_question.explanation or '')
+        return self.respond(user_question.id, user_response_ids,
+                            match_response_ids, importance,
+                            note=user_question.explanation or '')
 
     def respond_from_question(self, question, user_question, importance):
         """Copy the answer given in `question` to the logged in user's
@@ -321,7 +328,9 @@ class Questions(object):
         :param importance: The importance to assign to the response to the
                            answered question.
         """
-        option_index = user_question.answer_text_to_option[question.their_answer].id
+        option_index = user_question.answer_text_to_option[
+            question.their_answer
+        ].id
         self.respond(question.id, [option_index], [option_index], importance)
 
     def respond(self, question_id, user_response_ids, match_response_ids,
@@ -373,6 +382,8 @@ _current_page_xpb = _page_data_xpb.input(id='questions_pages_page').\
 _total_page_xpb = _page_data_xpb.input(id='questions_pages_total').\
                   select_attribute_('value')
 _question_xpb = xpb.div.with_class('question')
+
+
 def QuestionProcessor(question_class):
     return util.PaginationProcessor(question_class, _question_xpb,
                                     _current_page_xpb, _total_page_xpb)
@@ -398,6 +409,7 @@ class QuestionHTMLFetcher(object):
         response = self._session.okc_get(self._uri,
                                          params=self._query_params(start_at))
         return response.content.decode('utf8', 'replace')
+
 
 def QuestionFetcher(session, username, question_class=Question,
                     is_user=False, **kwargs):

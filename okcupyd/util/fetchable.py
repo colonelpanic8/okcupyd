@@ -120,11 +120,11 @@ class Fetchable(object):
 
     def __init__(self, fetcher, **kwargs):
         """
-        :param fetcher: An object with a `fetch` generator method that retrieves
-                        items for the fetchable.
+        :param fetcher: An object with a `fetch` generator method that
+                        retrieves items for the fetchable.
         :param nice_repr: Append the repr of a list containing the items that
-                          have been fetched to this point by the fetcher. Defaults
-                          to True
+                          have been fetched to this point by the fetcher.
+                          Defaults to True.
         :param kwargs: Arguments that should be passed to the fetcher when it's
                        fetch method is called. These are stored on the fetchable
                        so they can be passed to the fetcher whenever
@@ -193,15 +193,13 @@ class Fetchable(object):
 
     def _handle_slice(self, item):
         iterator = iter(self)
-        if item.start is None and item.stop is None:
-            # No point in being lazy if they want it all.
-            self.exhausted = True
-            return list(iterator)[item]
-        if ((item.start and item.start < 0) or
-            (not item.stop or item.stop < 0)):
+        # No point in being lazy if they want it all.
+        if ((item.start is None and item.stop is None) or
             # If we have any negative numbers we have to expand the whole
             # thing anyway. This is also the case if there is no bound
             # on the slice, hence the `not item.stop` trigger.
+            ((item.start and item.start < 0) or
+             (not item.stop or item.stop < 0))):
             self.exausted = True
             return list(iterator)[item]
         accumulator = []
