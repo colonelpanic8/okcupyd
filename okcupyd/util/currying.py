@@ -122,7 +122,8 @@ class curry(object):
             return len(args) >= count
         return function
 
-    def __init__(self, function, evaluation_checker=None, args=(), kwargs=None):
+    def __init__(self, function, evaluation_checker=None,
+                 args=(), kwargs=None, cache_name=False):
         """
         :param function: The function to curry.
         :evaluation checker: A function that controls when the function will
@@ -133,6 +134,9 @@ class curry(object):
         self.function = function
         self.evaluation_checker = (evaluation_checker or
                                    self.arity_evaluation_checker(function))
+        if cache_name is True:
+            cache_name = self.function.__name__
+        self.cache_name = cache_name
         self.args = args
         self.kwargs = kwargs or {}
         self.__name__ = function.__name__
@@ -156,7 +160,8 @@ class curry(object):
         # This caches the new partial application of the function on the
         # instance. Its not clear that this is a good idea but I'm leaving
         # it for now.
-        setattr(obj, self.function.__name__, bound)
+        if self.cache_name:
+            setattr(obj, self.cache_name, bound)
         return bound
 
     def __repr__(self):

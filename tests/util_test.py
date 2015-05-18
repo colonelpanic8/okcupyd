@@ -41,6 +41,46 @@ def test_curry_with_kwargs_taking_function():
     assert kwarg_taking_function(a=14)(2) == {'k': 2, 'a': 14}
 
 
+def test_curry_cache_behavior_problems():
+
+    class CurryCacheTest(object):
+        def func(self, a=1):
+            return 2 + a
+
+        test = util.curry(func)
+
+        def func(self):
+            return 1
+
+    instance = CurryCacheTest()
+    assert instance.func() == 1
+    assert instance.test() == 3
+    assert instance.func() == 1
+
+    # Ensure we are getting new bound instances each time
+    assert instance.test is not instance.test
+    assert instance.func is not instance.func
+
+    class CurryCacheTest2(object):
+        def func(self, a=1):
+            return 2 + a
+
+        test = util.curry(func, cache_name='test')
+
+        @util.curry(cache_name=True)
+        def func(self):
+            return 1
+
+    instance = CurryCacheTest2()
+    assert instance.func() == 1
+    assert instance.test() == 3
+    assert instance.func() == 1
+
+    # Ensure we are caching the result of the curry each time
+    assert instance.test is instance.test
+    assert instance.func is instance.func
+
+
 def test_get_cached_properties():
     class PropClass(object):
         def __init__(self):
@@ -96,6 +136,7 @@ def test_fetchable_teeing():
 
     for i in range(4):
         assert next(iter(fetchable)) == 5
+
 
 def test_fetchable_get_item():
     call_counter = mock.Mock()
