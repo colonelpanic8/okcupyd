@@ -12,7 +12,7 @@ path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'examples')
 def build_example_test_function(module_name):
     @mock.patch('okcupyd.save_file')
     def function(arg):
-        with util.use_cassette(cassette_name='{0}_example'.format(module_name)):
+        with util.use_cassette(path='{0}_example'.format(module_name)):
             importlib.import_module('examples.{0}'.format(module_name))
     return function
 

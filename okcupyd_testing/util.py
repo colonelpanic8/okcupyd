@@ -184,23 +184,17 @@ def body_as_query_string(left, right):
         return _match_search_query(left_qs_items, right_qs_items)
 
 
+cassette_library_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                          'tests', 'vcr_cassettes')
 okcupyd_vcr = vcr.VCR(match_on=('path', 'method', 'match_search_query',
                                 'body_as_query_string'),
                       before_record=(before_record,),
-                      before_record_response=scrub_response)
+                      before_record_response=scrub_response,
+                      cassette_library_dir=cassette_library_directory,
+                      path_transformer=vcr.VCR.ensure_suffix('.yaml'))
 okcupyd_vcr.register_matcher('body_as_query_string', body_as_query_string)
 okcupyd_vcr.register_matcher('match_search_query', match_search_query)
 match_on_no_body = list(filter(lambda x: 'body' not in x, okcupyd_vcr.match_on))
-
-
-class cassette(object):
-
-    base_path = os.path.dirname(__file__)
-
-    @classmethod
-    def path(cls, cassette_name):
-        return os.path.join(cls.base_path,
-                            'vcr_cassettes', '{0}.yaml'.format(cassette_name))
 
 
 @wrapt.adapter_factory
@@ -220,15 +214,4 @@ def skip_if_live(function, instance, args, kwargs):
         return function(*args, **kwargs)
 
 
-@util.curry(evaluation_checker=lambda *args, **kwargs: (
-    len(args) > 0 or 'function' in kwargs or 'cassette_name' in kwargs
-))
-def use_cassette(function=None, cassette_name=None, *args, **kwargs):
-    if cassette_name is None:
-        assert function, 'Must supply function if no cassette name given'
-        cassette_name = function.__name__
-    path = cassette.path(cassette_name)
-    context_decorator = okcupyd_vcr.use_cassette(path, *args, **kwargs)
-    if function:
-        return context_decorator(function)
-    return context_decorator
+use_cassette = okcupyd_vcr.use_cassette

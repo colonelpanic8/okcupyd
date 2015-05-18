@@ -2,7 +2,7 @@ from . import util
 from okcupyd import User, photo
 
 
-@util.use_cassette(cassette_name='photo_upload',
+@util.use_cassette(path='photo_upload',
                    match_on=util.match_on_no_body)
 def test_photo_upload():
     uploader = photo.PhotoUploader()
@@ -10,7 +10,7 @@ def test_photo_upload():
     assert int(upload_response_dict['id']) > 0
 
 
-@util.use_cassette(cassette_name='test_photo_delete', match_on=util.match_on_no_body)
+@util.use_cassette(path='test_photo_delete', match_on=util.match_on_no_body)
 def test_photo_delete():
     user = User()
     response_dict = user.photo.upload_and_confirm(user.quickmatch().photo_infos[0])

@@ -1,2 +1,4 @@
 from okcupyd_testing.util import *
-cassette.base_path = os.path.dirname(__file__)
+okcupyd_vcr.cassette_library_dir = os.path.join(
+    os.path.dirname(__file__), 'vcr_cassettes'
+)

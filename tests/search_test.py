@@ -13,7 +13,7 @@ from okcupyd.session import Session
 from . import util
 
 
-@util.use_cassette(cassette_name='search_age_filter')
+@util.use_cassette(path='search_age_filter')
 def test_age_filter():
     age = 22
     search_fetchable = SearchFetchable(gentation='everybody',
@@ -23,7 +23,7 @@ def test_age_filter():
     assert profile.age == age
 
 
-@util.use_cassette(cassette_name='search_count')
+@util.use_cassette(path='search_count')
 def test_count_variable(request):
     profiles = search(gentation='everybody', count=14)
     assert len(profiles) == 14
@@ -39,7 +39,7 @@ def test_count_variable(request):
         profile.contacted
 
 
-@util.use_cassette(cassette_name='search_location_filter')
+@util.use_cassette(path='search_location_filter')
 def test_location_filter():
     location = 'Portland, OR'
     search_fetchable = SearchFetchable(location=location, radius=25)
@@ -47,7 +47,7 @@ def test_location_filter():
     assert profile.location == 'Portland, OR'
 
 
-@util.use_cassette(cassette_name='search_function')
+@util.use_cassette(path='search_function')
 def test_search_function():
     profile, = search(count=1)
     assert isinstance(profile, Profile)

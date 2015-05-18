@@ -9,13 +9,13 @@ from okcupyd import helpers
 from okcupyd.profile import Profile
 
 
-@util.use_cassette(cassette_name='user_no_picture')
+@util.use_cassette(path='user_no_picture')
 def test_handle_no_pictures():
     username = User().profile.username
     assert username is not None
 
 
-@util.use_cassette(cassette_name='access_profile_from_message_thread')
+@util.use_cassette(path='access_profile_from_message_thread')
 def test_message_thread_to_profile():
     profile = User().inbox[0].correspondent_profile
     assert profile.age
@@ -23,12 +23,12 @@ def test_message_thread_to_profile():
     assert isinstance(profile.rating, int)
 
 
-@util.use_cassette(cassette_name='user_count')
+@util.use_cassette(path='user_count')
 def test_user_search_count():
     assert len(User().search(count=1)) == 1
 
 
-@util.use_cassette(cassette_name='test_user_essays')
+@util.use_cassette(path='test_user_essays')
 def test_user_essays():
     user = User()
     first_essay = 'an essay'
@@ -41,7 +41,7 @@ def test_user_essays():
     assert user.profile.essays.self_summary == second_essay
 
 
-@util.use_cassette(cassette_name='test_user_essays_refresh')
+@util.use_cassette(path='test_user_essays_refresh')
 def test_user_essay_refresh():
     # Test Refresh Function
     user = User()
@@ -54,7 +54,7 @@ def test_user_essay_refresh():
     )
 
 
-@util.use_cassette(cassette_name='visitors_test')
+@util.use_cassette(path='visitors_test')
 @util.skip_if_live
 def test_visitors():
     user = User()
@@ -65,7 +65,7 @@ def test_visitors():
 
 
 @pytest.mark.skipif(bool(os.environ.get('CI')), reason="Unicode issues...")
-@util.use_cassette(cassette_name='profile_titles')
+@util.use_cassette(path='profile_titles')
 def test_profile_titles():
     user = User()
     for essay_name in user.profile.essays.essay_names:
