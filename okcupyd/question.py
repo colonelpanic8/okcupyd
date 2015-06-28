@@ -9,8 +9,8 @@ log = logging.getLogger(__name__)
 
 
 class BaseQuestion(object):
-    """The abstract abse class of :class:`~.Question` and
-    :class:`~.UserQuestion`. Contains all the shared functinality of the
+    """The abstract base class of :class:`~.Question` and
+    :class:`~.UserQuestion`. Contains all the shared functionality of the
     aforementined classes. The two are quite different in some ways and can
     not always be used interchangably. See their respective docstrings for more
     details.
@@ -135,6 +135,7 @@ class Question(BaseQuestion):
         return self._my_note_span.text_content().strip()
 
     _explanation_xpb = xpb.div.span.with_class('note')
+    del return_none_if_unanswered
 
 
 class UserQuestion(BaseQuestion):
