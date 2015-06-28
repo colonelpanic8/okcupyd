@@ -83,11 +83,12 @@ class Copy(object):
             time.sleep(5)
             try:
                 question = self.dest_user.profile.question_fetchable()[0]
+            except IndexError:
+                break
+            else:
                 log.debug(u'Destination user still has question {0}'.format(
                     question.text
                 ))
-            except IndexError:
-                break
 
         for question in source_questions:
             try:
