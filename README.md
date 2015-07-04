@@ -54,11 +54,11 @@ directory in your \$PATH that will allow you to type okcupyd into your
 shell of choice to enter an interactive ipython shell that has been
 prepared for use with okcupyd. Before the shell starts, you will be
 prompted for your username and password. This executable script accepts
-the flags --enable-logger which enables a logger of the given name,
-and --credentials whose action is described below.
+the flags --enable-logger which enables a logger of the given name, and
+--credentials whose action is described below.
 
-It is highly recommended that you use the --enable-logger=requests
-and --enable-logger=okcupyd flags if you encounter any problems.
+It is highly recommended that you use the --enable-logger=requests and
+--enable-logger=okcupyd flags if you encounter any problems.
 
 ### Credentials
 
