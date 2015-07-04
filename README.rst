@@ -380,7 +380,7 @@ the provided git hooks that are included in this repository by running:
 
 from the root directory of the repository.
 
-.. |Latest PyPI version| image:: https://pypip.in/v/okcupyd/badge.png
+.. |Latest PyPI version| image:: https://img.shields.io/pypi/v/okcupyd.svg
    :target: https://pypi.python.org/pypi/okcupyd/
 .. |Build Status| image:: https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master
    :target: https://travis-ci.org/IvanMalison/okcupyd
