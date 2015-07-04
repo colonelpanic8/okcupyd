@@ -64,6 +64,7 @@ def test_visitors():
     assert len(user.visitors) > 26
 
 
+@pytest.mark.xfail
 @pytest.mark.skipif(bool(os.environ.get('CI')), reason="Unicode issues...")
 @util.use_cassette(path='profile_titles')
 def test_profile_titles():
