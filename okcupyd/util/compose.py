@@ -15,8 +15,11 @@ def compose_with_joiner(joiner, *functions):
 compose_one_arg = compose_with_joiner(_compose2)
 
 
-compose = compose_with_joiner(lambda f, g: _compose2(make_single_arity(f),
-                                                force_args_return(g)))
+compose = compose_with_joiner(lambda f, g: _compose2(
+    make_single_arity(f),
+    force_args_return(g)
+))
+
 
 def make_single_arity(function):
     @functools.wraps(function)
