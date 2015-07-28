@@ -3,6 +3,7 @@ import operator
 
 import mock
 import pytest
+import six
 
 from okcupyd import util
 
@@ -205,3 +206,33 @@ def test_curry_on_classmethod():
 
     assert TestClass.test(optional=1)(2) == 3
     assert TestClass().test(optional=3)(2) == 5
+
+
+def test_decorate_all():
+    def add_two(function):
+        def wrap(*args, **kwargs):
+            return function(*args, **kwargs) + 2
+        return wrap
+
+    class Test(six.with_metaclass(util.decorate_all(add_two))):
+
+        def one(self):
+            return 1
+
+        def two(self):
+            return 2
+
+    assert Test().one() == 3
+    assert Test().two() == 4
+
+
+def test_staticmethod_decorate_all():
+    class Test(six.with_metaclass(util.decorate_all(staticmethod))):
+        def test():
+            return 1
+
+        def test2(a, b):
+            return a + b
+
+    assert Test.test() == 1
+    assert Test.test2(1, 1) == 2

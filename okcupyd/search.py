@@ -247,7 +247,7 @@ class SearchHTMLFetcher(object):
         self.keywords = self._options.pop('keywords', None)
         self.order_by = self._options.pop('order_by', 'match').upper()
         self.count = self._options.pop('count', 9)
-        self.filters = search_filters.build(**self._options)
+        self.filters = search_filters.legacy_build(**self._options)
 
     def _query_params(self, low=None):
         search_parameters = {

@@ -3,6 +3,7 @@ import functools
 import inspect
 import logging
 import re
+import types
 
 import six
 
@@ -181,3 +182,14 @@ def IndexedREMap(*re_strings, **kwargs):
     return remap
 
 
+def decorate_all(decorator):
+    class DecorateAll(type):
+
+        def __new__(cls, name, bases, attributes_dict):
+            for attribute, value in attributes_dict.items():
+                if isinstance(value, types.FunctionType):
+                    attributes_dict[attribute] = decorator(value)
+            return super(DecorateAll, cls).__new__(
+                cls, name, bases, attributes_dict
+            )
+    return DecorateAll

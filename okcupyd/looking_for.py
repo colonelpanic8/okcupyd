@@ -125,7 +125,7 @@ class LookingFor(object):
             if kinds_numbers:
                 data['lookingfor'] = kinds_numbers
         age_min, age_max = ages
-        data.update(looking_for_filters.build(
+        data.update(looking_for_filters.legacy_build(
             status=single, gentation=gentation, radius=25 if near_me else 0,
             age_min=age_min, age_max=age_max
         ))
