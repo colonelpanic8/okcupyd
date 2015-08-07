@@ -159,9 +159,9 @@ or another from instances of :class:`~okcupyd.user.User`.
 .. autoclass:: okcupyd.question.AnswerOption
     :members:
     
-:func:`~okcupyd.search.SearchFetchable`
+:func:`~okcupyd.html_search.SearchFetchable`
 ========================================
-.. autofunction:: okcupyd.search.SearchFetchable
+.. autofunction:: okcupyd.html_search.SearchFetchable
     
 :class:`~okcupyd.attractiveness_finder._AttractivenessFinder`
 =============================================================

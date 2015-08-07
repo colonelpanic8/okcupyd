@@ -169,7 +169,7 @@ instance:
 
 .. code:: python
 
-    from okcupyd.search import SearchFetchable
+    from okcupyd.html_search import SearchFetchable
 
     for profile in SearchFetchable(attractiveness_min=8000)[:5]:
         profile.message("hawt...")
@@ -180,7 +180,7 @@ session that should be used to search:
 .. code:: python
 
     from okcupyd.session import Session
-    from okcupyd.search import SearchFetchable
+    from okcupyd.html_search import SearchFetchable
 
     session = Session.login('username', 'password')
     for profile in SearchFetchable(session=session, attractiveness_min=8000)[:5]:
@@ -188,7 +188,7 @@ session that should be used to search:
 
 For more details about what filter arguments can be used with these
 search functions, see the doucmentation for
-~okcupyd.search.SearchFetchable
+~okcupyd.html\_search.SearchFetchable
 
 Messaging another user
 ~~~~~~~~~~~~~~~~~~~~~~

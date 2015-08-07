@@ -1,4 +1,4 @@
-from okcupyd.search import search_filters
+from okcupyd.html_search import search_filters
 from okcupyd.filter import Filters
 
 

@@ -7,7 +7,7 @@ from okcupyd import User
 from okcupyd import magicnumbers
 from okcupyd.magicnumbers import maps
 from okcupyd.profile import Profile
-from okcupyd.search import SearchFetchable, search
+from okcupyd.html_search import SearchFetchable, search
 from okcupyd.session import Session
 
 from . import util

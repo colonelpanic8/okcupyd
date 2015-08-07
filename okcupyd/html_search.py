@@ -208,7 +208,7 @@ _match_card_xpb = xpb.div.with_classes('match_card')
 def SearchFetchable(session=None, **kwargs):
     """Search okcupid.com with the given parameters. Parameters are registered
     to this function through :meth:`~okcupyd.filter.Filters.register_filter_builder`
-    of :data:`~okcupyd.search.search_filters`.
+    of :data:`~okcupyd.html_search.search_filters`.
 
     :returns: A :class:`~okcupyd.util.fetchable.Fetchable` of
               :class:`~okcupyd.profile.Profile` instances.
@@ -278,11 +278,11 @@ class SearchHTMLFetcher(object):
         response = self._session.okc_get('match',
                                          params=search_parameters)
         try:
-            search_html = response.json()['html']
+            html_search = response.json()['html']
         except:
             log.warning(simplejson.dumps({'failure': response.content}))
             raise
-        return search_html
+        return html_search
 
     def __unicode__(self):
         return u'{0}({1})'.format(type(self).__name__, repr(self._options))

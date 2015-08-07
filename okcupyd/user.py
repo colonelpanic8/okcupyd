@@ -133,7 +133,7 @@ class User(object):
         return self._message_sender.send(username, message_text)
 
     def search(self, **kwargs):
-        """Call :func:`~okcupyd.search.SearchFetchable`  to get a
+        """Call :func:`~okcupyd.html_search.SearchFetchable`  to get a
         :class:`~okcupyd.util.fetchable.Fetchable` object that will lazily
         perform okcupid searches to provide :class:`~okcupyd.profile.Profile`
         objects matching the search criteria.
@@ -141,7 +141,7 @@ class User(object):
         Defaults for `gender`, `gentation`, `location` and `radius` will
         be provided if none are given.
 
-        :param kwargs: See the :func:`~okcupyd.search.SearchFetchable`
+        :param kwargs: See the :func:`~okcupyd.html_search.SearchFetchable`
                        docstring for details about what parameters are
                        available.
         """
