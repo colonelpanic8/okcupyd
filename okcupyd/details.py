@@ -34,9 +34,10 @@ class Detail(object):
 
     @classmethod
     def auto_indexed_updater(cls, *options):
-        return cls.mapping_updater({option: index
-                                    for index, option in enumerate(options, 1)},
-                                   default=0)
+        return cls.mapping_updater({
+            option: index
+            for index, option in enumerate(options, 1)
+        }, default=0)
 
     @classmethod
     def mapping_updater(cls, mapping, id_name=None):
