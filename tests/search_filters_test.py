@@ -1,4 +1,4 @@
-from okcupyd.search_filters import search_filters
+from okcupyd.json_search import search_filters
 
 
 def test_gentation():
