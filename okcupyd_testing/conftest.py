@@ -96,21 +96,12 @@ patch_break_on_exception = patch(
     mock.patch('okcupyd_testing.conftest.BREAK_ON_EXCEPTION', True)
 )
 
-original_cassette_enter = CassetteContextDecorator.__enter__
-def new_cassette_enter(self):
-    path, _ = self._args_getter()
-    try:
-        os.remove(path)
-    except:
-        pass
-    original_cassette_enter(self)
-patch_record = patch('record', mock.patch.object(CassetteContextDecorator,
-                                                 '__enter__',
-                                                 new_cassette_enter))
 
 @pytest.fixture(autouse=True, scope='session')
 def set_vcr_options(request):
     util.okcupyd_vcr.record_mode = request.config.getoption('cassette_mode')
+    if request.config.getoption('record'):
+        util.okcupyd_vcr.record_mode = 'all'
 
 
 @pytest.fixture(autouse=True, scope='session')
