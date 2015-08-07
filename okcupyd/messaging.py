@@ -134,7 +134,7 @@ class Message(object):
         """
         :returns: The text body of the message.
         """
-        # The code that follows is obviously pretty disgusting
+        # The code that follows is obviously pretty disgusting.
         # It seems like it might be impossible to completely replicate
         # the text of the original message if it has trailing whitespace
         message = self._content_xpb.one_(self._message_element)

@@ -169,7 +169,6 @@ class Details(object):
         'sign': maps.sign[value],
         'sign_status': maps.importance[value]
     })
-
     height = Detail(updater=lambda id_name, value: {
         'centimeters': int(round(magicnumbers.parse_height_string(value)))
     })
@@ -190,7 +189,6 @@ class Details(object):
             if len(ethnicities) < 1:
                 ethnicities = 10
             return {id_name: ethnicities}
-
 
     class income(DeclarativeDetail):
 

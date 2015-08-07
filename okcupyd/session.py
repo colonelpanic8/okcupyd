@@ -85,7 +85,7 @@ class Session(object):
         return profile.Profile(self, username)
 
     def get_current_user_profile(self):
-        """Get the `okcupyd.profile.Profile`  associated with the supplied
+        """Get the `okcupyd.profile.Profile` associated with the supplied
         username.
 
         :param username: The username of the profile to retrieve.
