@@ -294,8 +294,4 @@ def search(session=None, count=1, **kwargs):
     return SearchFetchable(session, count=count, **kwargs)[:count]
 
 
-SearchFetchable.__doc__ = '\n    '.join(
-    itertools.chain(
-        [SearchFetchable.__doc__], search_filters.build_documentation_lines()
-    )
-)
+search_filters.add_to_docstring_of(SearchFetchable)

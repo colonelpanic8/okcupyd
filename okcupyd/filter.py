@@ -1,4 +1,5 @@
 import inspect
+import itertools
 
 import six
 
@@ -88,6 +89,13 @@ class Filters(object):
                 key, the_type.__name__ if isinstance(the_type, type) else the_type
             ))
         return parameter_string_lines
+
+    def add_to_docstring_of(self, target):
+        target.__doc__ = '\n    '.join(
+            itertools.chain(
+                (target.__doc__,), self.build_documentation_lines()
+            )
+        )
 
     all_not_none_decider = staticmethod(all_not_none_decider)
 
