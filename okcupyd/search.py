@@ -290,6 +290,88 @@ class SearchHTMLFetcher(object):
     __repr__ = __unicode__
 
 
+class SearchJSONFetcher(object):
+
+    def __init__(self, session=None, **options):
+        self._session = session or Session.login()
+        self._options = options
+        self._parameters = search_filters.build(**options)
+
+    def _query_params(self, after=None, count=None):
+        search_parameters = {
+        }
+        if after:
+            search_parameters['after'] = after
+        if count:
+            search_filters['limit'] = count
+        return search_parameters
+
+    def fetch(self, after=None, count=18):
+        search_parameters = self._query_params(after=after, count=count)
+        log.info(simplejson.dumps({'search_parameters': search_parameters}))
+        response = self._session.okc_get(
+            'search', params=search_parameters
+        )
+        try:
+            search_json = response.json()
+        except:
+            log.warning(simplejson.dumps({'failure': response.content}))
+            raise
+        return search_json
+
+
+class SearchManager(object):
+
+    def __init__(self, search_fetchable, profile_builder):
+        self._search_fetchable = search_fetchable
+        self._profile_builder = profile_builder
+        self._last_after = None
+
+    def fetch(self, count=18):
+        last_last_after = object()
+        while last_last_after != self._last_after:
+            last_last_after = self._last_after
+            for profile in self.fetch_once(count=count):
+                yield profile
+
+    def fetch_once(self, count=18):
+        response = self._search_fetchable.fetch(after=self._last_after, count=count)
+        try:
+            self._last_after = response['paging']['cursors']['after']
+        except KeyError:
+            log.warning(simplejson.dumps(
+                {
+                    'msg': "unable to get after cursor from response",
+                    'response': response
+                }
+            )
+        )
+        for profile in self._profile_builder(response):
+            yield profile
+
+
+def ProfileBuilder(response_dictionary):
+    try:
+        profile_infos =` response['data']
+    except KeyError:
+        log.warning(simplejson.dumps(
+            {
+                'msg': "unable to get data from response"
+                'response': response
+            }
+        )
+    )
+    else:
+        for profile_info in profile_infos:
+            yield Profile("username")
+
+
+# TODO: Redefinition of the above function. Remove that version and
+# properly copy over its docstring
+def SearchFetchable2(session=None, **kwargs):
+    return util.Fetchable(SearchManager(SearchJSONFetcher(session=session, **kwargs), ProfileBuilder))
+
+
 def search(session=None, count=1, **kwargs):
     return SearchFetchable(session, count=count, **kwargs)[:count]
 
