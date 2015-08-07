@@ -132,20 +132,29 @@ def scrub_response(response):
 
 
 before_record = check_should_scrub(util.compose(
-    scrub_request_body, remove_headers(headers_to_remove=('Set-Cookie',
-                                                          'Cookie'))
+    scrub_request_body, remove_headers(headers_to_remove=(
+        'Set-Cookie',
+        'Cookie'
+    ))
 ))
+
+
+def _maybe_decode(maybe_bytes):
+    try:
+        return maybe_bytes.decode('utf-8')
+    except (AttributeError, UnicodeDecodeError):
+        return maybe_bytes
 
 
 def _match_search_query(left, right):
     left_filter = set([value for param_name, value in left
-                       if 'filter' in param_name])
+                       if 'filter' in _maybe_decode(param_name)])
     right_filter = set([value for param_name, value in right
-                        if 'filter' in param_name])
+                        if 'filter' in _maybe_decode(param_name)])
     left_rest = set([(param_name, value) for param_name, value in left
-                     if 'filter' not in param_name])
+                     if 'filter' not in _maybe_decode(param_name)])
     right_rest = set([(param_name, value) for param_name, value in right
-                      if 'filter' not in param_name])
+                      if 'filter' not in _maybe_decode(param_name)])
 
     try:
         log.info(simplejson.dumps(
