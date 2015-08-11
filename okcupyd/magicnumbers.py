@@ -36,7 +36,7 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
     ethnicities = util.IndexedREMap(
         'asian', 'middle eastern', 'black', 'native american', 'indian',
         'pacific islander', ('hispanic', 'latin', 'hispanic ?/ ?latin', 'hispanic latin'),
-        'white', 'other', values=[])
+        'white', 'other', values=[]
     )
 
     job = util.IndexedREMap(

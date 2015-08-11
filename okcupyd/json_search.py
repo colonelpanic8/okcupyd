@@ -118,7 +118,7 @@ class SearchJSONFetcher(object):
 
             # mandatory parameters
             'gender_tags': None,
-            'orientation_tags': None.
+            'orientation_tags': None,
             'minimum_age': 18,
             'maximum_age': 99,
             'located_anywhere': 0,
@@ -549,11 +549,11 @@ class EducationFilter(search_filters.filter_class):
             k = k.lower()
             i = magicnumbers.maps.education_level[k]
             if i == 1:
-                education.add('high_school'):
+                education.add('high_school')
             elif i == 2:
-                education.add('two_year_college'):
+                education.add('two_year_college')
             elif i == 3 or i == 4 or k == 'college/university':
-                education.add('college_university'):
+                education.add('college_university')
             elif i in (5,6,7,8) or k == 'post-grad' or k == 'post grad' or k == 'grad':
                 education.add('post_grad')
             else:
