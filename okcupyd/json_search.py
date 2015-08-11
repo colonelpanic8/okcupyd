@@ -29,6 +29,9 @@ def SearchFetchable(session=None, **kwargs):
     :type session: :class:`~okcupyd.session.Session`
     :param order_by: Expected values: 'match', 'online', 'special_blend'
     """
+##:param location: A location string which will be used to filter results.
+##:param gender: The gender of the user performing the search.
+##:param keywords: A list or space delimeted string of words to search for.
     session = session or Session.login()
     return util.Fetchable(
         SearchManager(
@@ -163,6 +166,45 @@ class ProfileBuilder(object):
             for profile_info in profile_infos:
                 yield Profile(self._session, profile_info["username"])
 
+
+### Filters ###
+
+# New keys: gender_sought, orientation_sought, interests, kinds (last is already attribute on profile.looking_for, together with gentation and ages and single and near_me)
+
+# These keys were available with the former html_search API, but no corresponding field has yet been observed
+# on the new json_search API: job, income, diet, sign, cats, dogs, join_date, question_count_min, keywords
+
+## :param job: expected values: 'art', 'sales', 'engineering', 'politics', 'education', 'technology', 'management', 'entertainment', 'media', 'administration', 'writing', 'other', 'music', 'medicine', 'transportation', 'finance', 'retired', 'government', 'marketing', 'unemployed', 'construction', 'student', 'hospitality', 'law', 'rather not say', 'science', 'banking', 'military'
+## :type job: str
+##
+## :param income: expected values: '$30,000-$40,000', '$20,000-$30,000', '$80,000-$100,000', '$100,000-$150,000', '$250,000-$500,000', 'less than $20,000', 'More than $1,000,000', '$500,000-$1,000,000', '$60,000-$70,000', '$70,000-$80,000', '$40,000-$50,000', '$50,000-$60,000', '$150,000-$250,000'
+## :type income: str
+##
+## :param diet: expected values: 'anything', 'vegetarian', 'vegan', 'kosher', 'other', 'halal'
+## :type diet: str
+##
+## :param sign: expected values: 'libra', 'sagittarius', 'cancer', 'scorpio', 'aquarius', 'taurus', 'leo', 'virgo', 'capricorn', 'gemini', 'aries', 'pisces'
+## :type sign: str
+##
+## :param cats: expected values: 'likes cats', 'dislikes cats', 'has cats'
+## :type cats: str
+##
+## :param dogs: expected values: 'dislikes dogs', 'has dogs', 'likes dogs'
+## :type dogs: str
+##
+## :param join_date: expected values: 'week', 'year', 'day', 'hour', 'month'
+## :type join_date: int
+##
+## :param question_count_min: The minimum number of questions answered by returned search results.
+## :type question_count_min: int
+
+
+# This key is available on profile.looking_for, but no corresponding field has yet been observed
+# on the new json_search API: single: True (is the target only looking for single matches?)
+
+
+
+# Mandatory criteria
 
 class LastLoginFilter(search_filters.filter_class):
     output_key = "last_login"
@@ -374,6 +416,8 @@ class GentationFilter(search_filters.filter_class):
             }[gen & 3][orient & 7]
         return [magicnumbers.gentation_to_number.get(gentation, gentation)]
 
+
+# Optional criteria
 
 class MinHeightFilter(search_filters.filter_class):
     output_key = "minimum_height"
@@ -607,6 +651,29 @@ class DrugsFilter(search_filters.filter_class):
     @util.makelist_decorator
     def transform(drugs=[]):
         return normalform(drugs, magicnumbers.maps.drugs)
+
+
+# These former keys may be available on the json_search API, but aren't implemented here
+# because this author doesn't have an A-list account to experiment with:
+# attractiveness_min, attractiveness_max, bodytype, question, question_answers
+
+## :param attractiveness_max: The maximum attractiveness of returned search results.
+## :type attractiveness_max: int
+##
+## :param attractiveness_min: The minimum attractiveness of returned search results.
+## :type attractiveness_min: int
+##
+## :param bodytype: expected values: 'jacked', 'rather not say', 'fit', 'athletic', 'used up', 'average', 'full figured', 'overwe
+## ight', 'curvy', 'thin', 'a little extra', 'skinny'
+## :type bodytype: str
+##
+## :param question: A question whose answer should be used to match search results, or a question id. If a question id, `question_answers` must be supplied.
+## :type question: :class:`~okcupyd.question.UserQuestion`
+##
+## :param question_answers: A list of acceptable question answer indices.
+## :type question_answers: list
+
+# There will presumably also be new keys for personality pluses/minuses, but this needs A-list
 
 
 search_filters.add_to_docstring_of(SearchFetchable)
