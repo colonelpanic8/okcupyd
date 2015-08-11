@@ -7,9 +7,8 @@ from . import util
 from . import magicnumbers
 
 
-def all_not_none_decider(function, incoming, accepted_keys):
-    return all(incoming.get(key) is not None for key in accepted_keys)
-
+def all_not_none_decider(transform_funct, incoming_kwargs, accepted_keys):
+    return all(incoming_kwargs.get(key) is not None for key in accepted_keys)
 
 class Filters(object):
     """Registrar for functions that construct filters for submission in
@@ -19,25 +18,26 @@ class Filters(object):
     def __init__(self):
         self.builders = []
         self.keys = set()
-        self._key_to_type = {}
-        self._key_to_values = {}
         self._key_to_string = {}
+        self._key_to_values = {}
+        self._key_to_type = {}
 
     @util.cached_property
     def filter_meta(filters_instance):
         class FilterMeta(util.decorate_all(staticmethod)):
 
-            acceptable_values = None
-            keys = ()
-            types = None
-            descriptions = None
             output_key = None
+            keys = () # must be a container
+            descriptions = None # one or more strings, same as number of keys
+            acceptable_values = None # one or more iterables, same as number of keys; will use repr of its elements
+            types = None # one or more types or strings, same as number of keys
 
             def __init__(cls, name, bases, attributes_dict):
                 super(FilterMeta, cls).__init__(name, bases, attributes_dict)
                 cls._set_defaults()
                 filters_instance.register_builder(cls)
 
+            # TODO: why not just decide = all_not_none_decider
             def decide(cls, kwargs):
                 return all_not_none_decider(cls.transform, kwargs, cls.keys)
 
@@ -68,15 +68,15 @@ class Filters(object):
         """
         return [
             line_string for key in sorted(self.keys)
-            for line_string in self.build_paramter_string(key)
+            for line_string in self.build_parameter_string(key)
         ]
 
-    def build_paramter_string(self, key):
+    def build_parameter_string(self, key):
         description_string = u''
         if key in self._key_to_string:
             description_string = u' {0}'.format(self._key_to_string[key])
         if key in self._key_to_values:
-            description_string += u' expected values: {0}'.format(
+            description_string += u' Expected values: {0}'.format(
                 u', '.join([repr(value)
                            for value in self._key_to_values[key]])
             )
@@ -100,16 +100,16 @@ class Filters(object):
     all_not_none_decider = staticmethod(all_not_none_decider)
 
     @staticmethod
-    def any_decider(function, incoming, accepted_keys):
-        return bool(set(incoming).intersection(accepted_keys))
+    def any_decider(transform_funct, incoming_kwargs, accepted_keys):
+        return bool(set(incoming_kwargs).intersection(accepted_keys))
 
     @staticmethod
-    def all_decider(function, incoming, accepted_keys):
-        return set(accepted_keys).issubset(set(incoming))
+    def all_decider(transform_funct, incoming_kwargs, accepted_keys):
+        return set(accepted_keys).issubset(set(incoming_kwargs))
 
     @staticmethod
-    def any_not_none_decider(function, incoming, accepted_keys):
-        return any(incoming.get(key) is not None for key in accepted_keys)
+    def any_not_none_decider(transform_funct, incoming_kwargs, accepted_keys):
+        return any(incoming_kwargs.get(key) is not None for key in accepted_keys)
 
     def __repr__(self):
         return "{0}({1})".format(type(self).__name__,
@@ -159,9 +159,9 @@ class Filters(object):
     def register_builder(self, filter_object):
         self.builders.append(filter_object)
         self.keys.update(filter_object.keys)
-        self._update_docs_dict(self._key_to_type, filter_object.types, filter_object.keys)
         self._update_docs_dict(self._key_to_string, filter_object.descriptions, filter_object.keys)
         self._update_docs_dict(self._key_to_values, filter_object.acceptable_values, filter_object.keys)
+        self._update_docs_dict(self._key_to_type, filter_object.types, filter_object.keys)
 
     @util.curry
     def register_filter_builder(self, function, **kwargs):
@@ -179,30 +179,33 @@ class Filters(object):
                 return '4,{0}'.format(argument)
 
         :param function: The filter function to register.
+        :param output_key: The key to use to output the provided value. Will
+                           default to the only value in keys if keys has
+                           length 1.
         :param keys: Keys that should be used as the argument names for
                      `function`, if none are provided, the filter functions
                      argument names will be used instead.
+        :type keys: iterable of strings
         :param decider: a function of signature
                         `(function, incoming_keys, accepted_keys)` that returns
                         True if the filter function should be called and False
                         otherwise. Defaults to
                         :meth:`~.all_not_none_decider`
-        :param acceptable_values: A list of acceptable values for the parameter
-                                  of the filter function (or a list of lists if
-                                  the filter function takes multiple parameters)
-        :param types: The type of the parameter accepted by the incoming filter
-                      function (or a list of types if the function takes
-                      multiple parameters)
         :param descriptions: A description for the incoming filter function's
                              argument (or a list of descriptions if the filter
                              function takes multiple arguments)
-        :param output_key: The key to use to output the provided value. Will
-                           default to the only value in keys if keys has
-                           length 1.
+        :param acceptable_values: An iterable of acceptable values for the parameter
+                                  of the filter function (or a list of iterables if
+                                  the filter function takes multiple parameters).
+                                  Docstring will use the repr of the iterable's elements.
+        :param types: The type (or a string describing the type) of the parameter accepted
+                      by the incoming filter function (or a list of types if the function
+                      takes multiple parameters)
         """
         kwargs['transform'] = function
-        if kwargs.get('decider'):
-            kwargs['decide'] = kwargs.get('decider')
+        # assert 'decide' not in kwargs
+        if 'decider' in kwargs:
+            kwargs['decide'] = kwargs.pop('decider')
         return type('filter', (self.filter_class,), kwargs)
 
     def _update_docs_dict(self, docs_dict, incoming, keys):

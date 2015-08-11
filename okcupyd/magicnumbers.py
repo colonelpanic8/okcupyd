@@ -51,7 +51,7 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
                                    'non-monogamous')
     strictness = util.IndexedREMap('mostly', 'strictly')
 
-    # Doesn't want kids is index 6 for some reason.
+    # Doesn't have kids is index 6 for some reason.
     has_kids = util.IndexedREMap('has a kid', 'has kids', (), (), (),
                                  "doesn't have kids")
     wants_kids = util.IndexedREMap('might want', 'wants', "doesn't want")
