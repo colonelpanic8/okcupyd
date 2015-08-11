@@ -149,6 +149,8 @@ class REMap(object):
     def values(self):
         return self.pattern_to_value.values()
 
+    def keys(self):
+        return self.pattern_to_value.keys()
 
 class GetAttrGetItem(type):
 
