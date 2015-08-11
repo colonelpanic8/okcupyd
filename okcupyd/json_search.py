@@ -536,7 +536,7 @@ class LookingForFilter(search_filters.filter_class):
         'sex', 'any')
     types = "string or list of strings"
     @util.makelist_decorator
-    def transform(kinds=[]):
+    def transform(kinds):
         result = []
         for k in kinds:
             k = k.lower()
@@ -560,7 +560,7 @@ class InterestsFilter(search_filters.filter_class):
     description = "One or more interest ints that search results must match."
     types = "int or intstring, or list of such"
     @util.makelist_decorator
-    def transform(interests=[]):
+    def transform(interests):
         for k in interests:
             int(k) # verify that each element converts to an int
         # expected to be list of bigint strings
@@ -576,7 +576,7 @@ class EducationFilter(search_filters.filter_class):
     types = "string or list of strings"
     # TODO: also permit shorter key `education`?
     @util.makelist_decorator
-    def transform(education_level=[]):
+    def transform(education_level):
         education = []
         for k in education_level:
             k = k.lower()
@@ -648,7 +648,7 @@ class EthnicitiesFilter(search_filters.filter_class):
         'white', 'other')
     types = "string or list of strings"
     @util.makelist_decorator
-    def transform(ethnicities=[]):
+    def transform(ethnicities):
         return normalform(ethnicities, magicnumbers.maps.ethnicities)
 
 class ReligionFilter(search_filters.filter_class):
@@ -657,7 +657,7 @@ class ReligionFilter(search_filters.filter_class):
     acceptable_values = magicnumbers.maps.religion.keys()
     types = "string or list of strings"
     @util.makelist_decorator
-    def transform(religion=[]):
+    def transform(religion):
         return normalform(religion, magicnumbers.maps.religion)
 
 class SmokingFilter(search_filters.filter_class):
@@ -666,7 +666,7 @@ class SmokingFilter(search_filters.filter_class):
     acceptable_values = magicnumbers.maps.smokes.keys()
     types = "string or list of strings"
     @util.makelist_decorator
-    def transform(smokes=[]):
+    def transform(smokes):
         return normalform(smokes, magicnumbers.maps.smokes)
 
 class DrinkingFilter(search_filters.filter_class):
@@ -675,7 +675,7 @@ class DrinkingFilter(search_filters.filter_class):
     acceptable_values = magicnumbers.maps.drinks.keys()
     types = "string or list of strings"
     @util.makelist_decorator
-    def transform(drinks=[]):
+    def transform(drinks):
         return normalform(drinks, magicnumbers.maps.drinks)
 
 class DrugsFilter(search_filters.filter_class):
@@ -684,7 +684,7 @@ class DrugsFilter(search_filters.filter_class):
     acceptable_values = magicnumbers.maps.drugs.keys()
     types = "string or list of strings"
     @util.makelist_decorator
-    def transform(drugs=[]):
+    def transform(drugs):
         return normalform(drugs, magicnumbers.maps.drugs)
 
 
