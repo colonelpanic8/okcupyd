@@ -218,7 +218,8 @@ def SearchFetchable(session=None, **kwargs):
     :param location: A location string which will be used to filter results.
     :param gender: The gender of the user performing the search.
     :param keywords: A list or space delimeted string of words to search for.
-    :param order_by: Expected values: 'match', 'online', 'special_blend'
+    :param order_by: The criteria to use for ordering search results.
+                     Expected values: 'match', 'online', 'special_blend'
     """
     session = session or Session.login()
     return util.Fetchable.fetch_marshall(

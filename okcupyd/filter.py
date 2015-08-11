@@ -27,10 +27,14 @@ class Filters(object):
         class FilterMeta(util.decorate_all(staticmethod)):
 
             output_key = None
-            keys = () # must be a container
-            descriptions = None # one or more strings, same as number of keys
-            acceptable_values = None # one or more iterables, same as number of keys; will use repr of its elements
-            types = None # one or more types or strings, same as number of keys
+            #: A container specifying the input keys, defaults to arguments of `transform`
+            keys = ()
+            #: One or more strings, same as the number of keys
+            descriptions = None
+            #: One or more iterables, same as the number of keys; docstring will use repr of the elements
+            acceptable_values = None
+            #: One or more types or strings, same as the number of keys
+            types = None
 
             def __init__(cls, name, bases, attributes_dict):
                 super(FilterMeta, cls).__init__(name, bases, attributes_dict)

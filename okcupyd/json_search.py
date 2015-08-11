@@ -27,11 +27,15 @@ def SearchFetchable(session=None, **kwargs):
 
     :param session: A logged in session.
     :type session: :class:`~okcupyd.session.Session`
-    :param order_by: Expected values: 'match', 'online', 'special_blend'
+    :param order_by: The criteria to use for ordering search results.
+                     Expected values: 'match', 'online', 'special_blend'
     """
-##:param location: A location string which will be used to filter results.
-##:param gender: The gender of the user performing the search.
-##:param keywords: A list or space delimeted string of words to search for.
+    # TODO: to match SearchFetchable in html_search.py, we may want to provide
+    # implementations handling the following keys:
+    #    param location: A location string which will be used to filter results.
+    #    param gender: The gender of the user performing the search.
+    #    param keywords: A list or space delimeted string of words to search for.
+    # Currently we just filter them out of kwargs and don't do anything with them.
     session = session or Session.login()
     return util.Fetchable(
         SearchManager(
@@ -210,7 +214,7 @@ class LastLoginFilter(search_filters.filter_class):
     output_key = "last_login"
     description = "How recently returned search results must have been online."
     accepted_values = ('hour', 'day', 'today', 'week', 'month', 'year', 'decade')
-    types = "str or int (seconds)"
+    types = "string or an int specifying number of seconds"
     def transform(last_online):
         return(helpers.format_last_online(last_online))
 
