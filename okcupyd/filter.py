@@ -127,10 +127,10 @@ class Filters(object):
         ]
 
     def _handle_decide(self, builder, kwargs):
-        if len(inspect.getargspec(builder.decide).args) == 2:
-            return builder.decide(kwargs)
-        else:
+        if len(inspect.getargspec(builder.decide).args) == 3:
             return builder.decide(builder.transform, kwargs, builder.keys)
+        else:
+            return builder.decide(kwargs)
 
     def _validate_incoming(self, kwargs):
         if not self.keys.issuperset(kwargs.keys()):
