@@ -164,12 +164,174 @@ class ProfileBuilder(object):
                 yield Profile(self._session, profile_info["username"])
 
 
+def accumulate_tags(keys, magicmap):
+    acc = 0
+    for k in keys:
+        i = magicmap[k]
+        if i is not None and i >= 0:
+            acc += 2 ** i
+        elif i < 0 or k.lower() in ('all', 'everyone', 'everybody', 'any'):
+            acc = 0
+            break
+        else:
+            raise TypeError
+    return acc
+
+# TODO also exploit `gender`?
+class GenderFilter(search_filters.filter_class):
+    output_key = "gender_tags"
+    decide = search_filters.any_not_none_decider
+    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+                        magicnumbers.gentation_to_number.keys())
+    types = ("string or list of strings", str)
+    def transform(gender_sought, gentation):
+        if gentation is not None:
+            assert gender_sought is None
+            gentation = gentation.strip().lower()
+            gent = magicnumbers.gentation_to_number[gentation]
+            if gent & (1+4+16):
+                if gent & (2+8+32):
+                    gender_sought = 'all'
+                else:
+                    gender_sought = 'men'
+            elif gent & (2+8+32):
+                gender_sought = 'women'
+            else:
+                gender_sought = 'all'
+        return accumulate_tags(makelist(gender_sought), magicnumbers.maps.gender_tags)
+
+# TODO also exploit `gender`?
+class OrientationFilter(search_filters.filter_class):
+    output_key = "orientation_tags"
+    decide = search_filters.any_not_none_decider
+    acceptable_values = (magicnumbers.maps.orientation_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+                        magicnumbers.gentation_to_number.keys())
+    types = ("string or list of strings", str)
+    def transform(orientation_sought, gentation):
+        if gentation is not None:
+            assert orientation_sought is None
+            gentation = gentation.strip().lower()
+            gent = magicnumbers.gentation_to_number[gentation]
+            orientation_sought = []
+            if gent & (1+2):
+                orientation_sought.add('straight')
+            if gent & (4+8):
+                orientation_sought.add('gay')
+            if gent & (16+32):
+                orientation_sought.add('bisexual')
+        return accumulate_tags(makelist(orientation_sought), magicnumbers.maps.orientation_tags)
+
+# TODO also exploit `gender`?
+class IWantFilter(search_filters.filter_class):
+    output_key = "i_want"
+    decide = search_filters.any_not_none_decider
+    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+                        magicnumbers.gentation_to_number.keys())
+    types = ("string or list of strings", str)
+    def transform(gender_sought, gentation):
+        if gentation is not None:
+            assert gender_sought is None
+            gentation = gentation.strip().lower()
+            gent = magicnumbers.gentation_to_number[gentation]
+            if gent & (1+4+16):
+                if gent & (2+8+32):
+                    gender_sought = 'all'
+                else:
+                    gender_sought = 'men'
+            elif gent & (2+8+32):
+                gender_sought = 'women'
+            else:
+                gender_sought = 'all'
+        gen = accumulate_tags(makelist(gender_sought), magicnumbers.maps.gender_tags)
+        if gen > 3:
+            return 'other'
+        assert gen >= 0
+        return {0: 'everyone', 1:'women', 2:'men', 3:'other'}[gen]
+
+# TODO also exploit `gender`?
+class TheyWantFilter(search_filters.filter_class):
+    output_key = "they_want"
+    decide = search_filters.any_not_none_decider
+    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+                        magicnumbers.maps.orientation_tags.keys(),
+                        magicnumbers.gentation_to_number.keys())
+    types = ("string or list of strings", "string or list of strings", str)
+    def transform(gender_sought, orientation_sought, gentation):
+        if gentation is not None:
+            assert gender_sought is None
+            assert orientation_sought is None
+            gentation = gentation.strip().lower()
+            gent = magicnumbers.gentation_to_number[gentation]
+            if gent & (1+4+16):
+                if gent & (2+8+32):
+                    gender_sought = 'all'
+                else:
+                    gender_sought = 'men'
+            elif gent & (2+8+32):
+                gender_sought = 'women'
+            else:
+                gender_sought = 'all'
+            orientation_sought = []
+            if gent & (1+2):
+                orientation_sought.add('straight')
+            if gent & (4+8):
+                orientation_sought.add('gay')
+            if gent & (16+32):
+                orientation_sought.add('bisexual')
+        orient = accumulate_tags(makelist(orientation_sought), magicnumbers.maps.orientation_tags)
+        if orient > 3:
+            return 'other'
+        gen = accumulate_tags(makelist(gender_sought), magicnumbers.maps.gender_tags)
+        if gen == 1:
+            return {0: 'other', 1: 'men', 2: 'women', 3: 'other'}[orient]
+        elif gen == 2:
+            return {0: 'other', 1: 'women', 2: 'men', 3: 'other'}[orient]
+        else:
+            return 'other'
+
+# TODO also exploit `gender`?
 class GentationFilter(search_filters.filter_class):
-    # output_key = "gentation"
-    acceptable_values = magicnumbers.gentation_to_number.keys()
-    types = str
-    def transform(gentation):
-        gentation = gentation.strip().lower()
+    output_key = "gentation"
+    decide = search_filters.any_not_none_decider
+    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+                        magicnumbers.maps.orientation_tags.keys(),
+                        magicnumbers.gentation_to_number.keys())
+    types = ("string or list of strings", "string or list of strings", str)
+    def transform(gender_sought, orientation_sought, gentation):
+        if gentation is not None:
+            assert gender_sought is None
+            assert orientation_sought is None
+            gentation = gentation.strip().lower()
+        else:
+            # convert gender_sought and orientation_sought to gentation
+            gen = accumulate_tags(makelist(gender_sought), magicnumbers.maps.gender_tags)
+            orient = accumulate_tags(makelist(orientation_sought), magicnumbers.maps.orientation_tags)
+            gentation = {
+                # all genders
+                0: {0: 'everybody', 1: 'everybody', 2: 'everybody', 3: 'everybody', 4: 'bi men and women',
+                    5: 'everybody', 6: 'everybody', 7: 'everybody'},
+                # women
+                1: {0: 'women',
+                    1: 'straight women only',
+                    2: 'gay women only',
+                    3: 'women',
+                    4: 'bi women only',
+                    5: 'women who like men',
+                    6: 'women who like women',
+                    7: 'women'},
+                # men
+                2: {0: 'men',
+                    1: 'straight men only',
+                    2: 'gay men only',
+                    3: 'men',
+                    4: 'bi men only',
+                    5: 'men who like women',
+                    6: 'men who like men',
+                    7: 'men'},
+                # women and men
+                3: {0: 'everybody', 1: 'everybody', 2: 'everybody', 3: 'everybody', 4: 'bi men and women',
+                    5: 'everybody', 6: 'everybody', 7: 'everybody'},
+            }[gen & 3][orient & 7]
         return [magicnumbers.gentation_to_number.get(gentation, gentation)]
 
 
