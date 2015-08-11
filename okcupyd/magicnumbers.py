@@ -16,6 +16,11 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
         'used up'
     )
 
+    # bodytype_new = util.IndexedREMap(
+    #     'thin', 'overweight', 'average', 'fit',
+    #     'jacked', 'a little extra', 'curvy', 'full figured'
+    # )
+
     orientation = util.IndexedREMap('straight', 'gay', 'bisexual')
 
     smokes = util.IndexedREMap(
