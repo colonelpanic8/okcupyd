@@ -205,7 +205,7 @@ class Fetchable(object):
         accumulator = []
         # No need to do this for stop since we are sure it is not None.
         start = item.start or 0
-        for _ in range(start):
+        for _ in range(0, start, item.step or 1):
             try:
                 next(iterator)
             except StopIteration: # This is strange but its what list do.
