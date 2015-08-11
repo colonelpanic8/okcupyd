@@ -632,7 +632,7 @@ class ChildrenFilter(search_filters.filter_class):
         # else: children.extend(('wants_kids', 'might_want', 'doesnt_want'))
         return children
 
-def normalform(keys, magicmap):
+def remap_items(keys, magicmap):
     result = []
     for k in keys:
         i = magicmap[k]
@@ -649,7 +649,7 @@ class EthnicitiesFilter(search_filters.filter_class):
     types = "string or list of strings"
     @util.makelist_decorator
     def transform(ethnicities):
-        return normalform(ethnicities, magicnumbers.maps.ethnicities)
+        return remap_items(ethnicities, magicnumbers.maps.ethnicities)
 
 class ReligionFilter(search_filters.filter_class):
     # output_key = "religion"
@@ -658,7 +658,7 @@ class ReligionFilter(search_filters.filter_class):
     types = "string or list of strings"
     @util.makelist_decorator
     def transform(religion):
-        return normalform(religion, magicnumbers.maps.religion)
+        return remap_items(religion, magicnumbers.maps.religion)
 
 class SmokingFilter(search_filters.filter_class):
     output_key = "smoking"
@@ -667,7 +667,7 @@ class SmokingFilter(search_filters.filter_class):
     types = "string or list of strings"
     @util.makelist_decorator
     def transform(smokes):
-        return normalform(smokes, magicnumbers.maps.smokes)
+        return remap_items(smokes, magicnumbers.maps.smokes)
 
 class DrinkingFilter(search_filters.filter_class):
     output_key = "drinking"
@@ -676,7 +676,7 @@ class DrinkingFilter(search_filters.filter_class):
     types = "string or list of strings"
     @util.makelist_decorator
     def transform(drinks):
-        return normalform(drinks, magicnumbers.maps.drinks)
+        return remap_items(drinks, magicnumbers.maps.drinks)
 
 class DrugsFilter(search_filters.filter_class):
     # output_key = "drugs"
@@ -685,7 +685,7 @@ class DrugsFilter(search_filters.filter_class):
     types = "string or list of strings"
     @util.makelist_decorator
     def transform(drugs):
-        return normalform(drugs, magicnumbers.maps.drugs)
+        return remap_items(drugs, magicnumbers.maps.drugs)
 
 
 # These former keys may be available on the json_search API, but aren't implemented here
