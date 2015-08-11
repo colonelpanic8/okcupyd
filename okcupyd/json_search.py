@@ -165,16 +165,14 @@ class ProfileBuilder(object):
 
 
 class GentationFilter(search_filters.filter_class):
-
-    def transform(gentation):
-        return [
-            magicnumbers.gentation_to_number.get(a_gentation.strip().lower(), a_gentation)
-            for a_gentation in gentation
-        ]
-
-    descriptions = "A list of the allowable gentations of returned search results."
-    types = list
+    # output_key = "gentation"
     acceptable_values = magicnumbers.gentation_to_number.keys()
+    types = str
+    def transform(gentation):
+        gentation = gentation.strip().lower()
+        return [magicnumbers.gentation_to_number.get(gentation, gentation)]
+
+
 
 
 search_filters.add_to_docstring_of(SearchFetchable)
