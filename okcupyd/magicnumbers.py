@@ -203,6 +203,7 @@ gentation_to_number = {
     'bi guys only': '16',
     'bi guys and girls': '48',
     'everybody': '63',
+    'everyone': '63',
     '': '63'
 }
 
