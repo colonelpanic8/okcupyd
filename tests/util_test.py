@@ -142,8 +142,8 @@ def test_fetchable_teeing():
 def test_fetchable_step():
     fetcher = mock.Mock(fetch=lambda: itertools.count(5))
     fetchable = util.Fetchable(fetcher)
-    assert fetchable[:10:3] == [i for i in itertools.count(5)][:10:3]
-    assert fetchable[:30:5] == [i for i in itertools.count(5)][:30:3]
+    assert fetchable[:10:3] == [i for i in range(5, 100)][:10:3]
+    assert fetchable[:30:5] == [i for i in range(5, 100)][:30:5]
 
 
 def test_fetchable_get_item():
