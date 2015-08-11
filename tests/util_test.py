@@ -243,3 +243,16 @@ def test_staticmethod_decorate_all():
 
     assert Test.test() == 1
     assert Test.test2(1, 1) == 2
+
+
+def test_classmethods_still_classmethods_with_staticmethod_decorate_all():
+    class Test(six.with_metaclass(util.decorate_all(staticmethod))):
+        @classmethod
+        def a_classmethod(cls):
+            return 2
+
+        def test():
+            return 1
+
+    assert Test.test() == 1
+    assert Test.a_classmethod() == 2
