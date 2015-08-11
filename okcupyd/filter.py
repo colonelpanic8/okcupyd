@@ -145,7 +145,7 @@ class Filters(object):
         return {
             builder.output_key: builder.transform_from_kwargs(kwargs)
             for builder in self.builders
-            if builder.decide(kwargs)
+            if self._handle_decide(builder, kwargs)
         }
 
     def legacy_build(self, **kwargs):
