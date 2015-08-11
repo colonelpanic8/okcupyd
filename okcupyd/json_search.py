@@ -587,7 +587,7 @@ class EducationFilter(search_filters.filter_class):
                 education.add('two_year_college')
             elif i == 3 or i == 4 or k == 'college/university':
                 education.add('college_university')
-            elif i in (5,6,7,8) or k == 'post-grad' or k == 'post grad' or k == 'grad':
+            elif i in (5, 6, 7, 8) or k == 'post-grad' or k == 'post grad' or k == 'grad':
                 education.add('post_grad')
             else:
                 # i == 9 when k == 'space camp', or unrecognized k
