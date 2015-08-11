@@ -250,6 +250,17 @@ class MaxAgeFilter(search_filters.filter_class):
     def transform(age_max=99):
         return age_max
 
+# Gender/orientation filters
+
+# These are interdependent in complex ways. See https://github.com/IvanMalison/okcupyd/issues/63#issuecomment-128243668.
+# For input keys, we honor the old-style `gentation` key as well as new `gender_sought` and `orientation_sought`
+# keys, which can be either strings or lists of strings, matching the new search interface on OKCupid's website.
+# In future we may want to also honor input from the `gender` key to SearchFetchable (which specifies the
+# logged-in user's gender, not the gender sought).
+# For output, these set the `gender_tags`, `orientation_tags`, `gentation`, `i_want` and `they_want` fields
+# in requests, in complex ways. We may be able to get away with omitting some of these fields; that's not
+# known yet.
+
 def accumulate_tags(keys, magicmap):
     acc = 0
     for k in keys:
