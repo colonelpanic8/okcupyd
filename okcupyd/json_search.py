@@ -7,6 +7,7 @@ from . import magicnumbers
 from . import util
 from .profile import Profile
 from .session import Session
+import six
 
 
 log = logging.getLogger(__name__)
