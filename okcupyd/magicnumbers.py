@@ -101,6 +101,18 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
         'More than $1,000,000'
     )
 
+    gender_tags = util.IndexedREMap(
+            'all genders', 'women', 'men', 'agenders', 'androgynes', 'bigenders',
+            'cis men', 'cis women', 'genderfluids', 'genderqueers',
+            'gender nonconforming', 'hijras', 'intersexes',
+            'non-binaries', 'others', 'pangenders', 'transfeminines',
+            'transgenders', 'trans men', 'transmasculines', 'transsexuals',
+            'trans women', 'two spirits', offset=-1, default=None)
+
+    orientation_tags = util.IndexedREMap(
+            'straight', 'gay', ('bisexual','bi'), 'asexual', 'demisexual',
+            'homoflexible', 'heteroflexible', 'lesbian',
+            'pansexual', 'queer', 'questioning', 'sapiosexual', offset=0, default=None)
 
 class MappingUpdater(object):
 
