@@ -27,6 +27,7 @@ def SearchFetchable(session=None, **kwargs):
 
     :param session: A logged in session.
     :type session: :class:`~okcupyd.session.Session`
+    :param order_by: Expected values: 'match', 'online', 'special_blend'
     """
     session = session or Session.login()
     return util.Fetchable(
@@ -71,15 +72,59 @@ class SearchManager(object):
 
 class SearchJSONFetcher(object):
 
-    def __init__(self, session=None, **options):
+    def __init__(self, session=None, order_by="MATCH", location=None, keywords=None, **options):
         self._session = session or Session.login()
-        self._options = options
+        self._order_by = order_by.upper()
+        if self._order_by not in ('MATCH', 'ONLINE', 'SPECIAL_BLEND'): # TODO: haven't verified that options other than 'MATCH' still work; the web interface no longer provides a way to modify this
+            raise TypeError
+        self._location = location # location string, haven't implemented
+        self._keywords = keywords # list or space-delimited string of words to match, haven't implemented
         self._parameters = search_filters.build(**options)
 
     def _query_params(self, after=None, count=None):
         search_parameters = {
             'after': after,
-            'limit': count
+            'limit': count,
+            # other admin parameters
+            'debug': 0,
+            'username': "",
+            'save_search': 1,
+            'order_by': self._order_by,
+
+            'i_want': None,
+            'they_want': None,
+            'tagOrder': [],
+
+            # optional parameters
+            'minimum_height': None,
+            'maximum_height': None,
+            'languages': 0,
+            'speaks_my_language': 0, # TODO shall we make 1 the default?
+            'ethnicity': [],
+            'religion': [],
+            'smoking': [],
+            'drinking': [],
+            'drugs': [],
+            'education': [],
+            'children': [],
+            'interest_ids': [],
+            'looking_for': [],
+            'availability': "any",
+            'monogamy': "unknown",
+            'answers': [],
+
+            # mandatory parameters
+            'gender_tags': None,
+            'orientation_tags': None.
+            'minimum_age': 18,
+            'maximum_age': 99,
+            'located_anywhere': 0,
+            'radius': 10, # TODO set from current user's profile?
+            'gentation': [ 0 ], # TODO set from current user's profile?
+            'last_login': 0,
+            'lquery': "",
+            'locid': 0, # FIXME what should default be?
+            'location': None, # FIXME what should default be?
         }
         search_parameters.update(self._parameters)
         return {'_json': search_parameters}
