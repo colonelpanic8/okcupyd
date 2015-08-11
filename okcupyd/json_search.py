@@ -164,6 +164,46 @@ class ProfileBuilder(object):
                 yield Profile(self._session, profile_info["username"])
 
 
+class LastLoginFilter(search_filters.filter_class):
+    output_key = "last_login"
+    description = "How recently returned search results must have been online."
+    accepted_values = ('hour', 'day', 'today', 'week', 'month', 'year', 'decade')
+    types = "str or int (seconds)"
+    def transform(last_online):
+        return(helpers.format_last_online(last_online))
+
+class RadiusFilter(search_filters.filter_class):
+    output_key = "radius"
+    decide = search_filters.all_decider # permit radius=None
+    description = "The maximum distance from the specified location of returned search results."
+    types = "int or None"
+    def transform(radius):
+        return radius
+
+class NearnessFilter(search_filters.filter_class):
+    output_key = "located_anywhere"
+    decide = search_filters.all_decider # permit radius=None
+    description = "The maximum distance from the specified location of returned search results."
+    types = "int or None"
+    def transform(radius):
+        return 1 if radius is None else 0
+
+class MinAgeFilter(search_filters.filter_class):
+    output_key = "minimum_age"
+    description = "The minimum age of returned search results."
+    types = int
+    # TODO: also permit single key `ages=(age_min, age_max)`, as in looking_for.py?
+    def transform(age_min=18):
+        return age_min
+
+class MaxAgeFilter(search_filters.filter_class):
+    output_key = "maximum_age"
+    description = "The maximum age of returned search results."
+    types = int
+    # TODO: also permit single key `ages=(age_min, age_max)`, as in looking_for.py?
+    def transform(age_max=99):
+        return age_max
+
 def accumulate_tags(keys, magicmap):
     acc = 0
     for k in keys:
@@ -335,6 +375,238 @@ class GentationFilter(search_filters.filter_class):
         return [magicnumbers.gentation_to_number.get(gentation, gentation)]
 
 
+class MinHeightFilter(search_filters.filter_class):
+    output_key = "minimum_height"
+    decide = search_filters.any_not_none_decider
+    descriptions = ("The minimum height of returned search results.",
+                    "The maximum height of returned search results.")
+    types = ("a height int in inches, an imperial height string (5'0\"), or a metric height string (1.5m)",
+             "a height int in inches, an imperial height string (5'0\"), or a metric height string (1.5m)")
+    def transform(height_min, height_max=None):
+        if isinstance(height_min, six.string_types):
+            return 100 * magicnumbers.parse_height_string(height_min)
+        elif isinstance(height_min, int):
+            return 100 * magicnumbers.inches_to_centimeters(height)
+        elif height_min is None:
+            # 48" is 121.92 cm
+            return 12192 # this will be called if height_max is specified but height_min isn't
+        raise TypeError
+
+class MaxHeightFilter(search_filters.filter_class):
+    output_key = "maximum_height"
+    decide = search_filters.any_not_none_decider
+    descriptions = ("The minimum height of returned search results.",
+                    "The maximum height of returned search results.")
+    types = ("a height int in inches, an imperial height string (5'0\"), or a metric height string (1.5m)",
+             "a height int in inches, an imperial height string (5'0\"), or a metric height string (1.5m)")
+    def transform(height_max, height_min=None):
+        if isinstance(height_max, six.string_types):
+            return 100 * magicnumbers.parse_height_string(height_max)
+        elif isinstance(height_max, int):
+            return 100 * magicnumbers.inches_to_centimeters(height)
+        elif height_max is None:
+            return 99999 # this will be called if height_min is specified but height_max isn't
+        raise TypeError
+
+# TODO: permit specifying multiple languages?
+# TODO: permit toggling speaks_my_language?
+class LanguageFilter(search_filters.filter_class):
+    output_key = "languages"
+    # descriptions = "A single long-form language that search results must match."
+    acceptable_values = magicnumbers.language_map.keys()
+    # types = str
+    def transform(language):
+        # defaults to 0; also speaks_my_language can be 1 or 0
+        return magicnumbers.language_map[language.lower()]
+
+class StatusFilter(search_filters.filter_class):
+    output_key = "availability"
+    description = "The relationship status of returned search results."
+    acceptable_values = ("single", "not single", "married", 'any')
+    # types = str
+    def transform(status="any"):
+        status = status.lower()
+        if status == 'not single' or status == 'married':
+            return 'not_single'
+        elif status in ('single', 'any'):
+            return status
+        else:
+            raise TypeError
+
+class MonogamyFilter(search_filters.filter_class):
+    output_key = "monogamy"
+    acceptable_values = ("yes", True, "no", False, 'monogamous', 'non-monogamous', 'any')
+    # types = str
+    def transform(monogamy="unknown"):
+        # default is 'unknown'
+        if isinstance(monogamy, six.string_types):
+            monogamy = monogamy.lower()
+        if monogamy in ('yes', True, 'monogamous'):
+            return 'yes'
+        elif monogamy in ('no', False, 'non-monogamous'):
+            return 'no'
+        elif monogamy == 'any':
+            return 'unknown' # default
+        else:
+            raise TypeError
+
+class LookingForFilter(search_filters.filter_class):
+    output_key = "looking_for"
+    # description = "One or more relationship types sought that search results must match."
+    acceptable_values = (
+        'new friends', 'short-term', 'short-term dating',
+        'long-term', 'long-term dating', 'casual sex',
+        'sex', 'any')
+    types = "string or list of strings"
+    @util.makelist_decorator
+    def transform(kinds=[]):
+        result = []
+        for k in kinds:
+            k = k.lower()
+            if k == 'new friends':
+                result.add('new_friends')
+            elif k == 'short-term' or k == 'short-term dating':
+                result.add('short_term_dating')
+            elif k == 'long-term' or k == 'long-term dating':
+                result.add('long_term_dating')
+            elif k == 'casual sex' or k == 'sex':
+                result.add('casual_sex')
+            elif k != 'any':
+                raise TypeError
+            else: result.extend(('new_friends', 'short_term_dating', 'long_term_dating', 'casual_sex')) # or []
+        return result
+
+## old param keywords: A list or space-delimeted string of words to search for.
+## new param interests: A list of ints or str(int)
+class InterestsFilter(search_filters.filter_class):
+    output_key = "interest_ids"
+    description = "One or more interest ints that search results must match."
+    types = "int or intstring, or list of such"
+    @util.makelist_decorator
+    def transform(interests=[]):
+        for k in interests:
+            int(k) # verify that each element converts to an int
+        # expected to be list of bigint strings
+        return interests
+
+class EducationFilter(search_filters.filter_class):
+    output_key = "education"
+    # description = "One or more education levels that search results must match."
+    acceptable_values = (
+        'high school', 'two-year college', 'college', 'university', 'college/university',
+        'post-grad', 'masters program', 'law school', 'med school', 'ph.d program'
+        )
+    types = "string or list of strings"
+    # TODO: also permit shorter key `education`?
+    @util.makelist_decorator
+    def transform(education_level=[]):
+        education = []
+        for k in education_level:
+            k = k.lower()
+            i = magicnumbers.maps.education_level[k]
+            if i == 1:
+                education.add('high_school'):
+            elif i == 2:
+                education.add('two_year_college'):
+            elif i == 3 or i == 4 or k == 'college/university':
+                education.add('college_university'):
+            elif i in (5,6,7,8) or k == 'post-grad' or k == 'post grad' or k == 'grad':
+                education.add('post_grad')
+            else:
+                # i == 9 when k == 'space camp', or unrecognized k
+                raise TypeError
+        return education
+
+class ChildrenFilter(search_filters.filter_class):
+    output_key = "children"
+    decide = search_filters.any_not_none_decider
+    acceptable_values = ((True, 'has a kid', 'has kids', False, "doesn't have a kid", "doesn't have kids"),
+                         (True, 'wants', 'wants kids', False, "doesn't want", "doesn't want kids",
+                         'might want', 'might want kids'))
+    # types = (str, str)
+    # TODO: also permit single key `kids`?
+    def transform(has_kids=None, wants_kids=None):
+        children = []
+        if isinstance(has_kids, six.string_types):
+            has_kids = has_kids.lower()
+        if isinstance(wants_kids, six.string_types):
+            wants_kids = wants_kids.lower()
+        if has_kids == 'has a kid' or has_kids == 'has kids' or has_kids is True:
+            children.append('has_one_or_more')
+        elif has_kids == "doesn't have a kid" or has_kids == "doesn't have kids" or has_kids is False:
+            children.append('doesnt_have')
+        elif has_kids is not None:
+            raise TypeError
+        # else: children.extend(('has_one_or_more', 'doesnt_have'))
+        if wants_kids == 'wants' or wants_kids == 'wants kids':
+            children.append('wants_kids')
+        elif wants_kids == "doesn't want" or wants_kids == "doesn't want kids":
+            children.append('doesnt_want')
+        elif wants_kids == 'might want' or wants_kids == 'might want kids':
+            children.append('might_want')
+        elif wants_kids is True:
+            children.extend(('wants_kids', 'might_want'))
+        elif wants_kids is False:
+            children.extend(('doesnt_want', 'might_want'))
+        elif wants_kids is not None:
+            raise TypeError
+        # else: children.extend(('wants_kids', 'might_want', 'doesnt_want'))
+        return children
+
+def normalform(keys, magicmap):
+    result = []
+    for k in keys:
+        i = magicmap[k]
+        result.append(magicmap.values[i])
+    return result
+
+class EthnicitiesFilter(search_filters.filter_class):
+    output_key = "ethnicity"
+    # description = "One or more ethnicities that search results must match."
+    acceptable_values = (
+        'asian',  'black', 'hispanic', 'hispanic/latin', 'indian', 'latin',
+        'middle eastern', 'native american', 'pacific islander',
+        'white', 'other')
+    types = "string or list of strings"
+    @util.makelist_decorator
+    def transform(ethnicities=[]):
+        return normalform(ethnicities, magicnumbers.maps.ethnicities)
+
+class ReligionFilter(search_filters.filter_class):
+    # output_key = "religion"
+    # description = "One or more religions that search results must match."
+    acceptable_values = magicnumbers.maps.religion.keys()
+    types = "string or list of strings"
+    @util.makelist_decorator
+    def transform(religion=[]):
+        return normalform(religion, magicnumbers.maps.religion)
+
+class SmokingFilter(search_filters.filter_class):
+    output_key = "smoking"
+    # description = "One or more smoking frequencies that search results must match."
+    acceptable_values = magicnumbers.maps.smokes.keys()
+    types = "string or list of strings"
+    @util.makelist_decorator
+    def transform(smokes=[]):
+        return normalform(smokes, magicnumbers.maps.smokes)
+
+class DrinkingFilter(search_filters.filter_class):
+    output_key = "drinking"
+    # description = "One or more drinking frequencies that search results must match."
+    acceptable_values = magicnumbers.maps.drinks.keys()
+    types = "string or list of strings"
+    @util.makelist_decorator
+    def transform(drinks=[]):
+        return normalform(drinks, magicnumbers.maps.drinks)
+
+class DrugsFilter(search_filters.filter_class):
+    # output_key = "drugs"
+    # description = "One or more drug-taking frequencies that search results must match."
+    acceptable_values = magicnumbers.maps.drugs.keys()
+    types = "string or list of strings"
+    @util.makelist_decorator
+    def transform(drugs=[]):
+        return normalform(drugs, magicnumbers.maps.drugs)
 
 
 search_filters.add_to_docstring_of(SearchFetchable)
