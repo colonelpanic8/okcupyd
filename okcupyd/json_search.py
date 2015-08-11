@@ -311,8 +311,10 @@ def accumulate_tags(keys, magicmap):
 class GenderFilter(search_filters.filter_class):
     output_key = "gender_tags"
     decide = search_filters.any_not_none_decider
-    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
-                        magicnumbers.gentation_to_number.keys())
+    acceptable_values = (
+            magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+            magicnumbers.gentation_to_number.keys()
+    )
     types = ("string or list of strings", str)
     def transform(gender_sought, gentation):
         if gentation is not None:
@@ -334,8 +336,10 @@ class GenderFilter(search_filters.filter_class):
 class OrientationFilter(search_filters.filter_class):
     output_key = "orientation_tags"
     decide = search_filters.any_not_none_decider
-    acceptable_values = (magicnumbers.maps.orientation_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
-                        magicnumbers.gentation_to_number.keys())
+    acceptable_values = (
+            magicnumbers.maps.orientation_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+            magicnumbers.gentation_to_number.keys()
+    )
     types = ("string or list of strings", str)
     def transform(orientation_sought, gentation):
         if gentation is not None:
@@ -355,8 +359,10 @@ class OrientationFilter(search_filters.filter_class):
 class IWantFilter(search_filters.filter_class):
     output_key = "i_want"
     decide = search_filters.any_not_none_decider
-    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
-                        magicnumbers.gentation_to_number.keys())
+    acceptable_values = (
+            magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+            magicnumbers.gentation_to_number.keys()
+    )
     types = ("string or list of strings", str)
     def transform(gender_sought, gentation):
         if gentation is not None:
@@ -382,9 +388,11 @@ class IWantFilter(search_filters.filter_class):
 class TheyWantFilter(search_filters.filter_class):
     output_key = "they_want"
     decide = search_filters.any_not_none_decider
-    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
-                        magicnumbers.maps.orientation_tags.keys(),
-                        magicnumbers.gentation_to_number.keys())
+    acceptable_values = (
+            magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+            magicnumbers.maps.orientation_tags.keys(),
+            magicnumbers.gentation_to_number.keys()
+    )
     types = ("string or list of strings", "string or list of strings", str)
     def transform(gender_sought, orientation_sought, gentation):
         if gentation is not None:
@@ -423,9 +431,11 @@ class TheyWantFilter(search_filters.filter_class):
 class GentationFilter(search_filters.filter_class):
     output_key = "gentation"
     decide = search_filters.any_not_none_decider
-    acceptable_values = (magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
-                        magicnumbers.maps.orientation_tags.keys(),
-                        magicnumbers.gentation_to_number.keys())
+    acceptable_values = (
+            magicnumbers.maps.gender_tags.keys(), # also 'all', 'everyone', 'everybody', 'any'
+            magicnumbers.maps.orientation_tags.keys(),
+            magicnumbers.gentation_to_number.keys()
+    )
     types = ("string or list of strings", "string or list of strings", str)
     def transform(gender_sought, orientation_sought, gentation):
         if gentation is not None:
@@ -587,9 +597,11 @@ class EducationFilter(search_filters.filter_class):
 class ChildrenFilter(search_filters.filter_class):
     output_key = "children"
     decide = search_filters.any_not_none_decider
-    acceptable_values = ((True, 'has a kid', 'has kids', False, "doesn't have a kid", "doesn't have kids"),
-                         (True, 'wants', 'wants kids', False, "doesn't want", "doesn't want kids",
-                         'might want', 'might want kids'))
+    acceptable_values = (
+            (True, 'has a kid', 'has kids', False, "doesn't have a kid", "doesn't have kids"),
+            (True, 'wants', 'wants kids', False, "doesn't want", "doesn't want kids",
+             'might want', 'might want kids')
+    )
     # types = (str, str)
     # TODO: also permit single key `kids`?
     def transform(has_kids=None, wants_kids=None):
