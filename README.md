@@ -5,6 +5,8 @@ Status](https://readthedocs.org/projects/okcupyd/badge/?version=latest)](http://
 Getting Started
 ===============
 
+[![Join the chat at https://gitter.im/IvanMalison/okcupyd](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Installation/Setup
 ------------------
 
