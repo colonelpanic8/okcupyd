@@ -70,25 +70,38 @@ class SearchManager(object):
 
 class SearchJSONFetcher(object):
 
+    search_uri = 'apitun/match/search'
+    default_headers = {
+        'Content-Type': 'application/json'
+    }
+
     def __init__(self, session=None, **options):
         self._session = session or Session.login()
         self._options = options
         self._parameters = search_filters.build(**options)
 
-    def _query_params(self, after=None, count=None):
+    def _request_params(self, after=None, count=None):
+        return {
+            'params': {
+                'access_token': self._session.access_token
+            },
+            'headers': self.default_headers,
+            'data': simplejson.dumps(self._post_body(after, count)),
+            'path': self.search_uri
+        }
+
+    def _post_body(self, after=None, count=None):
         search_parameters = {
             'after': after,
             'limit': count
         }
         search_parameters.update(self._parameters)
-        return {'_json': search_parameters}
+        return search_parameters
 
     def fetch(self, after=None, count=18):
-        search_parameters = self._query_params(after=after, count=count)
-        log.info(simplejson.dumps({'search_parameters': search_parameters}))
-        response = self._session.okc_get(
-            'search', params=search_parameters
-        )
+        request_parameters = self._request_params(after=after, count=count)
+        log.info(simplejson.dumps(request_parameters))
+        response = self._session.okc_post(**request_parameters)
         try:
             search_json = response.json()
         except:
@@ -129,6 +142,10 @@ class GentationFilter(search_filters.filter_class):
     descriptions = "A list of the allowable gentations of returned search results."
     types = list
     acceptable_values = magicnumbers.gentation_to_number.keys()
+
+
+def search(session=None, count=1, **kwargs):
+    return SearchFetchable(session, count=count, **kwargs)[:count]
 
 
 search_filters.add_to_docstring_of(SearchFetchable)
