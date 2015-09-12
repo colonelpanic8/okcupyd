@@ -100,9 +100,10 @@ class curry(object):
             # This is to handle the fact that self will get passed in
             # automatically.
             function_args = function_args[1:]
+
         def evaluation_checker(*args, **kwargs):
             kwarg_keys = set(kwargs.keys())
-            if function_info.keywords == None:
+            if function_info.keywords is None:
                 acceptable_kwargs = function_args[len(args):]
                 # Make sure that we didn't get an argument we can't handle.
                 if not kwarg_keys.issubset(acceptable_kwargs):
@@ -110,6 +111,7 @@ class curry(object):
                         [key for key in kwarg_keys
                          if key not in acceptable_kwargs]
                     ))
+
             needed_args = function_args[len(args):]
             if function_info.defaults:
                 needed_args = needed_args[:-len(function_info.defaults)]
