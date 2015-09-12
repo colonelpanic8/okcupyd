@@ -46,6 +46,10 @@ class Filters(object):
                 return cls.transform(*[kwargs.get(key) for key in cls.keys])
 
             def _set_defaults(cls):
+                if isinstance(cls.keys, six.string_types):
+                    cls.keys = [cls.keys]
+                if not hasattr(cls, 'transform'):
+                    cls.transform = staticmethod(lambda x: x)
                 function_arguments = inspect.getargspec(cls.transform).args
                 if cls.keys:
                     assert len(cls.keys) == len(function_arguments)
@@ -118,7 +122,8 @@ class Filters(object):
 
     def filters(self, **kwargs):
         builders = [
-            builder for builder in self.builders if self._handle_decide(builder, kwargs)
+            builder for builder in self.builders
+            if self._handle_decide(builder, kwargs)
         ]
         return [
             builder.transform(
@@ -160,9 +165,18 @@ class Filters(object):
     def register_builder(self, filter_object):
         self.builders.append(filter_object)
         self.keys.update(filter_object.keys)
-        self._update_docs_dict(self._key_to_type, filter_object.types, filter_object.keys)
-        self._update_docs_dict(self._key_to_string, filter_object.descriptions, filter_object.keys)
-        self._update_docs_dict(self._key_to_values, filter_object.acceptable_values, filter_object.keys)
+        self._update_docs_dict(
+            self._key_to_type,
+            filter_object.types, filter_object.keys
+        )
+        self._update_docs_dict(
+            self._key_to_string,
+            filter_object.descriptions, filter_object.keys
+        )
+        self._update_docs_dict(
+            self._key_to_values,
+            filter_object.acceptable_values, filter_object.keys
+        )
 
     @util.curry
     def register_filter_builder(self, function, **kwargs):
