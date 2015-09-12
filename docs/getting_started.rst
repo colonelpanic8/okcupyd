@@ -1,6 +1,6 @@
 .. toctree::
    :maxdepth: 4
-|PyPI Version|\ |Build Status|\ |Documentation Status|
+|PyPI Version|\ |Build Status|\ |Documentation Status|\ |Gitter|
 
 Getting Started
 ===============
@@ -416,5 +416,8 @@ from the root directory of the repository.
 .. |Documentation Status| image:: https://readthedocs.org/projects/okcupyd/badge/?version=latest
    :target: http://okcupyd.readthedocs.org/en/latest/
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/okcupyd.svg
-    :target: https://pypi.python.org/pypi/okcupyd/
-    :alt: Latest PyPI version
+   :target: https://pypi.python.org/pypi/okcupyd/
+   :alt: Latest PyPI version
+.. |Gitter| image:: https://badges.gitter.im/Join%20Chat.svg
+   :taget: https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+   :alt: Join the chat at https://gitter.im/IvanMalison/okcupyd

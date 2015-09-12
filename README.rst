@@ -1,4 +1,5 @@
-|Latest PyPI version|\ |Build Status|\ |Documentation Status|
+|Latest PyPI version|\ |Build Status|\ |Documentation Status|\ |Join the
+chat at https://gitter.im/IvanMalison/okcupyd|
 
 Getting Started
 ===============
@@ -386,3 +387,4 @@ from the root directory of the repository.
    :target: https://travis-ci.org/IvanMalison/okcupyd
 .. |Documentation Status| image:: https://readthedocs.org/projects/okcupyd/badge/?version=latest
    :target: http://okcupyd.readthedocs.org/en/latest/
+.. |Join the chat at https://gitter.im/IvanMalison/okcupyd| image:: https://badges.gitter.im/Join%20Chat.svg
