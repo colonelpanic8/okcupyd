@@ -5,6 +5,45 @@ Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://tr
 Status](https://readthedocs.org/projects/okcupyd/badge/?version=latest)](http://okcupyd.readthedocs.org/en/latest/)
 [![Join the chat at https://gitter.im/IvanMalison/okcupyd](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+Development Status
+==================
+
+okcupyd was broken when okcupid.com released their redesign of their
+website which included a change in the way their private api worked.
+This was first reported on July 5th by @mosesmc52 in
+this issue https://github.com/IvanMalison/okcupyd/issues/61 \_\_, and
+later by @dubiousjim in
+this issue https://github.com/IvanMalison/okcupyd/issues/63 \_\_. A
+migration to this new API is underway, and since
+this commit https://github.com/IvanMalison/okcupyd/commit/0f6b8df9905d29bddce6ee9d9978b73d9905f514
+\_\_, this new code path has been in use. The search functionality does
+seem to be working now, but almost all of the filters DO NOT WORK. Work
+on getting these filters can be tracked in
+<https://github.com/IvanMalison/okcupyd/issues/70> and more general work
+for getting okcupyd back to a stable state can be tracked in
+this milestone https://github.com/IvanMalison/okcupyd/milestones/v1.0.0
+\_\_.
+
+Alpha Installation
+------------------
+
+Because the old version of okcupyd does not work at all, I have released
+an alpha version that uses the new private api. You can get this version
+using pip by running:
+
+``` {.sourceCode .bash}
+pip install --pre -U okcupyd
+```
+
+Or by explicitly specifying the version you would like to obtain:
+
+``` {.sourceCode .bash}
+pip install okcupyd==1.0.0a1
+```
+
+Plase be aware that these alpha builds will likely have many bugs and
+they should not be expected to be stable in any way.
+
 Getting Started
 ===============
 
