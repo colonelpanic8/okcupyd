@@ -1,4 +1,4 @@
-|Latest PyPI version|\ |Build Status|\ |Documentation Status|\ |Join the
+|Latest PyPI version| |Build Status| |Documentation Status| |Join the
 chat at https://gitter.im/IvanMalison/okcupyd|
 
 Getting Started
