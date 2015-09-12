@@ -388,3 +388,4 @@ from the root directory of the repository.
 .. |Documentation Status| image:: https://readthedocs.org/projects/okcupyd/badge/?version=latest
    :target: http://okcupyd.readthedocs.org/en/latest/
 .. |Join the chat at https://gitter.im/IvanMalison/okcupyd| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

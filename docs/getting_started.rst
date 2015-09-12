@@ -419,6 +419,6 @@ from the root directory of the repository.
    :target: https://pypi.python.org/pypi/okcupyd/
    :alt: Latest PyPI version
 .. |Gitter Badge| image:: https://badges.gitter.im/Join%20Chat.svg
-   :taget: https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+   :target: https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
    :alt: Join the chat at https://gitter.im/IvanMalison/okcupyd
 

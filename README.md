@@ -3,7 +3,7 @@
 Status](https://travis-ci.org/IvanMalison/okcupyd.svg?branch=master)](https://travis-ci.org/IvanMalison/okcupyd)
 [![Documentation
 Status](https://readthedocs.org/projects/okcupyd/badge/?version=latest)](http://okcupyd.readthedocs.org/en/latest/)
-![Join the chat at https://gitter.im/IvanMalison/okcupyd](https://badges.gitter.im/Join%20Chat.svg)
+[![Join the chat at https://gitter.im/IvanMalison/okcupyd](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Getting Started
 ===============
