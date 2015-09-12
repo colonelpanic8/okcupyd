@@ -1,6 +1,7 @@
 import logging
 
 import simplejson
+import six
 
 from . import filter
 from . import magicnumbers
@@ -133,10 +134,14 @@ class ProfileBuilder(object):
 
 class GentationFilter(search_filters.filter_class):
 
-    def transform(gentation):
+    def transform(gentations):
+        if isinstance(gentations, six.string_types):
+            gentations = [gentations]
         return [
-            magicnumbers.gentation_to_number.get(a_gentation.strip().lower(), a_gentation)
-            for a_gentation in gentation
+            magicnumbers.gentation_to_number.get(
+                gentation.strip().lower(), gentation
+            )
+            for gentation in gentations
         ]
 
     descriptions = "A list of the allowable gentations of returned search results."
