@@ -14,10 +14,11 @@ to this new API is underway, and since `this
 commit <https://github.com/IvanMalison/okcupyd/commit/0f6b8df9905d29bddce6ee9d9978b73d9905f514>`__,
 this new code path has been in use. The search functionality does seem
 to be working now, but almost all of the filters DO NOT WORK. Work on
-getting these filters can be tracked in this issue
-https://github.com/IvanMalison/okcupyd/issues/70\_\_ and more general
-work for getting okcupyd back to a stable state can be tracked in this
-milestone https://github.com/IvanMalison/okcupyd/milestones/v1.0.0\_\_.
+getting these filters working can be tracked in `this
+issue <https://github.com/IvanMalison/okcupyd/issues/70>`__ and more
+general work for getting okcupyd back to a stable state can be tracked
+in `this
+milestone <https://github.com/IvanMalison/okcupyd/milestones/v1.0.0>`__.
 
 Alpha Installation
 ------------------
