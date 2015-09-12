@@ -1,5 +1,5 @@
-"""Module where the default username and password for logging in to okcupid are
-housed.
+"""Module where the default username and password for logging in to
+okcupid are housed.
 """
 import os
 
