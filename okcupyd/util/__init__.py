@@ -149,6 +149,8 @@ class REMap(object):
     def values(self):
         return self.pattern_to_value.values()
 
+    def keys(self):
+        return self.pattern_to_value.keys()
 
 class GetAttrGetItem(type):
 
@@ -172,13 +174,21 @@ def IndexedREMap(*re_strings, **kwargs):
     default = kwargs.get('default', 0)
     offset = kwargs.get('offset', 1)
     string_index_pairs = []
+    values = kwargs.get('values', None) # undocumented
+    if values is not None:
+        for index in range(offset):
+            values.append(None)
     for index, string_or_tuple in enumerate(re_strings, offset):
         if isinstance(string_or_tuple, six.string_types):
             string_or_tuple = (string_or_tuple,)
         for re_string in string_or_tuple:
             string_index_pairs.append((re_string, index))
+        if values is not None:
+            values.append(string_or_tuple[-1].replace(' ','_'))
     remap = REMap.from_string_pairs(string_index_pairs,
                                     default=default)
+    if values is not None:
+        remap.values = values
     return remap
 
 

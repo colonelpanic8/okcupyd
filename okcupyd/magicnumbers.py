@@ -16,21 +16,27 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
         'used up'
     )
 
+    # bodytype_new = util.IndexedREMap(
+    #     'thin', 'overweight', 'average', 'fit',
+    #     'jacked', 'a little extra', 'curvy', 'full figured'
+    # )
+
     orientation = util.IndexedREMap('straight', 'gay', 'bisexual')
 
     smokes = util.IndexedREMap(
-        'yes', 'sometimes', 'when drinking', 'trying to quit', 'no'
+        'yes', 'sometimes', 'when drinking', 'trying to quit', 'no', values=[]
     )
 
     drugs = util.IndexedREMap('never', 'sometimes', 'often',
-                              default=3, offset=0)
+                              default=3, offset=0, values=[])
 
     drinks = util.IndexedREMap('very often', 'often', 'socially', 'rarely',
-                               'desperately', 'not at all')
+                               'desperately', 'not at all', values=[])
 
     ethnicities = util.IndexedREMap(
         'asian', 'middle eastern', 'black', 'native american', 'indian',
-        'pacific islander', ('hispanic', 'latin'), 'white', 'other'
+        'pacific islander', ('hispanic', 'latin', 'hispanic ?/ ?latin', 'hispanic latin'),
+        'white', 'other', values=[]
     )
 
     job = util.IndexedREMap(
@@ -51,7 +57,7 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
                                    'non-monogamous')
     strictness = util.IndexedREMap('mostly', 'strictly')
 
-    # Doesn't want kids is index 6 for some reason.
+    # Doesn't have kids is index 6 for some reason.
     has_kids = util.IndexedREMap('has a kid', 'has kids', (), (), (),
                                  "doesn't have kids")
     wants_kids = util.IndexedREMap('might want', 'wants', "doesn't want")
@@ -66,7 +72,7 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
 
     religion = util.IndexedREMap('agnosticism', 'atheism', 'christianity',
                                  'judaism', 'catholicism', 'islam', 'hinduism',
-                                 'buddhism', 'other', default=1, offset=2)
+                                 'buddhism', 'other', default=1, offset=2, values=[])
     seriousness = util.IndexedREMap('very serious', 'somewhat serious',
                                     'not too serious', 'laughing')
 
@@ -100,6 +106,18 @@ class maps(six.with_metaclass(util.GetAttrGetItem)):
         'More than $1,000,000'
     )
 
+    gender_tags = util.IndexedREMap(
+            'all genders', 'women', 'men', 'agenders', 'androgynes', 'bigenders',
+            'cis men', 'cis women', 'genderfluids', 'genderqueers',
+            'gender nonconforming', 'hijras', 'intersexes',
+            'non-binaries', 'others', 'pangenders', 'transfeminines',
+            'transgenders', 'trans men', 'transmasculines', 'transsexuals',
+            'trans women', 'two spirits', offset=-1, default=None)
+
+    orientation_tags = util.IndexedREMap(
+            'straight', 'gay', ('bisexual','bi'), 'asexual', 'demisexual',
+            'homoflexible', 'heteroflexible', 'lesbian',
+            'pansexual', 'queer', 'questioning', 'sapiosexual', offset=0, default=None)
 
 class MappingUpdater(object):
 
@@ -190,6 +208,7 @@ gentation_to_number = {
     'bi guys only': '16',
     'bi guys and girls': '48',
     'everybody': '63',
+    'everyone': '63',
     '': '63'
 }
 
