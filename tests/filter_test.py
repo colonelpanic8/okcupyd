@@ -1,4 +1,5 @@
 from okcupyd.html_search import search_filters
+from okcupyd.json_search import search_filters as json_search_filters
 from okcupyd.filter import Filters
 
 
@@ -39,3 +40,8 @@ def test_filter_building():
         "incoming": "testoutput",
         "second": "testtwo"
     }
+
+
+def test_minimum_age_filter_building():
+    assert json_search_filters.build(minimum_age=22)['minimum_age'] == 22
+    assert json_search_filters.build(maximum_age=22)['maximum_age'] == 22

@@ -152,6 +152,22 @@ class GentationFilter(search_filters.filter_class):
     acceptable_values = magicnumbers.gentation_to_number.keys()
 
 
+class MinimumAgeFilter(search_filters.filter_class):
+
+    keys = 'minimum_age'
+
+    descriptions = "Filter profiles with ages below the provided value."
+    types = int
+
+
+class MaximumAgeFilter(search_filters.filter_class):
+
+    keys = 'maximum_age'
+
+    descriptions = "Filter profiles with ages below the provided value."
+    types = int
+
+
 def search(session=None, count=1, **kwargs):
     return SearchFetchable(session, count=count, **kwargs)[:count]
 
