@@ -70,13 +70,18 @@ class Session(object):
                                        data=credentials,
                                        headers=self.default_login_headers,
                                        secure=True)
-        log_in_name = login_response.json()['screenname']
+        login_json = login_response.json()
+        log_in_name = login_json['screenname']
         if log_in_name is None:
             raise AuthenticationError(u'Could not log in as {0}'.format(username))
         if log_in_name.lower() != username.lower():
             log.warning(u'Expected to log in as {0} but '
                         u'got {1}'.format(username, log_in_name))
         log.debug(login_response.content.decode('utf8'))
+
+        access_token = login_json.get("oauth_accesstoken")
+        if access_token:
+            self.access_token = access_token
         self.log_in_name = log_in_name
         self.headers.update(self.default_login_headers)
 
