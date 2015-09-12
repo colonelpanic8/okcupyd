@@ -5,7 +5,6 @@ from okcupyd import json_search
 from tests import util
 
 
-@pytest.mark.xfail
 @util.use_cassette
 def test_basic_json_search():
     for profile in json_search.SearchFetchable()[:4]:

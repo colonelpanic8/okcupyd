@@ -7,23 +7,22 @@ from okcupyd import User
 from okcupyd import magicnumbers
 from okcupyd.magicnumbers import maps
 from okcupyd.profile import Profile
-from okcupyd.html_search import SearchFetchable, search
+from okcupyd.json_search import SearchFetchable, search
 from okcupyd.session import Session
 
 from . import util
 
 
-@util.use_cassette(path='search_age_filter')
+@util.use_cassette
 def test_age_filter():
     age = 22
     search_fetchable = SearchFetchable(gentation='everybody',
-                                       age_min=age, age_max=age)
+                                       minimum_age=age, maximum_age=age)
+    for profile in search_fetchable[:5]:
+        assert profile.age == age
 
-    profile = next(iter(search_fetchable))
-    assert profile.age == age
 
-
-@util.use_cassette(path='search_count')
+@util.use_cassette
 def test_count_variable(request):
     profiles = search(gentation='everybody', count=14)
     assert len(profiles) == 14
@@ -203,4 +202,3 @@ def test_search_populates_upfront():
             assert mock_session.okc_get.call_count == 0
             profile.essays.self_summary
             assert mock_session.okc_get.call_count == 1
-
