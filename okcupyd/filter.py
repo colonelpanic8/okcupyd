@@ -16,12 +16,13 @@ class Filters(object):
     requests to okcupid.com
     """
 
-    def __init__(self):
+    def __init__(self, strict=True):
         self.builders = []
         self.keys = set()
         self._key_to_type = {}
         self._key_to_values = {}
         self._key_to_string = {}
+        self._strict = strict
 
     @util.cached_property
     def filter_meta(filters_instance):
@@ -133,7 +134,7 @@ class Filters(object):
             return builder.decide(builder.transform, kwargs, builder.keys)
 
     def _validate_incoming(self, kwargs):
-        if not self.keys.issuperset(kwargs.keys()):
+        if self._strict and not self.keys.issuperset(kwargs.keys()):
             raise TypeError("build() got unexpected keyword arguments: "
                             "{0}".format(', '.join(
                                 repr(k) for k in kwargs.keys()

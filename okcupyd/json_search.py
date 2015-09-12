@@ -12,7 +12,7 @@ from .session import Session
 log = logging.getLogger(__name__)
 
 
-search_filters = filter.Filters()
+search_filters = filter.Filters(strict=False)
 
 
 def SearchFetchable(session=None, **kwargs):
