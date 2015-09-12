@@ -16,6 +16,9 @@ log = logging.getLogger(__name__)
 search_filters = filter.Filters(strict=False)
 
 
+# The docstring below is extended automatically. Read it in its entirety at
+# http://okcupyd.readthedocs.org/en/latest/ or by generating the documentation
+# yourself.
 def SearchFetchable(session=None, **kwargs):
     """Search okcupid.com with the given parameters. Parameters are
     registered to this function through

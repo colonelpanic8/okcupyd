@@ -11,7 +11,7 @@ from .photo import PhotoUploader
 from .profile import Profile
 from .profile_copy import Copy
 from .question import Questions
-from .html_search import SearchFetchable, search
+from .json_search import SearchFetchable, search
 from .session import Session
 from .xpath import xpb
 
