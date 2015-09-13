@@ -7,18 +7,17 @@ Development Status
 
 okcupyd was broken when okcupid.com released their redesign of their
 website which included a change in the way their private api worked.
-This was first reported on July 5th by @mosesmc52 in `this issue
+This was first reported on July 5th by @mosesmc52 in `#61
 <https://github.com/IvanMalison/okcupyd/issues/61>`__, and later by
-@dubiousjim in `this issue
+@dubiousjim in `#63
 <https://github.com/IvanMalison/okcupyd/issues/63>`__. A migration to
-this new API is underway, and since `this commit
+this new API is underway, and since `0f6b8df9905d29bddce6ee9d9978b73d9905f514
 <https://github.com/IvanMalison/okcupyd/commit/0f6b8df9905d29bddce6ee9d9978b73d9905f514>`__,
 this new code path has been in use. The search functionality does seem
 to be working now, but almost all of the filters DO NOT WORK. Work on
 getting these filters working can be tracked in
-`this issue <https://github.com/IvanMalison/okcupyd/issues/70>`__ and more general work
-for getting okcupyd back to a stable state can be tracked in `this
-milestone <https://github.com/IvanMalison/okcupyd/milestones/v1.0.0>`__\.
+`#70 <https://github.com/IvanMalison/okcupyd/issues/70>`__ and more general work
+for getting okcupyd back to a stable state can be tracked in `milestone v1.0.0 <https://github.com/IvanMalison/okcupyd/milestones/v1.0.0>`__\.
 
 Alpha Installation 
 ------------------
