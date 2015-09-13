@@ -1,4 +1,4 @@
-|PyPI Version|\ |Build Status|\ |Documentation Status|
+|PyPI Version|\ |Build Status|\ |Documentation Status|\ |Gitter Badge|
 
 okcupyd
 =======
@@ -25,3 +25,6 @@ Indices and tables
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/okcupyd.svg
     :target: https://pypi.python.org/pypi/okcupyd/
     :alt: Latest PyPI version
+.. |Gitter Badge| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/IvanMalison/okcupyd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+   :alt: Join the chat at https://gitter.im/IvanMalison/okcupyd
