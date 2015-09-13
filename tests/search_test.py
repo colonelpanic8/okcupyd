@@ -13,6 +13,9 @@ from okcupyd.session import Session
 from . import util
 
 
+SEARCH_FILTERS_BEING_REIMPLEMENTED = "SEARCH_FILTERS_ARE_BEING_REIMPLEMENTED"
+
+
 @util.use_cassette
 def test_age_filter():
     age = 22
@@ -38,6 +41,7 @@ def test_count_variable(request):
         profile.contacted
 
 
+@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
 @util.use_cassette(path='search_location_filter')
 def test_location_filter():
     location = 'Portland, OR'
@@ -61,6 +65,7 @@ def test_search_function():
     profile.contacted
 
 
+@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
 @util.use_cassette
 def test_search_fetchable_iter():
     search_fetchable = SearchFetchable(gentation='everybody',
@@ -72,6 +77,7 @@ def test_search_fetchable_iter():
             break
 
 
+@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
 @util.use_cassette
 def test_easy_search_filters():
     session = Session.login()
@@ -92,6 +98,7 @@ def test_easy_search_filters():
             assert value in (attribute or '').lower()
 
 
+@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
 @util.use_cassette
 def test_children_filter():
     session = Session.login()
@@ -105,6 +112,7 @@ def test_children_filter():
     assert "doesn't want" in profile.details.children.lower()
 
 
+@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
 @util.use_cassette
 def test_pets_queries():
     session = Session.login()
@@ -118,6 +126,7 @@ def test_pets_queries():
     assert 'has cats' in profile.details.pets.lower()
 
 
+@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
 @util.use_cassette
 def test_height_filter():
     session = Session.login()
@@ -136,6 +145,7 @@ def test_height_filter():
     assert float(match.group(1)) <= 1.5
 
 
+@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
 @util.use_cassette
 def test_language_filter():
     session = Session.login()
@@ -190,6 +200,7 @@ def test_question_count_filter():
         assert profile.questions[249]
 
 
+@pytest.mark.xfail(reason="ProfileBuilder needs to be improved to actually get data from profile results")
 @util.use_cassette
 def test_search_populates_upfront():
     user = User()

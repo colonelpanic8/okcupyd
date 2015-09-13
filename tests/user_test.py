@@ -23,6 +23,7 @@ def test_message_thread_to_profile():
     assert isinstance(profile.rating, int)
 
 
+@pytest.mark.xfail(reason="Not yet implemented in json search.")
 @util.use_cassette(path='user_count')
 def test_user_search_count():
     assert len(User().search(count=1)) == 1

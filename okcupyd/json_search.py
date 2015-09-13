@@ -137,9 +137,11 @@ class ProfileBuilder(object):
 
 class GentationFilter(search_filters.filter_class):
 
-    def transform(gentations):
-        if isinstance(gentations, six.string_types):
-            gentations = [gentations]
+    def transform(gentation):
+        if isinstance(gentation, six.string_types):
+            gentations = [gentation]
+        else:
+            gentations = gentation
         return [
             magicnumbers.gentation_to_number.get(
                 gentation.strip().lower(), gentation

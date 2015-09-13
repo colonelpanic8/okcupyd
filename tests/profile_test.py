@@ -64,6 +64,7 @@ def test_profile_properties():
     assert profile.contacted == False # We want it to be false, not falsy
 
 
+@pytest.mark.xfail(reason="Needs A-list account for test to work")
 @util.use_cassette
 def test_profile_attractiveness():
     profile = User().search(attractiveness_min=3000, count=1)[0]
