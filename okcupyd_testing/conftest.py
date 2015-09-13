@@ -47,10 +47,12 @@ def pytest_addoption(parser):
 
 def patch(option, *patches, **kwargs):
     negate = kwargs.get('negate', False)
+
     @pytest.yield_fixture(autouse=True, scope='session')
     def patch_conditionally(request):
         condition = bool(request.config.getoption(option))
-        if negate: condition = not condition
+        if negate:
+            condition = not condition
         if condition:
             with contextlib.ExitStack() as exit_stack:
                 for patch in patches:
@@ -58,6 +60,7 @@ def patch(option, *patches, **kwargs):
                 yield
         else:
             yield
+
     return patch_conditionally
 
 
@@ -68,10 +71,12 @@ patch_settings = patch('credentials_modules',
                        mock.patch.object(settings, 'AF_PASSWORD', 'password'),
                        negate=True)
 
-patch_save = patch('resave',
-                   mock.patch.object(
-                       Cassette, '_save',
-                       okcupyd_util.curry(Cassette._save)(force=True)))
+
+patch_save = patch(
+    'resave', mock.patch.object(
+        Cassette, '_save', okcupyd_util.curry(Cassette._save)(force=True)
+    )
+)
 
 
 def reraise_exception(obj, error_type, error, traceback):
@@ -134,10 +139,14 @@ def setup_db(engine, session):
 
 @pytest.fixture
 def T(mock_profile_builder, mock_message_thread_builder, mock_message_builder):
-    class testing(object): pass
+
+    class testing(object):
+        pass
+
     testing.ensure = mock.Mock()
     testing.build_mock = mock.Mock()
     testing.factory = mock.Mock()
+
     def ensure_thread_model_resembles_okcupyd_thread(thread_model,
                                                      okcupyd_thread):
         assert thread_model.okc_id == okcupyd_thread.id
@@ -200,15 +209,18 @@ def mock_profile_builder():
     counter = itertools.count()
     next(counter)
     username_to_profile = {}
+
     def _build_mock_profile(username='username', age=30, id=None,
                             location='San Francisco, CA', **kwargs):
         if username in username_to_profile:
             return username_to_profile[username]
-        if id is None: id = next(counter)
+        if id is None:
+            id = next(counter)
         mock_profile = mock.MagicMock(id=id or next(counter), location=location,
                                       age=age, username=username, **kwargs)
         username_to_profile[username] = mock_profile
         return mock_profile
+
     return _build_mock_profile
 
 
@@ -216,6 +228,7 @@ def mock_profile_builder():
 def mock_message_builder():
     counter = itertools.count()
     next(counter)
+
     def _build_mock_message(id=None, sender='sender', recipient='recipient',
                             content='content', **kwargs):
         kwargs.setdefault('time_sent',
@@ -226,6 +239,7 @@ def mock_message_builder():
         return mock.MagicMock(id=id, sender=mock.Mock(username=sender),
                               recipient=mock.Mock(username=recipient),
                               content=content, **kwargs)
+
     return _build_mock_message
 
 
