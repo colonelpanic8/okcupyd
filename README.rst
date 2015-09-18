@@ -15,7 +15,7 @@ to this new API is underway, and since
 this new code path has been in use. The search functionality does seem
 to be working now, but almost all of the filters DO NOT WORK. Work on
 getting these filters working can be tracked in
-`#70 <https://github.com/IvanMalison/okcupyd/issues/70>`__ and more
+`#70 <https://github.com/IvanMalison/okcupyd/issues/70>`__ and the more
 general work for getting okcupyd back to a stable state can be tracked
 in `milestone
 v1.0.0 <https://github.com/IvanMalison/okcupyd/milestones/v1.0.0>`__.
@@ -37,7 +37,7 @@ Or by explicitly specifying the version you would like to obtain:
 
     pip install okcupyd==1.0.0a1
 
-Plase be aware that these alpha builds will likely have many bugs and
+Please be aware that these alpha builds will likely have many bugs and
 they should not be expected to be stable in any way.
 
 Getting Started

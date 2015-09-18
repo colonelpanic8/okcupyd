@@ -11,13 +11,16 @@ This was first reported on July 5th by @mosesmc52 in `#61
 <https://github.com/IvanMalison/okcupyd/issues/61>`__, and later by
 @dubiousjim in `#63
 <https://github.com/IvanMalison/okcupyd/issues/63>`__. A migration to
-this new API is underway, and since `0f6b8df9905d29bddce6ee9d9978b73d9905f514
+this new API is underway, and since
+`0f6b8df9905d29bddce6ee9d9978b73d9905f514
 <https://github.com/IvanMalison/okcupyd/commit/0f6b8df9905d29bddce6ee9d9978b73d9905f514>`__,
 this new code path has been in use. The search functionality does seem
 to be working now, but almost all of the filters DO NOT WORK. Work on
-getting these filters working can be tracked in
-`#70 <https://github.com/IvanMalison/okcupyd/issues/70>`__ and more general work
-for getting okcupyd back to a stable state can be tracked in `milestone v1.0.0 <https://github.com/IvanMalison/okcupyd/milestones/v1.0.0>`__\.
+getting these filters working can be tracked in `#70
+<https://github.com/IvanMalison/okcupyd/issues/70>`__ and the more
+general work for getting okcupyd back to a stable state can be tracked
+in `milestone v1.0.0
+<https://github.com/IvanMalison/okcupyd/milestones/v1.0.0>`__\.
 
 Alpha Installation 
 ------------------
@@ -36,7 +39,7 @@ Or by explicitly specifying the version you would like to obtain:
 
     pip install okcupyd==1.0.0a1
 
-Plase be aware that these alpha builds will likely have many bugs and
+Please be aware that these alpha builds will likely have many bugs and
 they should not be expected to be stable in any way.
 
 Getting Started
