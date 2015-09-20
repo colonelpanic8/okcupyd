@@ -1,4 +1,6 @@
 import logging
+import random
+import time
 
 from lxml import html
 import requests
@@ -11,7 +13,6 @@ from .errors import AuthenticationError
 
 
 log = logging.getLogger(__name__)
-
 
 class Session(object):
     """A `requests.Session` with convenience methods for interacting with
@@ -26,7 +27,7 @@ class Session(object):
     }
 
     @classmethod
-    def login(cls, username=None, password=None, requests_session=None):
+    def login(cls, username=None, password=None, requests_session=None, rate_limit=None):
         """Get a session that has authenticated with okcupid.com.
         If no username and password is supplied, the ones stored in
         :class:`okcupyd.settings` will be used.
@@ -35,9 +36,11 @@ class Session(object):
         :type username: str
         :param password: The password to log in with.
         :type password: str
+        :param rate_limit: Average time in seconds to wait between requests to OKC.
+        :type rate_limit: float
         """
         requests_session = requests_session or requests.Session()
-        session = cls(requests_session)
+        session = cls(requests_session, rate_limit)
         # settings.USERNAME and settings.PASSWORD should not be made
         # the defaults to their respective arguments because doing so
         # would prevent this function from picking up any changes made
@@ -47,9 +50,13 @@ class Session(object):
         session.do_login(username, password)
         return session
 
-    def __init__(self, requests_session):
+    def __init__(self, requests_session, rate_limit=None):
         self._requests_session = requests_session
         self.log_in_name = None
+        if isinstance(rate_limit, RateLimiter):
+            self.rate_limiter = rate_limit
+        else:
+            self.rate_limiter = RateLimiter(rate_limit)
 
     def __getattr__(self, name):
         return getattr(self._requests_session, name)
@@ -105,10 +112,27 @@ class Session(object):
         """
         return self.get_profile(self.log_in_name)
 
+class RateLimiter(object):
+    def __init__(self, rate_limit, wait_std_dev=None):
+        self.rate_limit = rate_limit
+        if rate_limit is not None and wait_std_dev is None:
+            wait_std_dev = float(rate_limit) / 5
+        self.wait_std_dev = wait_std_dev
+        self.last_request = None
+
+    def wait(self):
+        if self.rate_limit is None: return
+        if self.last_request is not None:
+            wait_time = random.gauss(self.rate_limit, self.wait_std_dev)
+            elapsed = time.time() - self.last_request
+            if elapsed < wait_time:
+                time.sleep(wait_time - elapsed)
+        self.last_request = time.time()
 
 def build_okc_method(method_name):
     def okc_method(self, path, secure=None, **kwargs):
         base_method = getattr(self, method_name)
+        self.rate_limiter.wait()
         response = base_method(self.build_path(path, secure), **kwargs)
         response.raise_for_status()
         return response
