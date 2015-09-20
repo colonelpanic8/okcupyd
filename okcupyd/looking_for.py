@@ -31,7 +31,8 @@ class LookingFor(object):
     profile.
     """
 
-    _ages_re = re.compile(u'Ages ([0-9]{1,3})\u2013([0-9]{1,3})')
+    _ages_re = re.compile(u'\s*Ages ([0-9]{1,3})\u2013([0-9]{1,3})\s*')
+    _ages_re2 = re.compile(u'\s*Age ([0-9]{1,3})')
 
     _looking_for_xpb = xpb.div.with_classes('text', 'what_i_want')
 
@@ -67,6 +68,9 @@ class LookingFor(object):
     def ages(self):
         """The age range that the user is interested in."""
         match = self._ages_re.match(self.raw_fields.get('ages'))
+        if not match:
+            match = self._ages_re2.match(self.raw_fields.get('ages'))
+            return self.Ages(int(match.group(1)),int(match.group(1)))
         return self.Ages(int(match.group(1)), int(match.group(2)))
 
     @update_property
