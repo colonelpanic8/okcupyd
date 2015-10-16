@@ -1,4 +1,4 @@
-from .html_search import search
+from .json_search import search
 from .session import Session
 from . import settings
 from . import util

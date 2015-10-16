@@ -116,7 +116,7 @@ okcupyd Package
 :mod:`search` Module
 --------------------
 
-.. automodule:: okcupyd.html_search
+.. automodule:: okcupyd.json_search
     :members:
     :undoc-members:
     :show-inheritance:
