@@ -66,8 +66,7 @@ class SearchManager(object):
                     'msg': "unable to get after cursor from response",
                     'response': response
                 }
-            )
-        )
+            ))
         for profile in self._profile_builder(response):
             yield profile
 
@@ -128,8 +127,7 @@ class ProfileBuilder(object):
                     'msg': "unable to get data from response",
                     'response': response_dictionary
                 }
-            )
-        )
+            ))
         else:
             for profile_info in profile_infos:
                 yield Profile(self._session, profile_info["username"])
@@ -144,9 +142,9 @@ class GentationFilter(search_filters.filter_class):
             gentations = gentation
         return [
             magicnumbers.gentation_to_number.get(
-                gentation.strip().lower(), gentation
+                a_gentation.strip().lower(), gentation
             )
-            for gentation in gentations
+            for a_gentation in gentations
         ]
 
     descriptions = "A list of the allowable gentations of returned search results."
