@@ -8,6 +8,7 @@ from okcupyd import magicnumbers
 from okcupyd.magicnumbers import maps
 from okcupyd.profile import Profile
 from okcupyd.json_search import SearchFetchable, search
+from okcupyd.location import LocationQueryCache
 from okcupyd.session import Session
 
 from . import util
@@ -41,13 +42,14 @@ def test_count_variable(request):
         profile.contacted
 
 
-@pytest.mark.xfail(reason=SEARCH_FILTERS_BEING_REIMPLEMENTED)
-@util.use_cassette(path='search_location_filter')
+@util.use_cassette
 def test_location_filter():
+    session = Session.login()
+    location_cache = LocationQueryCache(session)
     location = 'Portland, OR'
-    search_fetchable = SearchFetchable(location=location, radius=25)
-    profile = search_fetchable[0]
-    assert profile.location == 'Portland, OR'
+    search_fetchable = SearchFetchable(location=location, location_cache=location_cache, radius=1)
+    for profile in search_fetchable[:5]:
+        assert profile.location == 'Portland, OR'
 
 
 @util.use_cassette(path='search_function')

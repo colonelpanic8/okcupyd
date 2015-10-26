@@ -6,12 +6,13 @@ import six
 from . import helpers
 from . import util
 from .attractiveness_finder import AttractivenessFinder
+from .json_search import SearchFetchable, search
+from .location import LocationQueryCache
 from .messaging import ThreadFetcher, MessageThread
 from .photo import PhotoUploader
 from .profile import Profile
 from .profile_copy import Copy
 from .question import Questions
-from .json_search import SearchFetchable, search
 from .session import Session
 from .xpath import xpb
 
@@ -33,8 +34,8 @@ class User(object):
         return cls(Session.login(username, password))
 
     _visitors_xpb = xpb.div.with_class('user_info').\
-                   div.with_class('profile_info').div.with_class('username').\
-                   a.with_class('name').text_
+                    div.with_class('profile_info').div.with_class('username').\
+                    a.with_class('name').text_
 
     _visitors_current_page_xpb = xpb.div.with_class('pages').\
                                  span.with_class('curpage').text_
@@ -97,6 +98,9 @@ class User(object):
         #: the owning :class:`~.User` instance's session.
         self.photo = PhotoUploader(self._session)
 
+        #: A :class:`~okcupyd.location.LocationQueryCache` instance
+        self.location_cache = LocationQueryCache(self._session)
+
     def get_profile(self, username):
         """Get the :class:`~okcupyd.profile.Profile` associated with the
         supplied username.
@@ -151,6 +155,7 @@ class User(object):
         kwargs.setdefault('gentation', gentation)
         kwargs.setdefault('location', self.profile.location)
         kwargs.setdefault('radius', 25)
+        kwargs.setdefault('location_cache', self.location_cache)
         if 'count' in kwargs:
             count = kwargs.pop('count')
             return search(session=self._session, count=count, **kwargs)

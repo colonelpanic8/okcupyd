@@ -54,12 +54,6 @@ class Session(object):
     def __getattr__(self, name):
         return getattr(self._requests_session, name)
 
-    @util.cached_property
-    def access_token(self):
-        return helpers.get_authcode(html.fromstring(
-            self.okc_get('profile').content
-        ))
-
     def do_login(self, username, password):
         credentials = {
             'username': username,

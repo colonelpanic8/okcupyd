@@ -81,7 +81,7 @@ class SearchJSONFetcher(object):
     def __init__(self, session=None, **options):
         self._session = session or Session.login()
         self._options = options
-        self._parameters = search_filters.build(**options)
+        self._parameters = search_filters.build(session=self._session, **options)
 
     def _request_params(self, after=None, count=None):
         return {
@@ -166,6 +166,48 @@ class MaximumAgeFilter(search_filters.filter_class):
 
     descriptions = "Filter profiles with ages below the provided value."
     types = int
+
+
+class RadiusFilter(search_filters.filter_class):
+
+    output_key = "radius"
+    descriptions = "The maximum distance (in miles) from the specified location of returned search results."
+    types = "int or None"
+
+    def transform(radius):
+        return radius
+
+
+class LocationActivationFilter(search_filters.filter_class):
+
+    output_key = "located_anywhere"
+    types = (int, type(None))
+
+    def transform(radius):
+        return 1 if radius is None else 0
+
+
+class LocIdFilter(search_filters.filter_class):
+
+    types = int
+
+    def transform(locid):
+        return locid
+
+
+class LocationFilter(search_filters.filter_class):
+
+    output_key = "locid"
+    descriptions = (
+        "A query that will be used to look up a locid for the search, location_cache must also be passed in in order for this parameter to work. :class:`~okcupyd.user.User` automatically passes the location_cache in.",
+        "A :class:`~okcupyd.location.LocationQueryCache` instance."
+    )
+
+    # TODO:
+    # Requiring location_cache here is a weird type of dependency
+    # injection. A better solution is probably needed long term
+    def transform(location, location_cache):
+        return location_cache.get_locid(location)
 
 
 def search(session=None, count=1, **kwargs):

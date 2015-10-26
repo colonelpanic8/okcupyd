@@ -57,8 +57,6 @@ class Filters(object):
                     cls.keys = function_arguments
 
                 if not cls.output_key:
-                    # assert len(cls.keys) == 1
-                    # cls.output_key, = cls.keys
                     cls.output_key = cls.keys[0]
         return FilterMeta
 
