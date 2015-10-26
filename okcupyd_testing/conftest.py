@@ -1,7 +1,6 @@
 import datetime
 import logging
 import itertools
-import os
 import time
 
 import mock
@@ -22,8 +21,9 @@ BREAK_ON_EXCEPTION = False
 
 
 def pytest_addoption(parser):
-    okcupyd_util.add_command_line_options(parser.addoption,
-                                          use_short_options=False)
+    okcupyd_util.add_command_line_options(
+        parser.addoption, use_short_options=False
+    )
     parser.addoption('--live', dest='skip_vcrpy', action='store_true',
                      default=False, help="Skip the patching of http requests in"
                      " tests. USE WITH CAUTION. This will interact with the "
@@ -115,6 +115,7 @@ patch_record = patch(
     )
 )
 
+
 @pytest.fixture(autouse=True, scope='session')
 def set_vcr_options(request):
     util.okcupyd_vcr.record_mode = request.config.getoption('cassette_mode')
@@ -158,8 +159,9 @@ def T(mock_profile_builder, mock_message_thread_builder, mock_message_builder):
     testing.build_mock = mock.Mock()
     testing.factory = mock.Mock()
 
-    def ensure_thread_model_resembles_okcupyd_thread(thread_model,
-                                                     okcupyd_thread):
+    def ensure_thread_model_resembles_okcupyd_thread(
+        thread_model, okcupyd_thread
+    ):
         assert thread_model.okc_id == okcupyd_thread.id
         ensure_user_model_resembles_okcupyd_profile(
             thread_model.initiator, okcupyd_thread.initiator
@@ -171,9 +173,9 @@ def T(mock_profile_builder, mock_message_thread_builder, mock_message_builder):
             ensure_message_model_resembles_okcupyd_message(*pair)
             assert len(thread_model.messages) == len(okcupyd_thread.messages)
 
-
-    def ensure_message_model_resembles_okcupyd_message(message_model,
-                                                       okcupyd_message):
+    def ensure_message_model_resembles_okcupyd_message(
+        message_model, okcupyd_message
+    ):
         assert message_model.okc_id == okcupyd_message.id
         assert message_model.sender.handle == okcupyd_message.sender.username
         assert message_model.recipient.handle == okcupyd_message.recipient.username
@@ -244,7 +246,8 @@ def mock_message_builder():
                             content='content', **kwargs):
         kwargs.setdefault('time_sent',
                           datetime.datetime(year=2014, day=2, month=4))
-        if id == None: id = next(counter)
+        if id is None:
+            id = next(counter)
         assert isinstance(sender, str)
         assert isinstance(recipient, str)
         return mock.MagicMock(id=id, sender=mock.Mock(username=sender),
@@ -258,10 +261,12 @@ def mock_message_builder():
 def mock_message_thread_builder(mock_message_builder, mock_profile_builder):
     counter = itertools.count()
     next(counter)
+
     def _build_mock_message_thread(id=None, message_count=2,
                                    initiator='initiator',
                                    respondent='respondent', **kwargs):
-        if id == None: id = next(counter)
+        if id is None:
+            id = next(counter)
         messages = [mock_message_builder(content='{0}'.format(i),
                                          sender=respondent
                                          if i % 2 else initiator,
