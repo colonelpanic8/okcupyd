@@ -72,7 +72,7 @@ class Detail(object):
     def __get__(self, details, klass):
         if details is None:
             return self
-        return self.presenter(details.id_to_display_name_value[self.id_name])
+        return self.presenter(details.id_to_display_name_value.get(self.id_name, u'\u2014'))
 
     def __set__(self, details, value):
         details.update(self.update(value))
