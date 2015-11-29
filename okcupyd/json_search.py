@@ -156,7 +156,7 @@ class MinimumAgeFilter(search_filters.filter_class):
 
     keys = 'minimum_age'
 
-    descriptions = "Filter profiles with ages below the provided value."
+    descriptions = "Filter profiles with ages above the provided value."
     types = int
 
 
