@@ -1,3 +1,4 @@
+
 import time
 import logging
 
@@ -171,8 +172,7 @@ class User(object):
         return MessageThread.delete_threads(self._session,
                                             thread_ids_or_threads)
 
-    def get_user_question(self, question, fast=False,
-                          bust_questions_cache=False):
+    def get_user_question(self, question, fast=False, bust_questions_cache=False):
         """Get a :class:`~okcupyd.question.UserQuestion` corresponding to the
         given :class:`~okcupyd.question.Question`.
 
@@ -210,6 +210,7 @@ class User(object):
         if bust_questions_cache:
             self.profile.questions()
         user_question = None if fast else self.profile.find_question(
+
             question.id
         )
         if user_question is None:

@@ -25,12 +25,13 @@ class Profile(object):
     that this object avoids making unnecessary HTTP requests to retrieve the
     same piece of information twice.
 
-    Because of this caching behavior, care must
-    be taken to invalidate cached attributes on the object if an up to date view
-    of the profile is needed. It is recommended that you call :meth:`.refresh`
-    to accomplish this, but it is also possible to use
-    :meth:`~okcupyd.util.cached_property.bust_self` to bust individual
-    properties if necessary.
+    Because of this caching behavior, care must be taken to invalidate
+    cached attributes on the object if an up to date view of the
+    profile is needed. It is recommended that you call
+    :meth:`.refresh` to accomplish this, but it is also possible to
+    use :meth:`~okcupyd.util.cached_property.bust_self` to bust
+    individual properties if necessary.
+
     """
 
     def __init__(self, session, username, **kwargs):
@@ -342,10 +343,9 @@ class Profile(object):
                   associated with this profile has given to okcupid.com match
                   questions.
         """
-        return util.Fetchable(QuestionFetcher(
-            self._session, self.username,
-            is_user=self.is_logged_in_user, **kwargs
-        ))
+        return util.Fetchable(QuestionFetcher(self._session, self.username,
+                                              is_user=self.is_logged_in_user,
+                                              **kwargs))
 
     def authcode_get(self, path, **kwargs):
         """Perform an HTTP GET to okcupid.com using this profiles session

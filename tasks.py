@@ -44,6 +44,7 @@ def rerecord_one(test_name, rest='', pty=False):
 def failing_test_names():
     run("tox -e py27 | grep test_ | grep \u2015 | sed 's:\\\u2015::g'", pty=True)
 
+
 @ns.add_task
 @task
 def rerecord_failing():
