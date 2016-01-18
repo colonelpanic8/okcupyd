@@ -2,10 +2,8 @@ import logging
 import random
 import time
 
-from lxml import html
 import requests
 
-from . import helpers
 from . import profile
 from . import settings
 from . import util
@@ -13,6 +11,7 @@ from .errors import AuthenticationError
 
 
 log = logging.getLogger(__name__)
+
 
 class Session(object):
     """A `requests.Session` with convenience methods for interacting with
@@ -27,7 +26,10 @@ class Session(object):
     }
 
     @classmethod
-    def login(cls, username=None, password=None, requests_session=None, rate_limit=None):
+    def login(
+            cls, username=None, password=None, requests_session=None,
+            rate_limit=None
+    ):
         """Get a session that has authenticated with okcupid.com.
         If no username and password is supplied, the ones stored in
         :class:`okcupyd.settings` will be used.
@@ -106,6 +108,7 @@ class Session(object):
         """
         return self.get_profile(self.log_in_name)
 
+
 class RateLimiter(object):
     def __init__(self, rate_limit, wait_std_dev=None):
         self.rate_limit = rate_limit
@@ -122,6 +125,7 @@ class RateLimiter(object):
             if elapsed < wait_time:
                 time.sleep(wait_time - elapsed)
         self.last_request = time.time()
+
 
 def build_okc_method(method_name):
     def okc_method(self, path, secure=None, **kwargs):
