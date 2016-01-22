@@ -10,7 +10,7 @@ from okcupyd.db import model
 
 
 log = logging.getLogger(__name__)
-
+model = model
 
 ns = Collection()
 ns.add_collection(copy)
@@ -24,12 +24,15 @@ ns.add_task(login, 'login')
 @task(login, default=True)
 def interactive():
     u = user.User()
+    u = u
     IPython.embed()
+
 
 @ns.add_task
 @task(aliases='s')
 def session():
     with db.txn() as session:
+        session = session
         IPython.embed()
 
 
@@ -51,5 +54,3 @@ def enable_all_loggers():
     for logger_name in ('okcupyd', 'requests', __name__):
         util.enable_logger(logger_name)
     db.Session.kw['bind'].echo = True
-
-
