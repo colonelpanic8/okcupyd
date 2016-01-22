@@ -2,7 +2,6 @@ import argparse
 import pkg_resources
 import sys
 
-from invoke import cli as invoke
 import IPython
 
 from . import tasks
@@ -30,6 +29,7 @@ def interactive():
     util.handle_command_line_options(args)
     util.get_credentials()
     u = User()
+    u = u
     IPython.embed()
     # try:
     #     args, collection, parser_contexts = invoke.parse(sys.argv, collection=tasks.ns)

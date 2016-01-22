@@ -135,5 +135,7 @@ def build_okc_method(method_name):
         response.raise_for_status()
         return response
     return okc_method
+
+
 for method_name in ('get', 'put', 'post', 'delete'):
     setattr(Session, 'okc_{0}'.format(method_name), build_okc_method(method_name))
