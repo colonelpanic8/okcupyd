@@ -140,7 +140,7 @@ class Profile(object):
         """
         return looking_for.LookingFor(self)
 
-    _liked_xpb = xpb.div(id='actions').button(id='rate_user_profile')
+    _liked_xpb = xpb.button.with_class('binary_rating_button')
 
     @property
     def rating(self):
@@ -161,8 +161,10 @@ class Profile(object):
         classes = self._liked_xpb.one_(self.profile_tree).attrib['class'].split()
         return 'liked' in classes
 
-    _contacted_xpb = xpb.div(id='actions').div.with_classes(
-        'tooltip_text', 'hidden'
+    _contacted_xpb = xpb.div.with_class('actions2015').button.attribute_contains(
+        'class','actions2015-chat flatbutton blue'
+    ).select_attribute_(
+        'data-tooltip'
     )
 
     @util.cached_property
@@ -172,13 +174,11 @@ class Profile(object):
                  the owner of this profile.
         """
         try:
-            contacted_span = self._contacted_xpb.span.with_class('fancydate').\
-                             one_(self.profile_tree)
+            contacted_span = self._contacted_xpb.one_(self.profile_tree)
         except:
             return False
         else:
-            timestamp = contacted_span.attrib['id'].split('_')[-1][:-2]
-            return datetime.datetime.fromtimestamp(int(timestamp[:10]))
+            return contacted_span.replace('Last contacted ','')
 
     @util.cached_property
     def responds(self):
@@ -191,7 +191,8 @@ class Profile(object):
         if 'contacted' not in contacted_text:
             return contacted_text.strip().replace('replies ', '')
 
-    _id_xpb = xpb.div(id="action_bar").select_attribute_("data-userid")
+    _id_xpb = xpb.button.with_class('binary_rating_button').\
+              select_attribute_("data-tuid")
 
     @util.cached_property
     def id(self):
@@ -213,14 +214,25 @@ class Profile(object):
         """
         return essay.Essays(self)
 
+    _age_xpb = xpb.span.with_class('userinfo2015-basics-asl-age')
+    _user_age_xpb = xpb.span(id='ajax_age')
+
     @util.cached_property
     def age(self):
         """
         :returns: The age of the user associated with this profile.
         """
-        return int(xpb.span(id='ajax_age').get_text_(self.profile_tree).strip())
 
-    _percentages_and_ratings_xpb = xpb.div(id='percentages_and_ratings')
+        try:
+            #Attempt to get a non logged-in user's profile age
+            profile_age = int(self._age_xpb.get_text_(self.profile_tree))
+        except:
+            #If above test fails, attempt to get the logged-in user's profile age
+            profile_age = int(self._user_age_xpb.get_text_(self.profile_tree).strip())
+
+        return profile_age
+
+    _percentages_and_ratings_xpb = xpb.div.with_class('matchanalysis2015-graphs')
 
     @util.cached_property
     def match_percentage(self):
@@ -229,9 +241,10 @@ class Profile(object):
                   associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
-                   div.with_class('match').
-                   span.with_class('percent').
-                   get_text_(self.profile_tree).strip('%'))
+                   div.with_class('matchgraph--match').
+                   div.with_class('matchgraph-graph').
+                   canvas.select_attribute_('data-pct').
+                   one_(self.profile_tree))
 
     @util.cached_property
     def enemy_percentage(self):
@@ -240,17 +253,28 @@ class Profile(object):
                   associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
-                   div.with_class('enemy').
-                   span.with_class('percent').
-                   get_text_(self.profile_tree).strip('%'))
+                   div.with_classes('matchgraph','matchgraph--enemy').
+                   div.with_class('matchgraph-graph').
+                   canvas.select_attribute_('data-pct').
+                   one_(self.profile_tree))
 
-    _location_xpb = xpb.span(id='ajax_location')
+    _location_xpb = xpb.span.with_class('userinfo2015-basics-asl-location')
+    _user_location_xpb = xpb.span(id='ajax_location')
+
     @util.cached_property
     def location(self):
         """
         :returns: The location of the user associated with this profile.
         """
-        return self._location_xpb.get_text_(self.profile_tree)
+
+        try:
+            #Attempt to get a non logged-in user's profile location
+            profile_location = self._location_xpb.get_text_(self.profile_tree)      
+        except:
+            #If above test fails, attempt to get the logged-in user's profile location
+            profile_location = self._user_location_xpb.get_text_(self.profile_tree)
+
+        return profile_location
 
     @util.cached_property
     def gender(self):
