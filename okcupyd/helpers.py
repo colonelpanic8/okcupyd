@@ -133,10 +133,15 @@ def parse_slashed_date(date_updated_text):
 
 def parse_abbreviated_date(date_updated_text):
     try:
-        parsed_time = datetime.strptime(date_updated_text, '%b %d')
+        if ', 20' in date_updated_text:
+            parsed_time = datetime.strptime(date_updated_text.replace(',',''), '%b %d %Y')
+        else:
+            parsed_time = datetime.strptime(date_updated_text, '%b %d')
     except:
         pass
     else:
+        if ', 20' in date_updated_text:
+            return parsed_time
         return parsed_time.replace(year=datetime.now().year)
 
 def parse_time(date_updated_text):

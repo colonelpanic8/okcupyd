@@ -178,7 +178,8 @@ class Profile(object):
         except:
             return False
         else:
-            return contacted_span.replace('Last contacted ','')
+            date_text = contacted_span.replace('Last contacted ','')
+            return helpers.parse_date_updated(date_text)
 
     @util.cached_property
     def responds(self):
