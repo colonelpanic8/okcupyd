@@ -140,7 +140,7 @@ def parse_abbreviated_date(date_updated_text):
     except:
         pass
     else:
-        if ', 20' in date_updated_text:
+        if parsed_time.year != 1900:
             return parsed_time
         return parsed_time.replace(year=datetime.now().year)
 

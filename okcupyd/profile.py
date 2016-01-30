@@ -161,11 +161,9 @@ class Profile(object):
         classes = self._liked_xpb.one_(self.profile_tree).attrib['class'].split()
         return 'liked' in classes
 
-    _contacted_xpb = xpb.div.with_class('actions2015').button.attribute_contains(
-        'class','actions2015-chat flatbutton blue'
-    ).select_attribute_(
-        'data-tooltip'
-    )
+    _contacted_xpb = xpb.div.with_class('actions2015').button.\
+                     with_classes('actions2015-chat', 'flatbutton', 'blue').\
+                     select_attribute_('data-tooltip')
 
     @util.cached_property
     def contacted(self):
@@ -178,8 +176,8 @@ class Profile(object):
         except:
             return False
         else:
-            date_text = contacted_span.replace('Last contacted ','')
-            return helpers.parse_date_updated(date_text)
+            timestamp = contacted_span.replace('Last contacted ', '')
+            return helpers.parse_date_updated(timestamp)
 
     @util.cached_property
     def responds(self):
@@ -223,15 +221,12 @@ class Profile(object):
         """
         :returns: The age of the user associated with this profile.
         """
-
-        try:
-            #Attempt to get a non logged-in user's profile age
-            profile_age = int(self._age_xpb.get_text_(self.profile_tree))
-        except:
-            #If above test fails, attempt to get the logged-in user's profile age
-            profile_age = int(self._user_age_xpb.get_text_(self.profile_tree).strip())
-
-        return profile_age
+        if self.is_logged_in_user: 
+            # Retrieve the logged-in user's profile age
+            return int(self._user_age_xpb.get_text_(self.profile_tree).strip())
+        else:
+            # Retrieve a non logged-in user's profile age
+            return int(self._age_xpb.get_text_(self.profile_tree))
 
     _percentages_and_ratings_xpb = xpb.div.with_class('matchanalysis2015-graphs')
 
@@ -242,8 +237,8 @@ class Profile(object):
                   associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
-                   div.with_class('matchgraph--match').
-                   div.with_class('matchgraph-graph').
+                   div.with_classes('matchgraph', 'matchgraph--match').
+                   div.with_classes('matchgraph', 'matchgraph-graph').
                    canvas.select_attribute_('data-pct').
                    one_(self.profile_tree))
 
@@ -254,8 +249,8 @@ class Profile(object):
                   associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
-                   div.with_classes('matchgraph','matchgraph--enemy').
-                   div.with_class('matchgraph-graph').
+                   div.with_classes('matchgraph', 'matchgraph--enemy').
+                   div.with_classes('matchgraph', 'matchgraph-graph').
                    canvas.select_attribute_('data-pct').
                    one_(self.profile_tree))
 
@@ -267,15 +262,12 @@ class Profile(object):
         """
         :returns: The location of the user associated with this profile.
         """
-
-        try:
-            #Attempt to get a non logged-in user's profile location
-            profile_location = self._location_xpb.get_text_(self.profile_tree)      
-        except:
-            #If above test fails, attempt to get the logged-in user's profile location
-            profile_location = self._user_location_xpb.get_text_(self.profile_tree)
-
-        return profile_location
+        if self.is_logged_in_user: 
+            # Retrieve the logged-in user's profile location
+            return self._user_location_xpb.get_text_(self.profile_tree)
+        else:
+            # Retrieve a non logged-in user's profile location
+            return self._location_xpb.get_text_(self.profile_tree)
 
     @util.cached_property
     def gender(self):
