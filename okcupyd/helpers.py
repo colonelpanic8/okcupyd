@@ -134,7 +134,7 @@ def parse_slashed_date(date_updated_text):
 def parse_abbreviated_date(date_updated_text):
     date_text = date_updated_text.replace(',', '')
     try:
-        # Extract year if present in date_text; otherwise, use current year
+        # Parse year if present in date_text; otherwise, use current year
         if date_text[-4].isdigit():
             return datetime.strptime(date_text, '%b %d %Y')
         else:
