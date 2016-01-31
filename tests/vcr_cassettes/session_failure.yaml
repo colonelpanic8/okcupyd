@@ -1,35 +1,36 @@
 interactions:
 - request:
-    body: username=username&okc_api=1&password=wrong_password
+    body: password=password&okc_api=1&username=username
     headers:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      Content-Length: ['51']
+      Content-Length: ['56']
       Content-Type: [application/x-www-form-urlencoded]
       user-agent: ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36
           (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36']
     method: POST
-    uri: https://www.okcupid.com:443/login
+    uri: https://www.okcupid.com/login
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA6pWKk4uSk3Ny0vMTVVSsFLIK83J0VFQKi5JLCktji8uKUISLC1OLcpMAQkoGRqb
-        G5uYmhubWVgamRgamFgCaSW4PpASoGAtFwAAAP//AwDsVDFxXgAAAA==
+        H4sIAAAAAAAAA0WNQQoCMQxFrxK6FlFw5Tncl7STYQqZVJKUEcS72+DC5X883n+nYaRtSXe4niCZ
+        ow+LcbnFrEokgjtNJIN5Mt/GXgQbT5RSSFs/MnIzz6W//uKvlc01zMeGDvEVNegKTzQ7ui7QDJrU
+        rkrVzxHE6q0LFo7XFdno8wUxxRO4pwAAAA==
     headers:
       cache-control: [private]
-      cf-ray: [1748d59abf570d7f-SJC]
+      cf-ray: [26d87b16536111b3-SJC]
       connection: [keep-alive]
       content-encoding: [gzip]
       content-type: [application/json; charset=utf-8]
-      date: ['Sun, 05 Oct 2014 10:11:18 GMT']
+      date: ['Sun, 31 Jan 2016 21:23:59 GMT']
       p3p: ['CP="NOI CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="http://www.okcupid.com/w3c/p3p.xml"']
       server: [cloudflare-nginx]
-      set-cookie: ['__cfduid=de07fffd849f8f302a293cb72c4d7d8bb1412503878839; expires=Mon,
-          23-Dec-2019 23:50:00 GMT; path=/; domain=.okcupid.com; HttpOnly', 'guest=13395262824218223821;
-          Expires=Mon, 05 Oct 2015 10:11:18 GMT; Path=/; Domain=okcupid.com; HttpOnly']
-      transfer-encoding: [chunked]
-      x-okws-version: [OKWS/3.1.29.0]
+      set-cookie: ['__cfduid=d44c99e6d763dca105978a6effc40299e1454275439; expires=Mon,
+          30-Jan-17 21:23:59 GMT; path=/; domain=.okcupid.com; HttpOnly', 'guest=4434861497028288491;
+          Expires=Mon, 30 Jan 2017 21:23:59 GMT; Path=/; Domain=okcupid.com; HttpOnly']
+      x-frame-options: [DENY]
+      x-okws-version: [OKWS/3.1.34.5]
       x-xss-protection: [1; mode=block]
     status: {code: 200, message: OK}
 version: 1
