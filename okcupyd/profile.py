@@ -237,8 +237,8 @@ class Profile(object):
                   associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
-                   div.with_classes('matchgraph', 'matchgraph--match').
-                   div.with_classes('matchgraph', 'matchgraph-graph').
+                   div.with_class('matchgraph--match').
+                   div.with_class('matchgraph-graph').
                    canvas.select_attribute_('data-pct').
                    one_(self.profile_tree))
 
@@ -249,8 +249,8 @@ class Profile(object):
                   associated with this object.
         """
         return int(self._percentages_and_ratings_xpb.
-                   div.with_classes('matchgraph', 'matchgraph--enemy').
-                   div.with_classes('matchgraph', 'matchgraph-graph').
+                   div.with_class('matchgraph--enemy').
+                   div.with_class('matchgraph-graph').
                    canvas.select_attribute_('data-pct').
                    one_(self.profile_tree))
 
