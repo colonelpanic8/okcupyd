@@ -1,11 +1,10 @@
 import getpass
 
-import importlib
 import logging
 import shutil
 import sys
 
-from coloredlogs import ColoredFormatter
+from coloredlogs import ColoredFormatter, HostNameFilter
 
 from okcupyd import settings
 
@@ -25,10 +24,15 @@ headers = {
 
 def enable_logger(log_name, level=logging.DEBUG):
     log = logging.getLogger(log_name)
-    handler = ColoredFormatter(level_styles={'WARNING': dict(color='red')})
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(
+        ColoredFormatter(level_styles={'WARNING': dict(color='red')})
+    )
+    log.addHandler(handler)
+    HostNameFilter.install(handler=handler)
+
     handler.setLevel(level)
     log.setLevel(level)
-    log.addHandler(handler)
 
 
 def get_credentials():
@@ -52,7 +56,7 @@ def add_command_line_options(add_argument, use_short_options=True):
     add_argument(*logger_args, dest='enabled_loggers',
                  action="append", default=[],
                  help="Enable the specified logger.")
-    add_argument(*credentials_args, dest='credentials_modules',
+    add_argument(*credentials_args, dest='credential_files',
                  action="append", default=[],
                  help="Use the specified credentials module to update "
                  "the values in okcupyd.settings.")
@@ -66,25 +70,13 @@ def handle_command_line_options(args):
     """
     for enabled_log in args.enabled_loggers:
         enable_logger(enabled_log)
-    for credentials_module in args.credentials_modules:
-        update_settings_with_module(credentials_module)
+    for credential_file in args.credential_files:
+        settings.load_credentials_from_filepath(credential_file)
     if args.echo:
         from okcupyd import db
         db.echo = True
         db.Session.kw['bind'].echo = True
     return args
-
-
-def update_settings_with_module(module_name):
-    module = importlib.import_module(module_name)
-    if hasattr(module, 'USERNAME') and module.USERNAME:
-        settings.USERNAME = module.USERNAME
-    if hasattr(module, 'PASSWORD') and module.PASSWORD:
-        settings.PASSWORD = module.PASSWORD
-    if hasattr(module, 'AF_USERNAME') and module.AF_USERNAME:
-        settings.AF_USERNAME = module.AF_USERNAME
-    if hasattr(module, 'AF_PASSWORD') and module.AF_PASSWORD:
-        settings.AF_PASSWORD = module.AF_PASSWORD
 
 
 def save_file(filename, data):

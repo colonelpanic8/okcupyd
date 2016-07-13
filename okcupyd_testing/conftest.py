@@ -64,7 +64,7 @@ def patch(option, *patches, **kwargs):
     return patch_conditionally
 
 
-patch_settings = patch('credentials_modules',
+patch_settings = patch('credential_files',
                        mock.patch.object(settings, 'USERNAME', 'username'),
                        mock.patch.object(settings, 'PASSWORD', 'password'),
                        mock.patch.object(settings, 'AF_USERNAME', 'username'),
