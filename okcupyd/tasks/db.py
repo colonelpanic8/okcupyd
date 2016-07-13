@@ -13,13 +13,13 @@ log = logging.getLogger(__name__)
 
 
 @task(default=True)
-def session():
+def session(ctx):
     with db.txn() as session:
         IPython.embed()
 
 
 @task
-def reset():
+def reset(ctx):
     util.enable_logger(__name__)
     log.info(db.Base.metadata.bind)
     db.Base.metadata.drop_all()
@@ -27,14 +27,14 @@ def reset():
 
 
 @task
-def sync():
+def sync(ctx):
     user = User()
     mailbox.Sync(user).all()
     log.info(model.Message.query(model.User.okc_id == user.profile.id))
 
 
 @task
-def make():
+def make(ctx):
     user = User()
     user_model = model.User.from_profile(user.profile)
     user_model.upsert_model(id_key='okc_id')

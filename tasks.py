@@ -9,20 +9,20 @@ ns.add_collection(tasks, name='okcupyd')
 
 @ns.add_task
 @task(default=True)
-def install():
+def install(ctx):
     run("python setup.py install")
 
 
 @ns.add_task
 @task
-def pypi():
+def pypi(ctx):
     """Upload to pypi"""
     run("python setup.py sdist upload -r pypi")
 
 
 @ns.add_task
 @task
-def rerecord(rest):
+def rerecord(ctx, rest):
     """Rerecord tests."""
     run('tox -e py27 -- --cassette-mode all --record --credentials test_credentials {0} -s'
         .format(rest), pty=True)
@@ -32,7 +32,7 @@ def rerecord(rest):
 
 @ns.add_task
 @task(aliases='r')
-def rerecord_one(test_name, rest='', pty=False):
+def rerecord_one(ctx, test_name, rest='', pty=False):
     run('tox -e py27 -- --cassette-mode all --record --credentials test_credentials -k {0} -s {1}'
         .format(test_name, rest), pty=pty)
     run('tox -e py27 -- --resave --scrub --credentials test_credentials -k {0} -s {1}'
@@ -41,12 +41,12 @@ def rerecord_one(test_name, rest='', pty=False):
 
 @ns.add_task
 @task
-def failing_test_names():
+def failing_test_names(ctx):
     run("tox -e py27 | grep test_ | grep \u2015 | sed 's:\\\u2015::g'", pty=True)
 
 @ns.add_task
 @task
-def rerecord_failing():
+def rerecord_failing(ctx):
     result = run("tox -e py27 | grep test_ | grep \u2015 | sed 's:\\\u2015::g'",
                  hide='out')
     for test_name in result.stdout.split('\n'):
@@ -57,7 +57,7 @@ linux_dependencies = ('zlib1g-dev', 'libxml2-dev', 'libxslt1-dev', 'python-dev',
                       'libncurses5-dev')
 @ns.add_task
 @task(aliases=('linux_dep',))
-def install_linux_dependencies():
+def install_linux_dependencies(ctx):
     install_command = 'sudo apt-get install -y'
     for package in linux_dependencies:
         run('{0} {1}'.format(install_command, package), pty=False)

@@ -1,47 +1,29 @@
-import argparse
 import pkg_resources
-import sys
 
-import IPython
+from invoke import Program
 
-from . import tasks
-from . import util
 from .attractiveness_finder import AttractivenessFinder
 from .photo import PhotoUploader
 from .session import Session
 from .statistics import Statistics
 from .user import User
+from . import tasks
 from .util import save_file
 
 
 __version__ = pkg_resources.get_distribution('okcupyd').version
 
+@property
+def always_add_task_args_initial_context(self):
+    from invoke.parser import ParserContext
+    args = self.core_args()
+    args += self.task_args()
+    return ParserContext(args=args)
+
 
 def interactive():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', action='store_true',
-                        help='Display the version number of okcupyd')
-    util.add_command_line_options(parser.add_argument)
-    args = parser.parse_args()
-    if args.version:
-        print(__version__)
-        return sys.exit()
-    util.handle_command_line_options(args)
-    util.get_credentials()
-    u = User()
-    u = u
-    IPython.embed()
-    # try:
-    #     args, collection, parser_contexts = invoke.parse(sys.argv, collection=tasks.ns)
-    # except invoke.Exit as e:
-    #     # 'return' here is mostly a concession to testing. Meh :(
-    #     # TODO: probably restructure things better so we don't need this?
-    #     return sys.exit(e.code)
-    # executor = invoke.Executor(tasks.ns, invoke.Context(**invoke.derive_opts(args)))
-
-    # _tasks = invoke.tasks_from_contexts(parser_contexts, tasks.ns)
-    # dedupe = not args['no-dedupe'].value
-    # executor.execute(*_tasks, dedupe=dedupe)
+    Program.initial_context = always_add_task_args_initial_context
+    return Program(name="OKCupyd", version=__version__, namespace=tasks.ns).run()
 
 
 __all__ = ('User', 'AttractivenessFinder', 'Statistics',
