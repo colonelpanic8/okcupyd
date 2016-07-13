@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: okc_api=1&username=username&password=password
+    body: password=password&okc_api=1&username=username
     headers:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
@@ -10,29 +10,31 @@ interactions:
       user-agent: ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36
           (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36']
     method: POST
-    uri: https://www.okcupid.com:443/login
+    uri: https://www.okcupid.com/login
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA6tWKk4uSk3Ny0vMTVWyUlAqLU4tArN1FJSKSxJLSovji0uKgDJ5pTk5cDEg3wDI
-        KckozU3KS8zMAekE6QDpzkwB8gxrAcUb8gZZAAAA
+        H4sIAAAAAAAAAz2PQY7DIAxFr4KyzgIIDc3MLdrtSJExjhKVgARG7ajq3YdkMRvL/t9+tt9dLZQ3
+        330J1YsuQeV1BkQqhdODYtM71ctemYsZRmkn2csXOiuRFofuiqAsfY9aWwfTdQG6eO+HCe2gzKit
+        HADaFOrRTcrorq0oDFzLXDgf7HvK+bcXd4ZlEbfkEosVvACxU2CfnvGnaqkMroQP4aCFAEz5BGEm
+        ihF2OkDHG2feHF7r7iJs4TDO1jU9Zwhb4dmlV1NjDeH/llbLVgDyliK4cPAWCIU+f6tSg/MeAQAA
     headers:
       cache-control: [private]
-      cf-ray: [16f5881c5f7e0d7f-SJC]
+      cf-ray: [26d87b1402dd0da3-SJC]
       connection: [keep-alive]
       content-encoding: [gzip]
       content-type: [application/json; charset=utf-8]
-      date: ['Thu, 25 Sep 2014 07:33:06 GMT']
+      date: ['Sun, 31 Jan 2016 21:23:58 GMT']
       p3p: ['CP="NOI CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="http://www.okcupid.com/w3c/p3p.xml"']
       server: [cloudflare-nginx]
-      set-cookie: ['__cfduid=d31413e866fbe36627fc5515135d654fb1411630386613; expires=Mon,
-          23-Dec-2019 23:50:00 GMT; path=/; domain=.okcupid.com; HttpOnly', 'override_session=0;
-          Expires=Fri, 25 Sep 2015 07:33:06 GMT; Path=/; Domain=okcupid.com; HttpOnly',
-        'session=17905399961694981562%3a18385455690161286867; Expires=Fri, 25 Sep
-          2015 07:33:06 GMT; Path=/; Domain=okcupid.com; HttpOnly', 'guest=; Expires=Wed,
-          24 Sep 2014 07:33:06 GMT; Path=/; Domain=okcupid.com; HttpOnly']
-      transfer-encoding: [chunked]
-      x-okws-version: [OKWS/3.1.28.1]
+      set-cookie: ['__cfduid=d52d05b4165780a834ec2f75626c821201454275438; expires=Mon,
+          30-Jan-17 21:23:58 GMT; path=/; domain=.okcupid.com; HttpOnly', 'override_session=0;
+          Expires=Mon, 30 Jan 2017 21:23:58 GMT; Path=/; Domain=okcupid.com; HttpOnly',
+        'session=14659444367938068862%3a541903889323140458; Expires=Mon, 30 Jan 2017
+          21:23:58 GMT; Path=/; Domain=okcupid.com; HttpOnly', 'guest=; Expires=Sat,
+          30 Jan 2016 21:23:58 GMT; Path=/; Domain=okcupid.com; HttpOnly']
+      x-frame-options: [DENY]
+      x-okws-version: [OKWS/3.1.34.5]
       x-xss-protection: [1; mode=block]
     status: {code: 200, message: OK}
 version: 1
