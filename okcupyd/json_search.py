@@ -222,7 +222,7 @@ def search(session=None, count=1, **kwargs):
 class OrderByFilter(search_filters.filter_class):
 
     def transform(order_by):
-        return order_by or "SPECIAL_BLEND"
+        return (order_by or "SPECIAL_BLEND").upper()
 
 
 search_filters.add_to_docstring_of(SearchFetchable)
