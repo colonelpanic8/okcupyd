@@ -35,7 +35,7 @@ Or by explicitly specifying the version you would like to obtain:
 
 .. code:: bash
 
-    pip install okcupyd==1.0.0a3
+    pip install okcupyd==1.0.0a5
 
 Please be aware that these alpha builds will likely have many bugs and
 they should not be expected to be stable in any way.
