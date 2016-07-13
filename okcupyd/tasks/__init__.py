@@ -9,7 +9,6 @@ from okcupyd import user, db, util
 
 
 log = logging.getLogger(__name__)
-model = model
 
 ns = Collection()
 ns.add_collection(copy)

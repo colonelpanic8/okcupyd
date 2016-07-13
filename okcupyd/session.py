@@ -82,9 +82,8 @@ class Session(object):
                         u'got {1}'.format(username, log_in_name))
         log.debug(login_response.content.decode('utf8'))
 
-        access_token = login_json.get("oauth_accesstoken")
-        if access_token:
-            self.access_token = access_token
+
+        self.access_token = login_json.get("oauth_accesstoken")
         self.log_in_name = log_in_name
         self.headers.update(self.default_login_headers)
 
