@@ -73,7 +73,7 @@ class SearchManager(object):
 
 class SearchJSONFetcher(object):
 
-    search_uri = 'apitun/match/search'
+    search_uri = '1/apitun/match/search'
     default_headers = {
         'Content-Type': 'application/json'
     }
@@ -83,20 +83,25 @@ class SearchJSONFetcher(object):
         self._options = options
         self._parameters = search_filters.build(session=self._session, **options)
 
+    def _get_headers(self):
+        headers = {
+            "authorization": "Bearer {}".format(self._session.access_token)
+        }
+        headers.update(self.default_headers)
+        return headers
+
     def _request_params(self, after=None, count=None):
         return {
-            'params': {
-                'access_token': self._session.access_token
-            },
-            'headers': self.default_headers,
+            'headers': self._get_headers(),
             'data': simplejson.dumps(self._post_body(after, count)),
-            'path': self.search_uri
+            'path': self.search_uri,
         }
 
     def _post_body(self, after=None, count=None):
         search_parameters = {
             'after': after,
-            'limit': count
+            'limit': count,
+            'fields': "userinfo,thumbs,percentages,likes,last_contacts,online",
         }
         search_parameters.update(self._parameters)
         return search_parameters
@@ -212,6 +217,12 @@ class LocationFilter(search_filters.filter_class):
 
 def search(session=None, count=1, **kwargs):
     return SearchFetchable(session, count=count, **kwargs)[:count]
+
+
+class OrderByFilter(search_filters.filter_class):
+
+    def transform(order_by):
+        return order_by or "SPECIAL_BLEND"
 
 
 search_filters.add_to_docstring_of(SearchFetchable)

@@ -11,6 +11,10 @@ def all_not_none_decider(function, incoming, accepted_keys):
     return all(incoming.get(key) is not None for key in accepted_keys)
 
 
+def always_decider(*args, **kwargs):
+    return True
+
+
 class Filters(object):
     """Registrar for functions that construct filters for submission in
     requests to okcupid.com
