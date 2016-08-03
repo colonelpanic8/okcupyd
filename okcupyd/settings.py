@@ -14,8 +14,10 @@ AF_PASSWORD = os.environ.get('AF_PASSWORD', PASSWORD)
 
 OKCUPYD_CONFIG_FILENAME = '.okcupyd.yml'
 
+
 def okcupyd_config_at_path(path):
     return os.path.join(path, OKCUPYD_CONFIG_FILENAME)
+
 
 def generate_paths_to_check():
     yield os.getcwd()
@@ -29,7 +31,7 @@ def load_credentials_from_filepath(filepath):
         USERNAME = data['username']
         PASSWORD = data['password']
 
-    
+
 def load_credentials_from_files():
     for path in generate_paths_to_check():
         filepath = okcupyd_config_at_path(path)
