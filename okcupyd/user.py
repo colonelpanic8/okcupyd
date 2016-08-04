@@ -153,7 +153,14 @@ class User(object):
         gentation = helpers.get_default_gentation(self.profile.gender,
                                                   self.profile.orientation)
         kwargs.setdefault('gentation', gentation)
-        kwargs.setdefault('location', self.profile.location)
+
+        # We are no longer setting location by default because the
+        # query api that okcupid offers seems to have gotten much
+        # stricter. This should be revisited so that search gives good
+        # default results. This is issue #85.
+
+        # kwargs.setdefault('location', self.profile.location)
+
         kwargs.setdefault('radius', 25)
         kwargs.setdefault('location_cache', self.location_cache)
         if 'count' in kwargs:
