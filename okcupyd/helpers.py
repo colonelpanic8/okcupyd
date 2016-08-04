@@ -131,6 +131,7 @@ def parse_slashed_date(date_updated_text):
     except:
         pass
 
+
 def parse_abbreviated_date(date_updated_text):
     date_text = date_updated_text.replace(',', '')
     try:
@@ -142,6 +143,7 @@ def parse_abbreviated_date(date_updated_text):
             return parsed_time.replace(year=datetime.now().year)
     except:
         pass
+
 
 def parse_time(date_updated_text):
     try:
@@ -309,3 +311,9 @@ def add_newlines(tree):
     """
     for br in tree.xpath("*//br"):
         br.tail = u"\n" + br.tail if br.tail else u"\n"
+
+
+def make_auth_header_dictionary(session):
+    return {
+        "authorization": "Bearer {}".format(session.access_token)
+    }

@@ -1,3 +1,4 @@
+from . import helpers
 from .session import Session
 
 
@@ -6,6 +7,8 @@ class NoLocationFoundError(Exception):
 
 
 class LocationQueryCache(object):
+
+    uri = '1/apitun/location/query'
 
     def __init__(self, session=None):
         self._session = session or Session.login()
@@ -30,6 +33,7 @@ class LocationQueryCache(object):
 
     def _query(self, query):
         return self._session.okc_get(
-            'apitun/location/query',
-            params={'q': query, 'access_token': self._session.access_token},
+            self.uri,
+            params={'q': query},
+            headers=helpers.make_auth_header_dictionary(self._session)
         ).json()

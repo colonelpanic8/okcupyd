@@ -4,6 +4,7 @@ import simplejson
 import six
 
 from . import filter
+from . import helpers
 from . import magicnumbers
 from . import util
 from .profile import Profile
@@ -84,9 +85,7 @@ class SearchJSONFetcher(object):
         self._parameters = search_filters.build(session=self._session, **options)
 
     def _get_headers(self):
-        headers = {
-            "authorization": "Bearer {}".format(self._session.access_token)
-        }
+        headers = helpers.make_auth_header_dictionary(self._session)
         headers.update(self.default_headers)
         return headers
 
