@@ -1,5 +1,5 @@
 from .util import cached_property
-
+from .errors import NoProfileError
 
 class XPathBuilder(object):
 
@@ -72,7 +72,13 @@ class XPathBuilder(object):
         return tree.xpath(self.xpath)
 
     def one_(self, tree):
-        return self.apply_(tree)[0]
+        try:
+            return self.apply_(tree)[0]
+        except IndexError:
+            if no_profile(tree):
+                raise NoProfileError('Profile does not exist')
+            else:
+                raise
 
     def get_text_(self, tree):
         return self.apply_(tree)[0].text_content()
@@ -169,3 +175,12 @@ class XPathNode(object):
 
 
 xpb = XPathBuilder()
+
+_no_profile = xpb.div.with_class('blank_state')
+
+def no_profile(tree):
+    try:
+        node = _no_profile.apply_(tree)[0]
+    except IndexError:
+        return False
+    return True
